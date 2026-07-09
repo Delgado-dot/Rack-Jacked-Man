@@ -7,8 +7,13 @@ public class PuzzleMana : MonoBehaviour
 
     private bool puzzleActive;
 
-    private string[] puzzles =
+    // Guarda el rack que activó el puzzle
+    private RackController rackActual;
+
+    private string ElegirPuzzleAleatorio()
     {
+        string[] puzzles =
+        {
         "cables",
         "dispatcher",
         "nave",
@@ -17,16 +22,28 @@ public class PuzzleMana : MonoBehaviour
     };
 
 
-    public void StartPuzzle()
+        int indice = Random.Range(
+            0,
+            puzzles.Length
+        );
+
+
+        return puzzles[indice];
+    }
+    public void StartPuzzle(RackController rack)
     {
         if (puzzleActive)
             return;
 
 
+        rackActual = rack;
+
         puzzleActive = true;
 
 
-        Debug.Log("Puzzle iniciado");
+        Debug.Log(
+            "Puzzle iniciado para: " + rackActual.tipoRack
+        );
 
 
         playerMode.ChangeMode(
@@ -34,21 +51,22 @@ public class PuzzleMana : MonoBehaviour
         );
 
 
-        // Elegir puzzle aleatorio
-        string puzzleElegido =
-            puzzles[Random.Range(0, puzzles.Length)];
+        // Por ahora pruebas con cables
+        string puzzleElegido = ElegirPuzzleAleatorio();
 
 
-        Debug.Log("Puzzle elegido: " + puzzleElegido);
+        Debug.Log(
+            "Puzzle elegido: " + puzzleElegido
+        );
 
 
-        // Ejecutar Python
         string resultado =
             pythonPuzzleManager.EjecutarPuzzle(puzzleElegido);
 
 
-        Debug.Log("Resultado Python: " + resultado);
-
+        Debug.Log(
+            "Resultado puzzle: " + resultado
+        );
 
 
         if (resultado == "resuelto")
@@ -65,25 +83,50 @@ public class PuzzleMana : MonoBehaviour
 
     public void PuzzleCompleted()
     {
+        if (!puzzleActive)
+            return;
+
+
         puzzleActive = false;
 
+
         Debug.Log("Puzzle completado");
+
+
+        // Reparar el rack que llamó al puzzle
+        if (rackActual != null)
+        {
+            rackActual.RepararRack();
+        }
+
 
         playerMode.ChangeMode(
             PlayerMode.Mode.Runner
         );
+
+
+        rackActual = null;
     }
 
 
 
     public void PuzzleFailed()
     {
+        if (!puzzleActive)
+            return;
+
+
         puzzleActive = false;
 
+
         Debug.Log("Puzzle fallido");
+
 
         playerMode.ChangeMode(
             PlayerMode.Mode.Normal
         );
+
+
+        rackActual = null;
     }
 }

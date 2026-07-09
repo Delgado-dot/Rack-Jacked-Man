@@ -1,12 +1,14 @@
 using UnityEngine;
 
-
 public class RackTrigger : MonoBehaviour
 {
     private bool activated = false;
 
 
     public PuzzleMana puzzleMana;
+
+    // El rack al que pertenece este trigger
+    public RackController rackController;
 
 
     private void OnTriggerEnter(Collider other)
@@ -20,10 +22,10 @@ public class RackTrigger : MonoBehaviour
             activated = true;
 
 
-            puzzleMana.StartPuzzle();
+            puzzleMana.StartPuzzle(rackController);
 
 
-            Debug.Log("Rack alcanzado");
+            Debug.Log("Rack alcanzado: " + rackController.tipoRack);
         }
     }
 }

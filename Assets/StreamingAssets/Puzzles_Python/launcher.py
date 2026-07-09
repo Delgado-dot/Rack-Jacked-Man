@@ -1,28 +1,72 @@
 import pygame
 import sys
 import os
+import importlib
 
 
-from puzzles.puzzle_cables import PuzzleCables
-
-
-# Configuración de ventana - más compacta, sin bordes, DPI-aware
+# Configuración ventana
 WIDTH = 900
 HEIGHT = 550
+
 WINDOW_FLAGS = pygame.NOFRAME | pygame.SCALED
 
-# Centrar ventana en pantalla
-os.environ['SDL_VIDEO_CENTERED'] = '1'
+os.environ["SDL_VIDEO_CENTERED"] = "1"
+
+
+PUZZLES = {
+    "cables": "puzzles.puzzle_cables.PuzzleCables",
+    "dispatcher": "puzzles.puzzle_dispatcher.PuzzleDispatcher",
+    "nave": "puzzles.puzzle_nave.PuzzleNave",
+    "trafico": "puzzles.puzzle_trafico.PuzzleTrafico",
+    "patchcore": "puzzles.puzzle_patchcore.PuzzlePatchCore",
+}
+
+
+
+def cargar_puzzle(nombre):
+
+    if nombre not in PUZZLES:
+        print("[ERROR] Puzzle no encontrado:", nombre)
+        return None
+
+
+    ruta = PUZZLES[nombre]
+
+    modulo, clase = ruta.rsplit(".", 1)
+
+
+    try:
+        archivo = importlib.import_module(modulo)
+
+        clase_puzzle = getattr(
+            archivo,
+            clase
+        )
+
+        return clase_puzzle
+
+
+    except Exception as e:
+
+        print(
+            f"[ERROR] Importando {nombre}: {e}"
+        )
+
+        return None
+
+
 
 
 def ejecutar_puzzle(nombre):
 
     pygame.init()
 
+
     pantalla = pygame.display.set_mode(
         (WIDTH, HEIGHT),
         WINDOW_FLAGS
     )
+
 
     pygame.display.set_caption(
         "Rack Jacked Man - Puzzle"
@@ -35,32 +79,56 @@ def ejecutar_puzzle(nombre):
     )
 
 
-    if nombre == "cables":
-
-        puzzle = PuzzleCables(
-            pantalla,
-            WIDTH,
-            HEIGHT,
-            fuente,
-            3
-        )
+    clase_puzzle = cargar_puzzle(nombre)
 
 
-        resultado = puzzle.ejecutar()
+    if clase_puzzle is None:
 
-
-    else:
         resultado = "error"
 
 
-    ruta = os.path.join(
+    else:
+
+        try:
+
+            puzzle = clase_puzzle(
+                pantalla,
+                WIDTH,
+                HEIGHT,
+                fuente,
+                3
+            )
+
+
+            resultado = puzzle.ejecutar()
+
+
+        except Exception as e:
+
+            print(
+                "[ERROR EJECUTANDO PUZZLE]"
+            )
+
+            print(e)
+
+            resultado = "error"
+
+
+
+    ruta_resultado = os.path.join(
         os.path.dirname(__file__),
         "resultado.txt"
     )
 
 
-    with open(ruta,"w") as f:
-        f.write(resultado)
+    with open(
+        ruta_resultado,
+        "w",
+        encoding="utf-8"
+    ) as archivo:
+
+        archivo.write(resultado)
+
 
 
     pygame.quit()
@@ -69,4 +137,21 @@ def ejecutar_puzzle(nombre):
 
 if __name__ == "__main__":
 
-    ejecutar_puzzle("cables")
+
+    if len(sys.argv) > 1:
+
+        nombre = sys.argv[1]
+
+
+    else:
+
+        nombre = "cables"
+
+
+
+    print(
+        f"[LAUNCHER] Iniciando puzzle: {nombre}"
+    )
+
+
+    ejecutar_puzzle(nombre)
