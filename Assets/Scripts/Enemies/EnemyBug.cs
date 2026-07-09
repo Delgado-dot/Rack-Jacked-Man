@@ -21,6 +21,7 @@ public class EnemyBug : MonoBehaviour
     [SerializeField] private float stompAngleThreshold = 0.3f;
 
     private CharacterController playerController;
+    private PlayerHealth playerHealth;
 
     private void Start()
     {
@@ -38,6 +39,7 @@ public class EnemyBug : MonoBehaviour
             {
                 player = playerObj.transform;
                 playerController = playerObj.GetComponent<CharacterController>();
+                playerHealth = playerObj.GetComponent<PlayerHealth>();
             }
             else
             {
@@ -47,6 +49,7 @@ public class EnemyBug : MonoBehaviour
         else
         {
             playerController = player.GetComponent<CharacterController>();
+            playerHealth = player.GetComponent<PlayerHealth>();
         }
     }
 
@@ -94,9 +97,10 @@ public class EnemyBug : MonoBehaviour
             }
 
             // === DANNO AL JUGADOR ===
-            // TODO: Llamar a PlayerHealth.TakeDamage() cuando se implemente el sistema de vida del jugador.
-            // Por ahora solo se registra en consola.
-            Debug.Log("EnemyBug impacto al jugador. Aqui se llamaria a PlayerHealth.TakeDamage().");
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage();
+            }
         }
     }
 
