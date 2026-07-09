@@ -96,7 +96,7 @@ public class PlayerHealth : MonoBehaviour
     }
 
     /// <summary>
-    /// Ejecutar muerte del jugador. Game Over basico.
+    /// Ejecutar muerte del jugador. Game Over.
     /// </summary>
     private void Die()
     {
@@ -110,13 +110,27 @@ public class PlayerHealth : MonoBehaviour
         {
             playerMovement.enabled = false;
         }
+
+        // Notificar al GameManager
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.GameOver();
+        }
     }
 
     /// <summary>
-    /// Regresar al punto de aparicion.
+    /// Regresar al punto de aparicion o ultimo checkpoint.
     /// </summary>
     private void Respawn()
     {
+        // Usar GameManager si esta disponible
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.RespawnPlayer();
+            return;
+        }
+
+        // Fallback: usar posicion inicial o spawn point
         Vector3 targetPosition = initialPosition;
 
         if (spawnPoint != null)

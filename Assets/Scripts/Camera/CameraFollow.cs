@@ -15,10 +15,12 @@ public class CameraFollow : MonoBehaviour
 
     [Header("Limites de la camara (opcional)")]
     [SerializeField] private bool useBounds = false;
-    [SerializeField] private float minX = -10f;
-    [SerializeField] private float maxX = 10f;
-    [SerializeField] private float minY = 0f;
+    [SerializeField] private float minX = -5f;
+    [SerializeField] private float maxX = 40f;
+    [SerializeField] private float minY = -2f;
     [SerializeField] private float maxY = 15f;
+    [SerializeField] private float minZ = -10f;
+    [SerializeField] private float maxZ = -8f;
 
     private void Start()
     {
@@ -54,6 +56,7 @@ public class CameraFollow : MonoBehaviour
         {
             desiredPosition.x = Mathf.Clamp(desiredPosition.x, minX, maxX);
             desiredPosition.y = Mathf.Clamp(desiredPosition.y, minY, maxY);
+            desiredPosition.z = Mathf.Clamp(desiredPosition.z, minZ, maxZ);
         }
 
         // Suavizar el movimiento con SmoothDamp
