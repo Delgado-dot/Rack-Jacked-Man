@@ -1,7 +1,7 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(PlayerInputHandler))]
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movimiento")]
@@ -9,12 +9,11 @@ public class PlayerMovement : MonoBehaviour
     public float acceleration = 20f;
     public float deceleration = 25f;
 
-    [Header("Modo de juego")]
-    public bool subnivel = false;
 
     [Header("Salto")]
     public float jumpHeight = 3f;
     public float gravity = -35f;
+
 
     [Header("Suelo")]
     public Transform groundCheck;
@@ -23,19 +22,13 @@ public class PlayerMovement : MonoBehaviour
 
 
     private CharacterController controller;
+    private PlayerInputHandler input;
+    private PlayerMode playerMode;
 
-    private PlayerControls controls;
-
-    private Vector2 moveInput;
 
     private Vector3 velocity;
-
     private Vector3 currentMovement;
 
-    private bool sprinting;
-    private bool shootPressed;
-
-    private bool jumpPressed;
 
     private bool isGrounded;
 
@@ -43,76 +36,41 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
-
-        controls = new PlayerControls();
-    }
-
-
-    private void OnEnable()
-    {
-        controls.Enable();
-
-
-        controls.Player.Move.performed += ctx =>
-        {
-            moveInput = ctx.ReadValue<Vector2>();
-        };
-
-
-        controls.Player.Move.canceled += ctx =>
-        {
-            moveInput = Vector2.zero;
-        };
-
-
-        controls.Player.Jump.performed += ctx =>
-        {
-            jumpPressed = true;
-        };
-        controls.Player.Sprint.performed += ctx =>
-        {
-            sprinting = true;
-        };
-
-
-        controls.Player.Sprint.canceled += ctx =>
-        {
-            sprinting = false;
-        };
-
-
-        controls.Player.Shoot.performed += ctx =>
-        {
-            shootPressed = true;
-        };
-    }
-
-
-    private void OnDisable()
-    {
-        controls.Disable();
+        input = GetComponent<PlayerInputHandler>();
+        playerMode = GetComponent<PlayerMode>();
     }
 
 
     private void Update()
     {
-        // Detectar suelo
+        DetectGround();
+
+        ApplyGravity();
+
+        HandleJump();
+
+        HandleMovement();
+    }
+
+
+    private void DetectGround()
+    {
         isGrounded = Physics.CheckSphere(
             groundCheck.position,
             groundDistance,
             groundLayer
         );
+    }
 
 
-        // Mantener pegado al suelo
-        if (isGrounded && velocity.y < 0)
+    private void HandleJump()
+    {
+        if (!playerMode.IsNormal())
         {
-            velocity.y = -5f;
+            input.ConsumeJump();
+            return;
         }
-
-
-        // Salto
-        if (jumpPressed)
+        if (input.JumpPressed)
         {
             if (isGrounded)
             {
@@ -121,13 +79,20 @@ public class PlayerMovement : MonoBehaviour
                 );
             }
 
-            jumpPressed = false;
+            input.ConsumeJump();
+        }
+    }
+
+
+    private void HandleMovement()
+    {
+        if (!playerMode.IsNormal())
+        {
+            return;
         }
 
-
-        // Movimiento lateral A/D
         Vector3 direction = new Vector3(
-            moveInput.x,
+            input.MoveInput.x,
             0,
             0
         );
@@ -153,30 +118,22 @@ public class PlayerMovement : MonoBehaviour
         controller.Move(
             currentMovement * Time.deltaTime
         );
+    }
 
 
-        // Gravedad
+    private void ApplyGravity()
+    {
+        if (isGrounded && velocity.y < 0)
+        {
+            velocity.y = -5f;
+        }
+
+
         velocity.y += gravity * Time.deltaTime;
 
 
         controller.Move(
             velocity * Time.deltaTime
         );
-
-        if (shootPressed)
-        {
-            Debug.Log("Disparo");
-            shootPressed = false;
-        }
-    }
-    private void OnDrawGizmos()
-    {
-        if (groundCheck != null)
-        {
-            Gizmos.DrawWireSphere(
-                groundCheck.position,
-                groundDistance
-            );
-        }
     }
 }

@@ -11,14 +11,14 @@ TagManager:
   - Ground
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - Plataform
+  - Enemy
+  - Hazard
+  - Checkpoint
+  - Interactable
+  - Projectile
+  - RunnerLane
   - 
   - 
   - 
