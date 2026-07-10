@@ -2,6 +2,12 @@ using UnityEngine;
 
 public class JacketPickup : MonoBehaviour
 {
+    [Header("Prefab del powerup (recomendado)")]
+    [SerializeField] private GameObject pickupPrefab;
+
+    [Header("Fallback: si no hay prefab, crea un cubo")]
+    [SerializeField] private float escalaInicial = 1.2f;
+
     [Header("Configuracion")]
     [SerializeField] private float tiempoReaparicion = 10f;
     [SerializeField] private float alturaFlotacion = 1.5f;
@@ -11,9 +17,6 @@ public class JacketPickup : MonoBehaviour
     [SerializeField] private float[] cableXPositions = { -2.5f, 0f, 2.5f };
     [SerializeField] private float rangoZMin = 20f;
     [SerializeField] private float rangoZMax = 100f;
-
-    [Header("Tamano")]
-    [SerializeField] private float escalaInicial = 1.2f;
 
     [Header("Referencia")]
     [SerializeField] private Transform jugador;
@@ -30,8 +33,6 @@ public class JacketPickup : MonoBehaviour
         col = GetComponent<Collider>();
         posicionOriginal = transform.position;
 
-        transform.localScale = Vector3.one * escalaInicial;
-
         if (rend != null)
         {
             rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
@@ -43,7 +44,6 @@ public class JacketPickup : MonoBehaviour
         if (jugador == null)
         {
             GameObject playerObj = GameObject.FindWithTag("Player");
-            if (playerObj == null) playerObj = GameObject.Find("Player");
             if (playerObj != null) jugador = playerObj.transform;
         }
     }

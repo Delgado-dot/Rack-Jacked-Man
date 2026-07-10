@@ -6,9 +6,6 @@ public class EnemyCable : MonoBehaviour
     [SerializeField] private float velocidad = 5f;
     [SerializeField] private float distanciaMaxima = 60f;
 
-    [Header("Tamano")]
-    [SerializeField] private float escalaInicial = 1.5f;
-
     [Header("Danio")]
     [SerializeField] private int danoAlContacto = 1;
 
@@ -17,7 +14,6 @@ public class EnemyCable : MonoBehaviour
     private void Start()
     {
         posicionInicial = transform.position;
-        transform.localScale = Vector3.one * escalaInicial;
     }
 
     private void Update()

@@ -2,8 +2,11 @@ using UnityEngine;
 
 public class EnemySpawnerCable : MonoBehaviour
 {
-    [Header("Prefab del enemigo (opcional)")]
+    [Header("Prefab del enemigo (recomendado)")]
     [SerializeField] private GameObject enemyPrefab;
+
+    [Header("Fallback: si no hay prefab, crea un cilindro")]
+    [SerializeField] private float enemigoEscala = 1.5f;
 
     [Header("Cables (posiciones X)")]
     [SerializeField] private float[] cableXPositions = { -2.5f, 0f, 2.5f };
@@ -15,11 +18,6 @@ public class EnemySpawnerCable : MonoBehaviour
     [Header("Configuracion")]
     [SerializeField] private float tiempoEntreEnemigos = 2f;
     [SerializeField] private float distanciaAparicion = 40f;
-    [SerializeField] private float velocidadEnemigo = 5f;
-    [SerializeField] private float distanciaMaxima = 60f;
-
-    [Header("Tamano del enemigo")]
-    [SerializeField] private float enemigoEscala = 1.5f;
 
     [Header("Rango de variacion")]
     [SerializeField] private float variacionX = 0.3f;
@@ -28,7 +26,6 @@ public class EnemySpawnerCable : MonoBehaviour
     [SerializeField] private int maxEnemigosActivos = 5;
 
     private float spawnTimer;
-    private int enemigosActivos = 0;
 
     private void Start()
     {
@@ -37,7 +34,6 @@ public class EnemySpawnerCable : MonoBehaviour
         if (jugador == null)
         {
             GameObject playerObj = GameObject.FindWithTag("Player");
-            if (playerObj == null) playerObj = GameObject.Find("Player");
             if (playerObj != null) jugador = playerObj.transform;
         }
     }
@@ -46,7 +42,7 @@ public class EnemySpawnerCable : MonoBehaviour
     {
         if (jugador == null) return;
 
-        enemigosActivos = GameObject.FindGameObjectsWithTag("Enemy").Length;
+        int enemigosActivos = GameObject.FindGameObjectsWithTag("Enemy").Length;
 
         spawnTimer -= Time.deltaTime;
         if (spawnTimer <= 0f && enemigosActivos < maxEnemigosActivos)
@@ -80,29 +76,35 @@ public class EnemySpawnerCable : MonoBehaviour
         }
         else
         {
-            enemigo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            enemigo.transform.position = spawnPos;
-            enemigo.transform.localScale = new Vector3(0.8f, 1f, 0.8f) * enemigoEscala;
-            enemigo.tag = "Enemy";
-
-            Renderer rend = enemigo.GetComponent<Renderer>();
-            if (rend != null)
-            {
-                rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-                rend.material.color = new Color(0.8f, 0.2f, 0.2f);
-            }
-
-            Collider col = enemigo.GetComponent<Collider>();
-            if (col != null)
-            {
-                col.isTrigger = true;
-            }
+            enemigo = CreateFallbackEnemy(spawnPos);
         }
 
-        EnemyCable ec = enemigo.GetComponent<EnemyCable>();
-        if (ec == null)
+        if (enemigo.GetComponent<EnemyCable>() == null)
         {
-            ec = enemigo.AddComponent<EnemyCable>();
+            enemigo.AddComponent<EnemyCable>();
         }
+    }
+
+    private GameObject CreateFallbackEnemy(Vector3 position)
+    {
+        GameObject enemigo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        enemigo.transform.position = position;
+        enemigo.transform.localScale = new Vector3(0.8f, 1f, 0.8f) * enemigoEscala;
+        enemigo.tag = "Enemy";
+
+        Renderer rend = enemigo.GetComponent<Renderer>();
+        if (rend != null)
+        {
+            rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            rend.material.color = new Color(0.8f, 0.2f, 0.2f);
+        }
+
+        Collider col = enemigo.GetComponent<Collider>();
+        if (col != null)
+        {
+            col.isTrigger = true;
+        }
+
+        return enemigo;
     }
 }
