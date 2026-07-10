@@ -16,6 +16,7 @@ public class CableSegment : MonoBehaviour
     [SerializeField] private AudioSource audioElectrico;
 
     [Header("Danio")]
+    [SerializeField] private int danoPorSegundo = 1;
     [SerializeField] private float danioCooldown = 0.5f;
     private float timerDanio = 0f;
 
@@ -40,7 +41,7 @@ public class CableSegment : MonoBehaviour
             timerDanio -= Time.deltaTime;
             if (timerDanio <= 0f)
             {
-                playerController.TakeDamage();
+                playerController.TakeDamage(danoPorSegundo);
                 timerDanio = danioCooldown;
             }
         }
@@ -94,7 +95,7 @@ public class CableSegment : MonoBehaviour
 
         if (estadoActual == Estado.ELECTRIFICADO && playerController != null)
         {
-            playerController.TakeDamage();
+            playerController.TakeDamage(danoPorSegundo);
             timerDanio = danioCooldown;
         }
     }

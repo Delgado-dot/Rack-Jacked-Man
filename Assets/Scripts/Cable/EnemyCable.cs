@@ -10,12 +10,9 @@ public class EnemyCable : MonoBehaviour
     [SerializeField] private float escalaInicial = 1.5f;
 
     [Header("Danio")]
-    [SerializeField] private float danioCooldown = 1f;
-    private float timerDanio = 0f;
+    [SerializeField] private int danoAlContacto = 1;
 
     private Vector3 posicionInicial;
-    private SubLevelPlayerController playerController;
-    private bool jugadorEnRango = false;
 
     private void Start()
     {
@@ -31,17 +28,6 @@ public class EnemyCable : MonoBehaviour
         if (distancia > distanciaMaxima)
         {
             Destroy(gameObject);
-            return;
-        }
-
-        if (jugadorEnRango && playerController != null)
-        {
-            timerDanio -= Time.deltaTime;
-            if (timerDanio <= 0f)
-            {
-                playerController.TakeDamage();
-                timerDanio = danioCooldown;
-            }
         }
     }
 
@@ -49,21 +35,12 @@ public class EnemyCable : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        jugadorEnRango = true;
-        playerController = other.GetComponent<SubLevelPlayerController>();
-        timerDanio = 0f;
-
+        SubLevelPlayerController playerController = other.GetComponent<SubLevelPlayerController>();
         if (playerController != null)
         {
-            playerController.TakeDamage();
-            timerDanio = danioCooldown;
+            playerController.TakeDamage(danoAlContacto);
         }
-    }
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (!other.CompareTag("Player")) return;
-        jugadorEnRango = false;
-        playerController = null;
+        Destroy(gameObject);
     }
 }

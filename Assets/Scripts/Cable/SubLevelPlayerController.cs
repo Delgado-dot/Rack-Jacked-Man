@@ -130,16 +130,17 @@ public class SubLevelPlayerController : MonoBehaviour
         }
     }
 
-    // === Public API for other scripts ===
+    // === Public API ===
 
-    public void TakeDamage()
+    public void TakeDamage(int cantidad)
     {
-        currentHealth--;
-        Debug.Log("Jugador danado. Vida restante: " + currentHealth);
+        currentHealth -= cantidad;
+        Debug.Log("Jugador danado: -" + cantidad + " vida. Restante: " + currentHealth);
 
         if (currentHealth <= 0)
         {
             Debug.Log("Jugador derrotado.");
+            currentHealth = 0;
             Time.timeScale = 0f;
         }
     }
