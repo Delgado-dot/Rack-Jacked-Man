@@ -16,10 +16,10 @@ public class ElectrifiedCable : MonoBehaviour
     [SerializeField] private int warningSteps = 5;
 
     [Header("Active Phase")]
-    [SerializeField] private float activeDuration = 2f;
+    [SerializeField] private float activeDuration = 0.5f;
 
     [Header("Cooldown Phase")]
-    [SerializeField] private float cooldownDuration = 2f;
+    [SerializeField] private float cooldownDuration = 0.1f;
 
     [Header("Idle Timing")]
     [SerializeField] private float minTimeBetweenCycles = 8f;

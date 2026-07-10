@@ -2261,10 +2261,10 @@ MonoBehaviour:
   electricParticles: {fileID: 0}
   warningParticles: {fileID: 0}
   electricLight: {fileID: 0}
-  warningDuration: 3
-  warningSteps: 3
-  activeDuration: 2
-  cooldownDuration: 1.5
+  warningDuration: 5
+  warningSteps: 5
+  activeDuration: 0.5
+  cooldownDuration: 0.1
   minTimeBetweenCycles: 8
   maxTimeBetweenCycles: 20
   damageAmount: 1
@@ -2286,10 +2286,10 @@ MonoBehaviour:
   electricParticles: {fileID: 0}
   warningParticles: {fileID: 0}
   electricLight: {fileID: 0}
-  warningDuration: 3
-  warningSteps: 3
-  activeDuration: 2
-  cooldownDuration: 1.5
+  warningDuration: 5
+  warningSteps: 5
+  activeDuration: 0.5
+  cooldownDuration: 0.1
   minTimeBetweenCycles: 8
   maxTimeBetweenCycles: 20
   damageAmount: 1
@@ -2311,10 +2311,10 @@ MonoBehaviour:
   electricParticles: {fileID: 0}
   warningParticles: {fileID: 0}
   electricLight: {fileID: 0}
-  warningDuration: 3
-  warningSteps: 3
-  activeDuration: 2
-  cooldownDuration: 1.5
+  warningDuration: 5
+  warningSteps: 5
+  activeDuration: 0.5
+  cooldownDuration: 0.1
   minTimeBetweenCycles: 8
   maxTimeBetweenCycles: 20
   damageAmount: 1

@@ -34,6 +34,17 @@ public class SubLevelPlayerController : MonoBehaviour
     private float shakeTimer = 0f;
     private Vector3 cameraBaseLocalPos;
 
+    [Header("Camera Head Bob")]
+    [SerializeField] private float bobAmplitude = 0.03f;
+    [SerializeField] private float bobFrequency = 10f;
+    private float bobTimer = 0f;
+
+    [Header("Camera Lane Tilt")]
+    [SerializeField] private float tiltAngle = 1.5f;
+    [SerializeField] private float tiltSpeed = 6f;
+    private float currentTilt = 0f;
+    private float prevTargetX;
+
     private int currentLane = 1;
     private float targetX;
     private CharacterController cc;
@@ -100,13 +111,15 @@ public class SubLevelPlayerController : MonoBehaviour
         Camera cam = Camera.main;
         if (cam != null)
             cameraBaseLocalPos = cam.transform.localPosition;
+
+        prevTargetX = targetX;
     }
 
     private void Update()
     {
         MoveForward();
         MoveToLane();
-        UpdateShake();
+        UpdateCameraEffects();
     }
 
     private void ChangeLane(int direction)
@@ -190,20 +203,36 @@ public class SubLevelPlayerController : MonoBehaviour
         Destroy(effect, lifetime);
     }
 
-    private void UpdateShake()
+    private void UpdateCameraEffects()
     {
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        Vector3 offset = Vector3.zero;
+
+        // Head bob
+        float speed = isSprinting ? sprintSpeed : forwardSpeed;
+        bobTimer += Time.deltaTime * bobFrequency * (speed / forwardSpeed);
+        offset.y += Mathf.Sin(bobTimer) * bobAmplitude;
+
+        // Lane tilt
+        float laneDelta = targetX - prevTargetX;
+        float targetTilt = laneDelta != 0f ? -Mathf.Sign(laneDelta) * tiltAngle : 0f;
+        currentTilt = Mathf.Lerp(currentTilt, targetTilt, tiltSpeed * Time.deltaTime);
+        if (Mathf.Abs(currentTilt) < 0.01f && targetTilt == 0f) currentTilt = 0f;
+        cam.transform.localRotation = Quaternion.Euler(0f, 0f, currentTilt);
+        prevTargetX = targetX;
+
+        // Shake
         if (shakeTimer > 0f)
         {
             shakeTimer -= Time.deltaTime;
-            Camera cam = Camera.main;
-            if (cam != null)
-            {
-                float progress = shakeTimer / shakeDuration;
-                float currentIntensity = shakeIntensity * progress;
-                Vector3 shakeOffset = Random.insideUnitSphere * currentIntensity;
-                cam.transform.localPosition = cameraBaseLocalPos + shakeOffset;
-            }
+            float progress = shakeTimer / shakeDuration;
+            float currentIntensity = shakeIntensity * progress;
+            offset += Random.insideUnitSphere * currentIntensity;
         }
+
+        cam.transform.localPosition = cameraBaseLocalPos + offset;
     }
 
     private void Shoot()
