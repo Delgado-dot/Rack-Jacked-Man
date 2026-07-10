@@ -11,6 +11,16 @@ public class SubLevelPlayerController : MonoBehaviour
     [SerializeField] private float forwardSpeed = 10f;
     [SerializeField] private float sprintSpeed = 16f;
 
+    [Header("Health")]
+    [SerializeField] private int maxHealth = 3;
+    private int currentHealth;
+
+    [Header("Teleport Power")]
+    [SerializeField] private float teleportDistance = 15f;
+    [SerializeField] private float teleportCooldown = 2f;
+    private float teleportTimer = 0f;
+    private bool hasPower = false;
+
     private int currentLane = 1;
     private float targetX;
     private CharacterController cc;
@@ -19,6 +29,7 @@ public class SubLevelPlayerController : MonoBehaviour
     private InputAction moveLeftAction;
     private InputAction moveRightAction;
     private InputAction sprintAction;
+    private InputAction teleportAction;
 
     private void Awake()
     {
@@ -44,6 +55,11 @@ public class SubLevelPlayerController : MonoBehaviour
         sprintAction.performed += ctx => isSprinting = true;
         sprintAction.canceled += ctx => isSprinting = false;
         sprintAction.Enable();
+
+        teleportAction = new InputAction("Teleport", InputActionType.Button);
+        teleportAction.AddBinding("<Keyboard>/space");
+        teleportAction.performed += ctx => TryTeleport();
+        teleportAction.Enable();
     }
 
     private void OnDisable()
@@ -51,10 +67,12 @@ public class SubLevelPlayerController : MonoBehaviour
         moveLeftAction?.Disable();
         moveRightAction?.Disable();
         sprintAction?.Disable();
+        teleportAction?.Disable();
     }
 
     private void Start()
     {
+        currentHealth = maxHealth;
         currentLane = 1;
         targetX = lanePositions[currentLane];
         transform.position = new Vector3(targetX, transform.position.y, transform.position.z);
@@ -64,6 +82,7 @@ public class SubLevelPlayerController : MonoBehaviour
     {
         MoveForward();
         MoveToLane();
+        UpdateCooldowns();
     }
 
     private void ChangeLane(int direction)
@@ -90,7 +109,55 @@ public class SubLevelPlayerController : MonoBehaviour
         transform.position = pos;
     }
 
+    private void UpdateCooldowns()
+    {
+        if (teleportTimer > 0f)
+            teleportTimer -= Time.deltaTime;
+    }
+
+    private void TryTeleport()
+    {
+        if (hasPower && teleportTimer <= 0f)
+        {
+            Vector3 pos = transform.position;
+            pos.z += teleportDistance;
+            transform.position = pos;
+
+            hasPower = false;
+            teleportTimer = teleportCooldown;
+
+            Debug.Log("Teletransporte activado. Distancia: " + teleportDistance);
+        }
+    }
+
+    // === Public API for other scripts ===
+
+    public void TakeDamage()
+    {
+        currentHealth--;
+        Debug.Log("Jugador danado. Vida restante: " + currentHealth);
+
+        if (currentHealth <= 0)
+        {
+            Debug.Log("Jugador derrotado.");
+            Time.timeScale = 0f;
+        }
+    }
+
+    public void ActivarPoder()
+    {
+        hasPower = true;
+        Debug.Log("Poder de teletransporte activado.");
+    }
+
+    public bool TienePoder()
+    {
+        return hasPower;
+    }
+
     public int GetCurrentLane() => currentLane;
     public float GetTargetX() => targetX;
     public float GetForwardSpeed() => isSprinting ? sprintSpeed : forwardSpeed;
+    public int GetCurrentHealth() => currentHealth;
+    public int GetMaxHealth() => maxHealth;
 }

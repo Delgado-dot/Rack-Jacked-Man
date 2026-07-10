@@ -1,35 +1,32 @@
 using UnityEngine;
 
-/// <summary>
-/// EnemyCable - Enemigo que avanza en linea recta hacia el jugador.
-/// NO persigue. NO gira. Solo avanza hacia adelante.
-/// Se destruye al llegar al final del recorrido.
-/// </summary>
 public class EnemyCable : MonoBehaviour
 {
     [Header("Configuracion")]
     [SerializeField] private float velocidad = 5f;
     [SerializeField] private float distanciaMaxima = 60f;
 
+    [Header("Tamano")]
+    [SerializeField] private float escalaInicial = 1.5f;
+
     [Header("Danio")]
     [SerializeField] private float danioCooldown = 1f;
     private float timerDanio = 0f;
 
     private Vector3 posicionInicial;
-    private PlayerHealth playerHealth;
+    private SubLevelPlayerController playerController;
     private bool jugadorEnRango = false;
 
     private void Start()
     {
         posicionInicial = transform.position;
+        transform.localScale = Vector3.one * escalaInicial;
     }
 
     private void Update()
     {
-        // Avanzar en linea recta (hacia -Z, hacia el jugador)
         transform.position += Vector3.back * velocidad * Time.deltaTime;
 
-        // Destruir si recorrio la distancia maxima
         float distancia = Vector3.Distance(transform.position, posicionInicial);
         if (distancia > distanciaMaxima)
         {
@@ -37,13 +34,12 @@ public class EnemyCable : MonoBehaviour
             return;
         }
 
-        // Danio por contacto
-        if (jugadorEnRango && playerHealth != null)
+        if (jugadorEnRango && playerController != null)
         {
             timerDanio -= Time.deltaTime;
             if (timerDanio <= 0f)
             {
-                playerHealth.TakeDamage();
+                playerController.TakeDamage();
                 timerDanio = danioCooldown;
             }
         }
@@ -54,12 +50,12 @@ public class EnemyCable : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         jugadorEnRango = true;
-        playerHealth = other.GetComponent<PlayerHealth>();
+        playerController = other.GetComponent<SubLevelPlayerController>();
         timerDanio = 0f;
 
-        if (playerHealth != null)
+        if (playerController != null)
         {
-            playerHealth.TakeDamage();
+            playerController.TakeDamage();
             timerDanio = danioCooldown;
         }
     }
@@ -68,6 +64,6 @@ public class EnemyCable : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
         jugadorEnRango = false;
-        playerHealth = null;
+        playerController = null;
     }
 }

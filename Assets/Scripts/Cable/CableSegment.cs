@@ -1,10 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// CableSegment - Segmento individual de cable.
-/// Puede estar en estado NORMAL o ELECTRIFICADO.
-/// Cuando esta electrificado, cambia material, activa particulas y dania al jugador.
-/// </summary>
 public class CableSegment : MonoBehaviour
 {
     public enum Estado { NORMAL, ELECTRIFICADO }
@@ -26,7 +21,7 @@ public class CableSegment : MonoBehaviour
 
     private Renderer rend;
     private bool jugadorEnZona = false;
-    private PlayerHealth playerHealth;
+    private SubLevelPlayerController playerController;
 
     private void Awake()
     {
@@ -40,12 +35,12 @@ public class CableSegment : MonoBehaviour
 
     private void Update()
     {
-        if (jugadorEnZona && estadoActual == Estado.ELECTRIFICADO && playerHealth != null)
+        if (jugadorEnZona && estadoActual == Estado.ELECTRIFICADO && playerController != null)
         {
             timerDanio -= Time.deltaTime;
             if (timerDanio <= 0f)
             {
-                playerHealth.TakeDamage();
+                playerController.TakeDamage();
                 timerDanio = danioCooldown;
             }
         }
@@ -94,12 +89,12 @@ public class CableSegment : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         jugadorEnZona = true;
-        playerHealth = other.GetComponent<PlayerHealth>();
+        playerController = other.GetComponent<SubLevelPlayerController>();
         timerDanio = 0f;
 
-        if (estadoActual == Estado.ELECTRIFICADO && playerHealth != null)
+        if (estadoActual == Estado.ELECTRIFICADO && playerController != null)
         {
-            playerHealth.TakeDamage();
+            playerController.TakeDamage();
             timerDanio = danioCooldown;
         }
     }
@@ -108,6 +103,6 @@ public class CableSegment : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
         jugadorEnZona = false;
-        playerHealth = null;
+        playerController = null;
     }
 }

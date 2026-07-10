@@ -1,18 +1,12 @@
 using UnityEngine;
 
-/// <summary>
-/// EnemySpawnerCable - Genera enemigos aleatoriamente sobre los cables.
-/// Los enemigos aparecen delante del jugador y avanzan en linea recta.
-/// NO persiguen. NO usan NavMesh.
-/// Se destruyen al llegar al final.
-/// </summary>
 public class EnemySpawnerCable : MonoBehaviour
 {
-    [Header("Prefab del enemigo")]
+    [Header("Prefab del enemigo (opcional)")]
     [SerializeField] private GameObject enemyPrefab;
 
     [Header("Cables (posiciones X)")]
-    [SerializeField] private float[] cableXPositions = { -3f, 0f, 3f };
+    [SerializeField] private float[] cableXPositions = { -2.5f, 0f, 2.5f };
     [SerializeField] private float alturaSpawn = 1f;
 
     [Header("Referencia al jugador")]
@@ -24,10 +18,17 @@ public class EnemySpawnerCable : MonoBehaviour
     [SerializeField] private float velocidadEnemigo = 5f;
     [SerializeField] private float distanciaMaxima = 60f;
 
+    [Header("Tamano del enemigo")]
+    [SerializeField] private float enemigoEscala = 1.5f;
+
     [Header("Rango de variacion")]
     [SerializeField] private float variacionX = 0.3f;
 
+    [Header("Cantidad constante de enemigos")]
+    [SerializeField] private int maxEnemigosActivos = 5;
+
     private float spawnTimer;
+    private int enemigosActivos = 0;
 
     private void Start()
     {
@@ -43,10 +44,12 @@ public class EnemySpawnerCable : MonoBehaviour
 
     private void Update()
     {
-        if (enemyPrefab == null || jugador == null) return;
+        if (jugador == null) return;
+
+        enemigosActivos = GameObject.FindGameObjectsWithTag("Enemy").Length;
 
         spawnTimer -= Time.deltaTime;
-        if (spawnTimer <= 0f)
+        if (spawnTimer <= 0f && enemigosActivos < maxEnemigosActivos)
         {
             SpawnEnemigo();
             spawnTimer = tiempoEntreEnemigos;
@@ -60,21 +63,42 @@ public class EnemySpawnerCable : MonoBehaviour
 
     private void SpawnEnemigo()
     {
-        // Elegir cable aleatorio
         int indiceCable = Random.Range(0, cableXPositions.Length);
         float xCable = cableXPositions[indiceCable];
 
-        // Posicion de spawn delante del jugador
         Vector3 spawnPos = new Vector3(
             xCable + Random.Range(-variacionX, variacionX),
             alturaSpawn,
             jugador.position.z + distanciaAparicion
         );
 
-        // Instanciar enemigo
-        GameObject enemigo = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+        GameObject enemigo;
 
-        // Configurar EnemyCable
+        if (enemyPrefab != null)
+        {
+            enemigo = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+        }
+        else
+        {
+            enemigo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            enemigo.transform.position = spawnPos;
+            enemigo.transform.localScale = new Vector3(0.8f, 1f, 0.8f) * enemigoEscala;
+            enemigo.tag = "Enemy";
+
+            Renderer rend = enemigo.GetComponent<Renderer>();
+            if (rend != null)
+            {
+                rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                rend.material.color = new Color(0.8f, 0.2f, 0.2f);
+            }
+
+            Collider col = enemigo.GetComponent<Collider>();
+            if (col != null)
+            {
+                col.isTrigger = true;
+            }
+        }
+
         EnemyCable ec = enemigo.GetComponent<EnemyCable>();
         if (ec == null)
         {

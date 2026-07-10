@@ -1,11 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// JacketPickup - Power-up de chaqueta que otorga teletransporte hacia adelante.
-/// Aparece sobre cualquier cable.
-/// Cuando el jugador la recoge, obtiene el poder de teletransportarse.
-/// La chaqueta reaparece despues de un tiempo.
-/// </summary>
 public class JacketPickup : MonoBehaviour
 {
     [Header("Configuracion")]
@@ -14,9 +8,12 @@ public class JacketPickup : MonoBehaviour
     [SerializeField] private float velocidadRotacion = 90f;
 
     [Header("Cables (posiciones X)")]
-    [SerializeField] private float[] cableXPositions = { -3f, 0f, 3f };
+    [SerializeField] private float[] cableXPositions = { -2.5f, 0f, 2.5f };
     [SerializeField] private float rangoZMin = 20f;
     [SerializeField] private float rangoZMax = 100f;
+
+    [Header("Tamano")]
+    [SerializeField] private float escalaInicial = 1.2f;
 
     [Header("Referencia")]
     [SerializeField] private Transform jugador;
@@ -33,6 +30,16 @@ public class JacketPickup : MonoBehaviour
         col = GetComponent<Collider>();
         posicionOriginal = transform.position;
 
+        transform.localScale = Vector3.one * escalaInicial;
+
+        if (rend != null)
+        {
+            rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            rend.material.color = Color.yellow;
+            rend.material.SetColor("_EmissionColor", Color.yellow * 0.5f);
+            rend.material.EnableKeyword("_EMISSION");
+        }
+
         if (jugador == null)
         {
             GameObject playerObj = GameObject.FindWithTag("Player");
@@ -43,10 +50,8 @@ public class JacketPickup : MonoBehaviour
 
     private void Update()
     {
-        // Rotar la chaqueta
         transform.Rotate(Vector3.up * velocidadRotacion * Time.deltaTime);
 
-        // Flotar arriba y abajo
         float offsetY = Mathf.Sin(Time.time * 2f) * 0.2f;
         transform.position = new Vector3(
             posicionOriginal.x,
@@ -54,7 +59,6 @@ public class JacketPickup : MonoBehaviour
             posicionOriginal.z
         );
 
-        // Reaparecer despues de un tiempo
         if (recogida)
         {
             timerReaparicion -= Time.deltaTime;
@@ -73,10 +77,10 @@ public class JacketPickup : MonoBehaviour
         if (!other.CompareTag("Player")) return;
         if (recogida) return;
 
-        PlayerCableMovement pcm = other.GetComponent<PlayerCableMovement>();
-        if (pcm != null && !pcm.TienePoder())
+        SubLevelPlayerController slpc = other.GetComponent<SubLevelPlayerController>();
+        if (slpc != null && !slpc.TienePoder())
         {
-            pcm.ActivarPoder();
+            slpc.ActivarPoder();
             recogida = true;
             timerReaparicion = tiempoReaparicion;
 
@@ -89,10 +93,9 @@ public class JacketPickup : MonoBehaviour
 
     private void Reposicionar()
     {
-        // Elegir cable aleatorio
         int indiceCable = Random.Range(0, cableXPositions.Length);
         float x = cableXPositions[indiceCable];
-        float z = Random.Range(rangoZMin, rangoZMax);
+        float z = jugador.position.z + Random.Range(rangoZMin, rangoZMax);
 
         posicionOriginal = new Vector3(x, alturaFlotacion, z);
         transform.position = posicionOriginal;
