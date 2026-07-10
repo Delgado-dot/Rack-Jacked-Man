@@ -24,6 +24,9 @@ public class PlayerHealth : MonoBehaviour
 
     private void Start()
     {
+        // Auto-setup racks y puzzles si no existen
+        AutoSetupRacks.Setup();
+
         // Guardar posicion inicial para respawn
         initialPosition = transform.position;
 

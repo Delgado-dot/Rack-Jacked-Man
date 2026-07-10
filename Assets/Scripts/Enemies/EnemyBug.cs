@@ -2,9 +2,9 @@ using UnityEngine;
 
 /// <summary>
 /// EnemyBug - Enemigo que persigue constantemente al jugador.
-/// Copia el comportamiento del EnemyBug original del juego en Python/Pygame.
-/// No patrulla, no tiene estados, simplemente persigue al jugador sin descanso.
+/// Se mueve libremente por el mapa usando CharacterController.
 /// </summary>
+[RequireComponent(typeof(CharacterController))]
 public class EnemyBug : MonoBehaviour
 {
     [Header("Configuracion de movimiento")]
@@ -20,13 +20,16 @@ public class EnemyBug : MonoBehaviour
     [SerializeField] private float stompThreshold = -0.5f;
     [SerializeField] private float stompAngleThreshold = 0.3f;
 
+    private CharacterController enemyController;
     private CharacterController playerController;
     private PlayerHealth playerHealth;
+    private Vector3 velocity;
+    private float gravity = -20f;
 
     private void Start()
     {
-        // Buscar al jugador automaticamente si no se asigno manualmente
-        // Primero intenta por tag "Player", si no lo encuentra busca por nombre "Player"
+        enemyController = GetComponent<CharacterController>();
+
         if (player == null)
         {
             GameObject playerObj = GameObject.FindWithTag("Player");
@@ -43,7 +46,7 @@ public class EnemyBug : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("EnemyBug: No se encontro el jugador. El enemigo no podra perseguir.");
+                Debug.LogWarning("EnemyBug: No se encontro el jugador.");
             }
         }
         else
@@ -57,46 +60,56 @@ public class EnemyBug : MonoBehaviour
     {
         if (player == null) return;
 
-        // === PERSECUCION CONSTANTE ===
-        // Calcular direccion hacia el jugador (X, Y y Z)
-        Vector3 direction = (player.position - transform.position).normalized;
-
-        // Moverse hacia el jugador usando Time.deltaTime
-        transform.position += direction * speed * Time.deltaTime;
-
-        // === ROTACION MIRANDO AL JUGADOR ===
-        Vector3 lookDirection = player.position - transform.position;
-        if (lookDirection != Vector3.zero)
+        // Mantener en el suelo
+        if (enemyController.isGrounded && velocity.y < 0)
         {
-            transform.rotation = Quaternion.LookRotation(lookDirection);
+            velocity.y = -5f;
         }
 
-        // === DETECCION DE COLISION ===
-        // Verificar distancia entre enemigo y jugador
+        // Direccion hacia el jugador (X y Z, sin importar la altura)
+        Vector3 toPlayer = player.position - transform.position;
+        Vector3 direction = new Vector3(toPlayer.x, 0, toPlayer.z).normalized;
+
+        // Moverse hacia el jugador
+        enemyController.Move(direction * speed * Time.deltaTime);
+
+        // Rotar mirando al jugador
+        if (direction != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                10f * Time.deltaTime
+            );
+        }
+
+        // Gravedad
+        velocity.y += gravity * Time.deltaTime;
+        enemyController.Move(velocity * Time.deltaTime);
+
+        // Deteccion de colision
         float distance = Vector3.Distance(transform.position, player.position);
 
         if (distance < collisionDistance)
         {
-            // === MUERTE POR PISOTON ===
-            // Verificar si el jugador esta cayendo y esta por encima del enemigo
+            // Muerte por pisoton
             bool isFalling = false;
             if (playerController != null)
             {
                 isFalling = playerController.velocity.y < stompThreshold;
             }
 
-            // Verificar angulo: el jugador debe estar significativamente por encima
-            Vector3 toPlayer = player.position - transform.position;
-            bool isAbove = toPlayer.y > stompAngleThreshold;
+            Vector3 toPlayer3D = player.position - transform.position;
+            bool isAbove = toPlayer3D.y > stompAngleThreshold;
 
             if (isFalling && isAbove)
             {
-                // El jugador piso al enemigo: destruir este objeto
                 Destroy(gameObject);
                 return;
             }
 
-            // === DANNO AL JUGADOR ===
+            // Danio al jugador
             if (playerHealth != null)
             {
                 playerHealth.TakeDamage();
@@ -104,7 +117,6 @@ public class EnemyBug : MonoBehaviour
         }
     }
 
-    // Visualizar radio de colision en el Editor
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
