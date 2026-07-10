@@ -29,9 +29,10 @@ public class SubLevelPlayerController : MonoBehaviour
     private bool hasPower = false;
 
     [Header("Teleport Feedback")]
-    [SerializeField] private float shakeDuration = 0.15f;
-    [SerializeField] private float shakeIntensity = 0.2f;
+    [SerializeField] private float shakeDuration = 0.2f;
+    [SerializeField] private float shakeIntensity = 0.25f;
     private float shakeTimer = 0f;
+    private Vector3 cameraBaseLocalPos;
 
     private int currentLane = 1;
     private float targetX;
@@ -95,6 +96,10 @@ public class SubLevelPlayerController : MonoBehaviour
         currentLane = 1;
         targetX = lanePositions[currentLane];
         transform.position = new Vector3(targetX, transform.position.y, transform.position.z);
+
+        Camera cam = Camera.main;
+        if (cam != null)
+            cameraBaseLocalPos = cam.transform.localPosition;
     }
 
     private void Update()
@@ -132,14 +137,57 @@ public class SubLevelPlayerController : MonoBehaviour
     {
         if (!hasPower) return;
 
+        Vector3 startPos = transform.position;
+        SpawnTeleportEffect(startPos, true);
+
         float distance = Random.Range(teleportMinDistance, teleportMaxDistance);
         Vector3 pos = transform.position;
         pos.z += distance;
         transform.position = pos;
-        hasPower = false;
 
+        SpawnTeleportEffect(transform.position, false);
+
+        hasPower = false;
         shakeTimer = shakeDuration;
         Debug.Log("Teletransporte activado. Distancia: " + distance);
+    }
+
+    private void SpawnTeleportEffect(Vector3 position, bool isExit)
+    {
+        GameObject effect = new GameObject("TeleportEffect");
+        effect.transform.position = position;
+
+        ParticleSystem ps = effect.AddComponent<ParticleSystem>();
+        var main = ps.main;
+        main.startLifetime = isExit ? 0.4f : 0.3f;
+        main.startSpeed = isExit ? 2f : 4f;
+        main.startSize = isExit ? 0.15f : 0.2f;
+        main.startColor = new Color(0.3f, 0.6f, 1f, 0.8f);
+        main.maxParticles = isExit ? 20 : 30;
+        main.loop = false;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+
+        var emission = ps.emission;
+        emission.rateOverTime = 0;
+        emission.SetBursts(new ParticleSystem.Burst[] {
+            new ParticleSystem.Burst(0f, (short)(isExit ? 20 : 30))
+        });
+
+        var shape = ps.shape;
+        shape.enabled = true;
+        shape.shapeType = ParticleSystemShapeType.Sphere;
+        shape.radius = isExit ? 0.3f : 0.5f;
+
+        var renderer = ps.GetComponent<ParticleSystemRenderer>();
+        renderer.material = new Material(Shader.Find("Particles/Standard Unlit"));
+        Color teleportColor = new Color(0.3f, 0.6f, 1f, 1f);
+        renderer.material.color = teleportColor;
+        renderer.material.SetColor("_EmissionColor", teleportColor * 4f);
+        renderer.material.EnableKeyword("_EMISSION");
+        renderer.renderMode = ParticleSystemRenderMode.Billboard;
+
+        float lifetime = isExit ? 0.5f : 0.4f;
+        Destroy(effect, lifetime);
     }
 
     private void UpdateShake()
@@ -150,8 +198,10 @@ public class SubLevelPlayerController : MonoBehaviour
             Camera cam = Camera.main;
             if (cam != null)
             {
-                Vector3 offset = Random.insideUnitSphere * shakeIntensity;
-                cam.transform.localPosition = new Vector3(offset.x, 1f + offset.y, cam.transform.localPosition.z);
+                float progress = shakeTimer / shakeDuration;
+                float currentIntensity = shakeIntensity * progress;
+                Vector3 shakeOffset = Random.insideUnitSphere * currentIntensity;
+                cam.transform.localPosition = cameraBaseLocalPos + shakeOffset;
             }
         }
     }

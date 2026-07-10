@@ -948,12 +948,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 800575917}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.09853758, y: 3.0257861e-15, z: -2.9961178e-16, w: 0.99513334}
-  m_LocalPosition: {x: 0, y: 1, z: -800}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1504853059}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &800575921
 MonoBehaviour:
@@ -1150,7 +1150,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 800575917}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8, type: 3}
   m_Name: 
@@ -1333,6 +1333,7 @@ Transform:
   m_Children:
   - {fileID: 371199197}
   - {fileID: 487348886}
+  - {fileID: 800575920}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &1504853061
@@ -2258,10 +2259,14 @@ MonoBehaviour:
   cableRenderer: {fileID: 2028828622}
   electricColor: {r: 0, g: 0.7, b: 1, a: 1}
   electricParticles: {fileID: 0}
+  warningParticles: {fileID: 0}
   electricLight: {fileID: 0}
-  minTimeBetweenChanges: 5
-  maxTimeBetweenChanges: 15
-  electrifyDuration: 3
+  warningDuration: 3
+  warningSteps: 3
+  activeDuration: 2
+  cooldownDuration: 1.5
+  minTimeBetweenCycles: 8
+  maxTimeBetweenCycles: 20
   damageAmount: 1
   damageCooldown: 1
 --- !u!114 &700000002
@@ -2279,10 +2284,14 @@ MonoBehaviour:
   cableRenderer: {fileID: 1972840905}
   electricColor: {r: 0, g: 0.7, b: 1, a: 1}
   electricParticles: {fileID: 0}
+  warningParticles: {fileID: 0}
   electricLight: {fileID: 0}
-  minTimeBetweenChanges: 5
-  maxTimeBetweenChanges: 15
-  electrifyDuration: 3
+  warningDuration: 3
+  warningSteps: 3
+  activeDuration: 2
+  cooldownDuration: 1.5
+  minTimeBetweenCycles: 8
+  maxTimeBetweenCycles: 20
   damageAmount: 1
   damageCooldown: 1
 --- !u!114 &700000003
@@ -2300,9 +2309,13 @@ MonoBehaviour:
   cableRenderer: {fileID: 1620057600}
   electricColor: {r: 0, g: 0.7, b: 1, a: 1}
   electricParticles: {fileID: 0}
+  warningParticles: {fileID: 0}
   electricLight: {fileID: 0}
-  minTimeBetweenChanges: 5
-  maxTimeBetweenChanges: 15
-  electrifyDuration: 3
+  warningDuration: 3
+  warningSteps: 3
+  activeDuration: 2
+  cooldownDuration: 1.5
+  minTimeBetweenCycles: 8
+  maxTimeBetweenCycles: 20
   damageAmount: 1
   damageCooldown: 1
