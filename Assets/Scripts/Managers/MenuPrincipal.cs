@@ -1,11 +1,13 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class MenuPrincipal : MonoBehaviour
 {
     public void Jugar()
     {
-        SceneManager.LoadScene("Nivel1");
+        if (Manager_FlujoEscenas.Instancia != null)
+            Manager_FlujoEscenas.Instancia.CargarSiguienteEscena();
+        else
+            Debug.LogError("No hay un Manager_FlujoEscenas en la escena.");
     }
 
     public void Ranking()

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 
 public class BotonMenu3D : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
@@ -83,7 +82,10 @@ public class BotonMenu3D : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         switch (action)
         {
             case ActionType.Jugar:
-                SceneManager.LoadScene("Nivel_1");
+                if (Manager_FlujoEscenas.Instancia != null)
+                    Manager_FlujoEscenas.Instancia.CargarSiguienteEscena();
+                else
+                    Debug.LogError("No hay un Manager_FlujoEscenas en la escena.");
                 break;
 
             case ActionType.Ranking:
