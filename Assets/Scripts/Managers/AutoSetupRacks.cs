@@ -53,6 +53,14 @@ public class AutoSetupRacks : MonoBehaviour
             Debug.LogWarning("[AutoSetupRacks] No se encontro Player en la escena");
         }
 
+        // --- GameManager ---
+        if (GameManager.Instance == null)
+        {
+            GameObject gmGO = new GameObject("GameManager");
+            gmGO.AddComponent<GameManager>();
+            Debug.Log("[AutoSetupRacks] GameManager creado");
+        }
+
         // --- PuzzleMana ---
         PuzzleMana puzzleMana = null;
         GameObject puzzleManaGO = GameObject.Find("PuzzleMana");

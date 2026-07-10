@@ -144,6 +144,17 @@ public class PlayerHealth : MonoBehaviour
         transform.position = targetPosition;
     }
 
+    public void ResetDeath()
+    {
+        isDead = false;
+        isInvulnerable = false;
+        invulnerabilityTimer = 0f;
+        if (playerMovement != null)
+        {
+            playerMovement.enabled = true;
+        }
+    }
+
     // Getters para UI o otros sistemas
     public int GetCurrentLives() { return currentLives; }
     public int GetMaxLives() { return maxLives; }

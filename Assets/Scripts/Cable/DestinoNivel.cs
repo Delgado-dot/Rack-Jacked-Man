@@ -10,7 +10,7 @@ public class DestinoNivel : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        Debug.Log("Destino alcanzado. Cargando siguiente nivel...");
+        Debug.Log("Destino alcanzado.");
 
         if (!string.IsNullOrEmpty(siguienteNivel))
         {
@@ -22,6 +22,10 @@ public class DestinoNivel : MonoBehaviour
             if (nextIndex < SceneManager.sceneCountInBuildSettings)
             {
                 SceneManager.LoadScene(nextIndex);
+            }
+            else if (GameManager.Instance != null)
+            {
+                GameManager.Instance.LevelCompleted();
             }
             else
             {

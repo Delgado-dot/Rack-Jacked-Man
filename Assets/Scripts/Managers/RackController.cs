@@ -13,6 +13,7 @@ public class RackController : MonoBehaviour
 
     public void RepararRack()
     {
+        if (reparado) return;
         reparado = true;
         Debug.Log("Rack reparado: " + tipoRack);
 
@@ -29,10 +30,18 @@ public class RackController : MonoBehaviour
     void ActivarCheckpoint()
     {
         Debug.Log("Checkpoint activado");
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.RegisterCheckpoint(transform);
+        }
     }
 
     void CompletarNivel()
     {
-        Debug.Log("Nivel completado");
+        Debug.Log("Nivel completado, cargando subnivel...");
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.LoadSubLevel();
+        }
     }
 }

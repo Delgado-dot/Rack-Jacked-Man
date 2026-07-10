@@ -8,21 +8,6 @@ public class PuzzleMana : MonoBehaviour
     private bool puzzleActive;
     private RackController rackActual;
 
-    private string ElegirPuzzleAleatorio()
-    {
-        string[] puzzles =
-        {
-            "cables",
-            "dispatcher",
-            "nave",
-            "trafico",
-            "patchcore"
-        };
-
-        int indice = Random.Range(0, puzzles.Length);
-        return puzzles[indice];
-    }
-
     public void StartPuzzle(RackController rack)
     {
         if (puzzleActive)
@@ -35,7 +20,7 @@ public class PuzzleMana : MonoBehaviour
 
         playerMode.ChangeMode(PlayerMode.Mode.Puzzle);
 
-        string puzzleElegido = ElegirPuzzleAleatorio();
+        string puzzleElegido = pythonPuzzleManager.ElegirPuzzleAleatorio();
         Debug.Log("Puzzle elegido: " + puzzleElegido);
 
         pythonPuzzleManager.EjecutarPuzzleAsync(puzzleElegido, OnPuzzleFinished);

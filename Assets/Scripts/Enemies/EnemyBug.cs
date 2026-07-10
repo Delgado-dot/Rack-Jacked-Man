@@ -16,6 +16,9 @@ public class EnemyBug : MonoBehaviour
     [Header("Deteccion de colision")]
     [SerializeField] private float collisionDistance = 1.2f;
 
+    [Header("Cooldown de danio")]
+    [SerializeField] private float damageCooldown = 1.5f;
+
     [Header("Muerte por pisoton")]
     [SerializeField] private float stompThreshold = -0.5f;
     [SerializeField] private float stompAngleThreshold = 0.3f;
@@ -25,6 +28,7 @@ public class EnemyBug : MonoBehaviour
     private PlayerHealth playerHealth;
     private Vector3 velocity;
     private float gravity = -20f;
+    private float damageTimer = 0f;
 
     private void Start()
     {
@@ -59,6 +63,11 @@ public class EnemyBug : MonoBehaviour
     private void Update()
     {
         if (player == null) return;
+
+        if (damageTimer > 0f)
+        {
+            damageTimer -= Time.deltaTime;
+        }
 
         // Mantener en el suelo
         if (enemyController.isGrounded && velocity.y < 0)
@@ -110,9 +119,10 @@ public class EnemyBug : MonoBehaviour
             }
 
             // Danio al jugador
-            if (playerHealth != null)
+            if (playerHealth != null && damageTimer <= 0f)
             {
                 playerHealth.TakeDamage();
+                damageTimer = damageCooldown;
             }
         }
     }

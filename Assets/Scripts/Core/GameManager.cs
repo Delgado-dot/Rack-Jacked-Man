@@ -9,6 +9,12 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    [Header("Escenas")]
+    public string sceneSubLevel = "SubCable01_Copy";
+    public string sceneGameOver = "Menu GameOver";
+    public string sceneVictory = "Menu Victoria";
+    public string sceneMainMenu = "MenuPrincipal";
+
     [Header("Estado del juego")]
     [SerializeField] private bool isGameOver = false;
     [SerializeField] private bool isLevelCompleted = false;
@@ -21,10 +27,10 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton - solo un GameManager en la escena
         if (Instance == null)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -35,7 +41,6 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        // Buscar jugador automaticamente
         if (playerHealth == null)
         {
             GameObject player = GameObject.Find("Player");
@@ -45,13 +50,11 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // Guardar posicion inicial del jugador
         if (playerHealth != null)
         {
             initialSpawnPosition = playerHealth.transform.position;
         }
 
-        // Buscar primer checkpoint (RackStart) si no hay ninguno registrado
         if (lastCheckpoint == null)
         {
             GameObject rackStart = GameObject.Find("RackStart");
@@ -63,18 +66,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Registrar un checkpoint cuando el jugador lo toca.
-    /// </summary>
     public void RegisterCheckpoint(Transform checkpoint)
     {
         lastCheckpoint = checkpoint;
         Debug.Log("Checkpoint registrado: " + checkpoint.name);
     }
 
-    /// <summary>
-    /// Respawn al ultimo checkpoint registrado.
-    /// </summary>
     public void RespawnPlayer()
     {
         if (isGameOver) return;
@@ -89,47 +86,85 @@ public class GameManager : MonoBehaviour
         if (playerHealth != null)
         {
             playerHealth.transform.position = respawnPosition;
+            playerHealth.ResetDeath();
             Debug.Log("Jugador respawneado en: " + respawnPosition);
         }
     }
 
-    /// <summary>
-    /// Ejecutar Game Over. Detiene el juego.
-    /// </summary>
     public void GameOver()
     {
         if (isGameOver) return;
 
         isGameOver = true;
         Debug.Log("GAME OVER");
-
-        // Aqui se puede agregar: mostrar UI de Game Over, reproducir sonido, etc.
+        Time.timeScale = 0f;
+        SafeLoadScene(sceneGameOver);
     }
 
-    /// <summary>
-    /// Completar el nivel. Ejecutar al llegar a RackGoal.
-    /// </summary>
     public void LevelCompleted()
     {
         if (isLevelCompleted) return;
 
         isLevelCompleted = true;
         Debug.Log("NIVEL COMPLETADO!");
-
-        // Aqui se puede agregar: mostrar pantalla de victoria, cargar siguiente nivel, etc.
+        Time.timeScale = 0f;
+        SafeLoadScene(sceneVictory);
     }
 
-    /// <summary>
-    /// Reiniciar la escena actual.
-    /// </summary>
+    public void LoadSubLevel()
+    {
+        Debug.Log("Cargando subnivel: " + sceneSubLevel);
+        isLevelCompleted = false;
+        SafeLoadScene(sceneSubLevel);
+    }
+
+    public void LoadMainMenu()
+    {
+        isGameOver = false;
+        isLevelCompleted = false;
+        Time.timeScale = 1f;
+        SafeLoadScene(sceneMainMenu);
+    }
+
     public void RestartLevel()
     {
         isGameOver = false;
         isLevelCompleted = false;
+        Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    // Getters
+    public void ResetState()
+    {
+        isGameOver = false;
+        isLevelCompleted = false;
+        Time.timeScale = 1f;
+    }
+
+    private void SafeLoadScene(string sceneName)
+    {
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            Debug.LogError("[GameManager] Nombre de escena vacio.");
+            return;
+        }
+
+        for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+        {
+            string path = SceneUtility.GetScenePathByBuildIndex(i);
+            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+            if (name == sceneName)
+            {
+                SceneManager.LoadScene(sceneName);
+                return;
+            }
+        }
+
+        Debug.LogError("[GameManager] La escena '" + sceneName + "' NO esta en Build Settings." +
+            "\nVe a File > Build Profiles y agregala." +
+            "\nO ejecuta: Rack-Jacked-Man > Setup Build Scenes");
+    }
+
     public bool IsGameOver() { return isGameOver; }
     public bool IsLevelCompleted() { return isLevelCompleted; }
     public Transform GetLastCheckpoint() { return lastCheckpoint; }
