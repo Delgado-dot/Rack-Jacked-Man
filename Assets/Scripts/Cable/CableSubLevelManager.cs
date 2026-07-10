@@ -32,7 +32,7 @@ public class CableSubLevelManager : MonoBehaviour
         // Buscar todos los segmentos si no estan asignados
         if (segmentos == null || segmentos.Length == 0)
         {
-            segmentos = FindObjectsByType<CableSegment>(FindObjectsSortMode.None);
+            segmentos = FindObjectsByType<CableSegment>(FindObjectsInactive.Exclude);
         }
 
         // Buscar spawner si no esta asignado

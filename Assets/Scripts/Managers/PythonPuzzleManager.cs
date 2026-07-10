@@ -1,7 +1,9 @@
 using System;
-using System.IO;
-using UnityEngine;
+using System.Collections;
 using Diagnostics = System.Diagnostics;
+using System.IO;
+using System.Threading;
+using UnityEngine;
 
 public class PythonPuzzleManager : MonoBehaviour
 {
@@ -27,10 +29,13 @@ public class PythonPuzzleManager : MonoBehaviour
     [Header("Nombre del ejecutable")]
     public string ejecutable = "launcher.exe";
 
+    [Header("Timeout maximo (segundos)")]
+    public float timeout = 60f;
+
     public string EjecutarPuzzleAleatorio()
     {
         string puzzleElegido = puzzles[UnityEngine.Random.Range(0, puzzles.Length)];
-        Debug.Log("Puzzle seleccionado: " + puzzleElegido);
+        UnityEngine.Debug.Log("Puzzle seleccionado: " + puzzleElegido);
         return EjecutarPuzzle(puzzleElegido);
     }
 
@@ -40,7 +45,7 @@ public class PythonPuzzleManager : MonoBehaviour
 
         if (!Directory.Exists(rutaCarpeta))
         {
-            Debug.LogError("No existe la carpeta:\n" + rutaCarpeta);
+            UnityEngine.Debug.LogError("No existe la carpeta:\n" + rutaCarpeta);
             return "error";
         }
 
@@ -69,7 +74,7 @@ public class PythonPuzzleManager : MonoBehaviour
 
             if (proceso == null)
             {
-                Debug.LogError("No se pudo iniciar el proceso.");
+                UnityEngine.Debug.LogError("No se pudo iniciar el proceso.");
                 return "error";
             }
 
@@ -79,16 +84,16 @@ public class PythonPuzzleManager : MonoBehaviour
             proceso.WaitForExit();
 
             if (!string.IsNullOrWhiteSpace(salida))
-                Debug.Log(salida);
+                UnityEngine.Debug.Log(salida);
 
             if (!string.IsNullOrWhiteSpace(errores))
-                Debug.LogError(errores);
+                UnityEngine.Debug.LogError(errores);
 
             string rutaResultado = Path.Combine(rutaCarpeta, "resultado.txt");
 
             if (!File.Exists(rutaResultado))
             {
-                Debug.LogError("No se encontró resultado.txt");
+                UnityEngine.Debug.LogError("No se encontro resultado.txt");
                 return "error";
             }
 
@@ -96,8 +101,119 @@ public class PythonPuzzleManager : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogException(e);
+            UnityEngine.Debug.LogException(e);
             return "error";
         }
+    }
+
+    public void EjecutarPuzzleAsync(string nombrePuzzle, Action<string> callback)
+    {
+        StartCoroutine(EjecutarPuzzleCoroutine(nombrePuzzle, callback));
+    }
+
+    private IEnumerator EjecutarPuzzleCoroutine(string nombrePuzzle, Action<string> callback)
+    {
+        string rutaCarpeta = Path.Combine(Application.streamingAssetsPath, carpetaPuzzles);
+
+        if (!Directory.Exists(rutaCarpeta))
+        {
+            UnityEngine.Debug.LogError("No existe la carpeta:\n" + rutaCarpeta);
+            callback?.Invoke("error");
+            yield break;
+        }
+
+        Diagnostics.ProcessStartInfo info = new Diagnostics.ProcessStartInfo();
+
+        if (usarExe)
+        {
+            info.FileName = Path.Combine(rutaCarpeta, ejecutable);
+            info.Arguments = nombrePuzzle;
+        }
+        else
+        {
+            info.FileName = "python";
+            info.Arguments = $"{launcher} {nombrePuzzle}";
+        }
+
+        info.WorkingDirectory = rutaCarpeta;
+        info.UseShellExecute = false;
+        info.CreateNoWindow = false;
+        info.RedirectStandardOutput = true;
+        info.RedirectStandardError = true;
+
+        Diagnostics.Process proceso = null;
+
+        try
+        {
+            proceso = Diagnostics.Process.Start(info);
+        }
+        catch (Exception e)
+        {
+            UnityEngine.Debug.LogException(e);
+            callback?.Invoke("error");
+            yield break;
+        }
+
+        if (proceso == null)
+        {
+            UnityEngine.Debug.LogError("No se pudo iniciar el proceso.");
+            callback?.Invoke("error");
+            yield break;
+        }
+
+        string salida = "";
+        string errores = "";
+
+        Thread stdoutThread = new Thread(() =>
+        {
+            try { salida = proceso.StandardOutput.ReadToEnd(); }
+            catch { }
+        });
+        stdoutThread.IsBackground = true;
+        stdoutThread.Start();
+
+        Thread stderrThread = new Thread(() =>
+        {
+            try { errores = proceso.StandardError.ReadToEnd(); }
+            catch { }
+        });
+        stderrThread.IsBackground = true;
+        stderrThread.Start();
+
+        float elapsed = 0f;
+        while (!proceso.HasExited && elapsed < timeout)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (!proceso.HasExited)
+        {
+            UnityEngine.Debug.LogWarning("Proceso excedio timeout, matiendo...");
+            try { proceso.Kill(); } catch { }
+            callback?.Invoke("timeout");
+            yield break;
+        }
+
+        stdoutThread.Join(2000);
+        stderrThread.Join(2000);
+
+        if (!string.IsNullOrWhiteSpace(salida))
+            UnityEngine.Debug.Log(salida);
+
+        if (!string.IsNullOrWhiteSpace(errores))
+            UnityEngine.Debug.LogError(errores);
+
+        string rutaResultado = Path.Combine(rutaCarpeta, "resultado.txt");
+
+        if (!File.Exists(rutaResultado))
+        {
+            UnityEngine.Debug.LogError("No se encontro resultado.txt");
+            callback?.Invoke("error");
+            yield break;
+        }
+
+        string resultado = File.ReadAllText(rutaResultado).Trim();
+        callback?.Invoke(resultado);
     }
 }

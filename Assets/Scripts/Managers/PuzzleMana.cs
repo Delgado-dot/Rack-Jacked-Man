@@ -38,7 +38,11 @@ public class PuzzleMana : MonoBehaviour
         string puzzleElegido = ElegirPuzzleAleatorio();
         Debug.Log("Puzzle elegido: " + puzzleElegido);
 
-        string resultado = pythonPuzzleManager.EjecutarPuzzle(puzzleElegido);
+        pythonPuzzleManager.EjecutarPuzzleAsync(puzzleElegido, OnPuzzleFinished);
+    }
+
+    private void OnPuzzleFinished(string resultado)
+    {
         Debug.Log("Resultado puzzle: " + resultado);
 
         if (resultado == "resuelto")
@@ -62,6 +66,10 @@ public class PuzzleMana : MonoBehaviour
         if (rackActual != null)
         {
             rackActual.RepararRack();
+
+            RackTrigger trigger = rackActual.GetComponent<RackTrigger>();
+            if (trigger != null)
+                trigger.ResetTrigger();
         }
 
         playerMode.ChangeMode(PlayerMode.Mode.Normal);
@@ -75,6 +83,13 @@ public class PuzzleMana : MonoBehaviour
 
         puzzleActive = false;
         Debug.Log("Puzzle fallido");
+
+        if (rackActual != null)
+        {
+            RackTrigger trigger = rackActual.GetComponent<RackTrigger>();
+            if (trigger != null)
+                trigger.ResetTrigger();
+        }
 
         playerMode.ChangeMode(PlayerMode.Mode.Normal);
         rackActual = null;

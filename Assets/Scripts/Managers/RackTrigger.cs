@@ -19,4 +19,9 @@ public class RackTrigger : MonoBehaviour
             Debug.Log("Rack alcanzado: " + rackController.tipoRack);
         }
     }
+
+    public void ResetTrigger()
+    {
+        activated = false;
+    }
 }
