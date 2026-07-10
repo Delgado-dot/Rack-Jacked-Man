@@ -5107,7 +5107,6 @@ MonoBehaviour:
   cooldownDuration: 0.1
   minTimeBetweenCycles: 8
   maxTimeBetweenCycles: 20
-  maxCablesActivos: 2
 --- !u!1 &900000020
 GameObject:
   m_ObjectHideFlags: 0
@@ -5161,7 +5160,6 @@ MonoBehaviour:
   cooldownDuration: 0.1
   minTimeBetweenCycles: 8
   maxTimeBetweenCycles: 20
-  maxCablesActivos: 2
 --- !u!1 &900000030
 GameObject:
   m_ObjectHideFlags: 0
@@ -5215,7 +5213,6 @@ MonoBehaviour:
   cooldownDuration: 0.1
   minTimeBetweenCycles: 8
   maxTimeBetweenCycles: 20
-  maxCablesActivos: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -5,7 +5,7 @@ public class SubLevelPlayerController : MonoBehaviour
 {
     [Header("Lane System")]
     [SerializeField] private float[] lanePositions = { -2f, 0f, 2f };
-    [SerializeField] private float laneChangeSpeed = 25f;
+    [SerializeField] private float laneChangeSpeed = 55f;
 
     [Header("Forward Movement")]
     [SerializeField] private float forwardSpeed = 20f;
@@ -156,13 +156,19 @@ public class SubLevelPlayerController : MonoBehaviour
         float distance = Random.Range(teleportMinDistance, teleportMaxDistance);
         Vector3 pos = transform.position;
         pos.z += distance;
+
+        int newLane = Random.Range(0, lanePositions.Length);
+        currentLane = newLane;
+        targetX = lanePositions[currentLane];
+        pos.x = targetX;
+
         transform.position = pos;
 
         SpawnTeleportEffect(transform.position, false);
 
         hasPower = false;
         shakeTimer = shakeDuration;
-        Debug.Log("Teletransporte activado. Distancia: " + distance);
+        Debug.Log("Teletransporte activado. Distancia: " + distance + " Carril: " + currentLane);
     }
 
     private void SpawnTeleportEffect(Vector3 position, bool isExit)

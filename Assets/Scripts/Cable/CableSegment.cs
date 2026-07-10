@@ -21,12 +21,15 @@ public class CableSegment : MonoBehaviour
     private float timerDanio = 0f;
 
     private Renderer rend;
+    private Material runtimeMat;
     private bool jugadorEnZona = false;
     private SubLevelPlayerController playerController;
 
     private void Awake()
     {
         rend = GetComponent<Renderer>();
+        if (rend != null && rend.sharedMaterial != null)
+            runtimeMat = new Material(rend.sharedMaterial);
     }
 
     private void Start()
@@ -60,25 +63,24 @@ public class CableSegment : MonoBehaviour
 
     private void AplicarEstado(Estado estado)
     {
+        if (rend == null) return;
+
         switch (estado)
         {
             case Estado.NORMAL:
-                if (rend != null && materialNormal != null)
-                    rend.sharedMaterial = materialNormal;
+                if (materialNormal != null)
+                    runtimeMat = new Material(materialNormal);
+                rend.material = runtimeMat;
                 if (particulas != null) particulas.Stop();
                 if (audioElectrico != null) audioElectrico.Stop();
                 break;
 
             case Estado.ELECTRIFICADO:
-                if (rend != null && materialElectrificado != null)
-                {
-                    rend.sharedMaterial = materialElectrificado;
-                    if (rend.material.HasProperty("_EmissionColor"))
-                    {
-                        rend.material.EnableKeyword("_EMISSION");
-                        rend.material.SetColor("_EmissionColor", Color.cyan * 3f);
-                    }
-                }
+                if (materialElectrificado != null)
+                    runtimeMat = new Material(materialElectrificado);
+                runtimeMat.EnableKeyword("_EMISSION");
+                runtimeMat.SetColor("_EmissionColor", Color.cyan * 3f);
+                rend.material = runtimeMat;
                 if (particulas != null) particulas.Play();
                 if (audioElectrico != null) audioElectrico.Play();
                 break;

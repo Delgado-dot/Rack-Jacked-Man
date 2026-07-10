@@ -90,7 +90,7 @@ public class Projectile : MonoBehaviour
 
         Renderer r = obj.GetComponent<Renderer>();
         Color celeste = new Color(0f, 0.85f, 1f, 1f);
-        r.material = new Material(Shader.Find("Standard"));
+        r.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
         r.material.color = celeste;
         r.material.SetColor("_EmissionColor", celeste * 3f);
         r.material.EnableKeyword("_EMISSION");

@@ -23,13 +23,11 @@ public class CableGroup : MonoBehaviour
     [SerializeField] private float minTimeBetweenCycles = 8f;
     [SerializeField] private float maxTimeBetweenCycles = 20f;
 
-    [Header("Global Limit")]
-    [SerializeField] private int maxCablesActivos = 2;
-
     private GroupState currentState = GroupState.Idle;
     private float stateTimer = 0f;
     private float nextCycleTime;
     private int currentWarningStep = 0;
+    private bool groupCountClaimed = false;
     private ElectrifiedCable[] allCables;
 
     private void Awake()
@@ -71,13 +69,8 @@ public class CableGroup : MonoBehaviour
 
     private void UpdateIdle()
     {
-        if (Time.time >= nextCycleTime)
-        {
-            if (ElectrifiedCable.GetElectrifiedCount() < maxCablesActivos)
-                StartWarning();
-            else
-                ScheduleNextCycle();
-        }
+        if (Time.time >= nextCycleTime && ElectrifiedCable.GetElectrifiedCount() < ElectrifiedCable.GetMaxActiveCables())
+            StartWarning();
     }
 
     private void StartWarning()
@@ -85,6 +78,8 @@ public class CableGroup : MonoBehaviour
         currentState = GroupState.Warning;
         stateTimer = 0f;
         currentWarningStep = 0;
+        ElectrifiedCable.IncrementElectrifiedCount();
+        groupCountClaimed = true;
         SetAllCables(true, 0f);
     }
 
@@ -101,21 +96,17 @@ public class CableGroup : MonoBehaviour
         SetAllCables(true, t);
 
         if (stateTimer >= warningDuration)
+        {
             StartActive();
+        }
     }
 
     private void StartActive()
     {
-        if (ElectrifiedCable.GetElectrifiedCount() >= maxCablesActivos)
-        {
-            SkipToCooldown();
-            return;
-        }
-
         currentState = GroupState.Active;
         stateTimer = 0f;
-        ElectrifiedCable.IncrementElectrifiedCount();
         SetAllCables(true, 1f);
+        SetAllCanDamage(true);
     }
 
     private void UpdateActive()
@@ -130,13 +121,25 @@ public class CableGroup : MonoBehaviour
     {
         currentState = GroupState.Cooldown;
         stateTimer = 0f;
-        ElectrifiedCable.DecrementElectrifiedCount();
+        SetAllCanDamage(false);
+        if (groupCountClaimed)
+        {
+            ElectrifiedCable.DecrementElectrifiedCount();
+            groupCountClaimed = false;
+        }
     }
 
-    private void SkipToCooldown()
+    private void SkipActivation()
     {
-        currentState = GroupState.Cooldown;
-        stateTimer = 0f;
+        SetAllCanDamage(false);
+        if (groupCountClaimed)
+        {
+            ElectrifiedCable.DecrementElectrifiedCount();
+            groupCountClaimed = false;
+        }
+        SetAllCables(false, 0f);
+        currentState = GroupState.Idle;
+        ScheduleNextCycle();
     }
 
     private void UpdateCooldown()
@@ -172,6 +175,15 @@ public class CableGroup : MonoBehaviour
         }
     }
 
+    private void SetAllCanDamage(bool value)
+    {
+        foreach (var cable in allCables)
+        {
+            if (cable != null)
+                cable.SetCanDamage(value);
+        }
+    }
+
     // --- Public API ---
 
     public GroupState GetCurrentState()
@@ -187,11 +199,23 @@ public class CableGroup : MonoBehaviour
 
     public void ForceDeactivate()
     {
-        if (currentState == GroupState.Active)
+        SetAllCanDamage(false);
+        if (groupCountClaimed)
+        {
             ElectrifiedCable.DecrementElectrifiedCount();
-
-        currentState = GroupState.Idle;
+            groupCountClaimed = false;
+        }
         SetAllCables(false, 0f);
+        currentState = GroupState.Idle;
         ScheduleNextCycle();
+    }
+
+    private void OnDestroy()
+    {
+        if (groupCountClaimed)
+        {
+            ElectrifiedCable.DecrementElectrifiedCount();
+            groupCountClaimed = false;
+        }
     }
 }

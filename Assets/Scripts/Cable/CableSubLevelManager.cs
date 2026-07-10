@@ -32,13 +32,13 @@ public class CableSubLevelManager : MonoBehaviour
         // Buscar todos los segmentos si no estan asignados
         if (segmentos == null || segmentos.Length == 0)
         {
-            segmentos = FindObjectsOfType<CableSegment>();
+            segmentos = FindObjectsByType<CableSegment>(FindObjectsSortMode.None);
         }
 
         // Buscar spawner si no esta asignado
         if (spawner == null)
         {
-            spawner = FindObjectOfType<EnemySpawnerCable>();
+            spawner = FindAnyObjectByType<EnemySpawnerCable>();
         }
 
         timerElectrificacion = Random.Range(tiempoMinNormal, tiempoMaxNormal);
@@ -67,18 +67,19 @@ public class CableSubLevelManager : MonoBehaviour
     {
         if (!esperandoCambio)
         {
-            // Activar electrificados aleatorios
             int segmentosActivados = 0;
+            int limiteGlobal = ElectrifiedCable.GetMaxActiveCables() - ElectrifiedCable.GetElectrifiedCount();
+
             foreach (CableSegment segmento in segmentos)
             {
                 if (segmentosActivados >= maxSegmentosElectrificados) break;
+                if (limiteGlobal <= 0) break;
+
                 if (segmento.GetEstado() == CableSegment.Estado.NORMAL)
                 {
-                    if (Random.value > 0.5f)
-                    {
-                        segmento.SetEstado(CableSegment.Estado.ELECTRIFICADO);
-                        segmentosActivados++;
-                    }
+                    segmento.SetEstado(CableSegment.Estado.ELECTRIFICADO);
+                    segmentosActivados++;
+                    limiteGlobal--;
                 }
             }
 
@@ -87,7 +88,6 @@ public class CableSubLevelManager : MonoBehaviour
         }
         else
         {
-            // Desactivar todos los electrificados
             foreach (CableSegment segmento in segmentos)
             {
                 segmento.SetEstado(CableSegment.Estado.NORMAL);
