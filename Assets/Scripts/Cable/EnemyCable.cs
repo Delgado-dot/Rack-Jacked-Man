@@ -39,4 +39,9 @@ public class EnemyCable : MonoBehaviour
 
         Destroy(gameObject);
     }
+
+    public void TakeDamage(int amount)
+    {
+        Destroy(gameObject);
+    }
 }

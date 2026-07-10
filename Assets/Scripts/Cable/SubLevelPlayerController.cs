@@ -15,10 +15,23 @@ public class SubLevelPlayerController : MonoBehaviour
     [SerializeField] private int maxHealth = 3;
     private int currentHealth;
 
+    // Integration: Connect to Kevin's health system
+    // public event System.Action<int> OnHealthChanged;
+    // public event System.Action OnPlayerDeath;
+
+    [Header("Shooting")]
+    [SerializeField] private float fireRate = 0.2f;
+    private float nextFireTime = 0f;
+
     [Header("Teleport Power")]
     [SerializeField] private float teleportMinDistance = 10f;
     [SerializeField] private float teleportMaxDistance = 40f;
     private bool hasPower = false;
+
+    [Header("Teleport Feedback")]
+    [SerializeField] private float shakeDuration = 0.15f;
+    [SerializeField] private float shakeIntensity = 0.2f;
+    private float shakeTimer = 0f;
 
     private int currentLane = 1;
     private float targetX;
@@ -29,6 +42,7 @@ public class SubLevelPlayerController : MonoBehaviour
     private InputAction moveRightAction;
     private InputAction sprintAction;
     private InputAction teleportAction;
+    private InputAction shootAction;
 
     private void Awake()
     {
@@ -59,6 +73,11 @@ public class SubLevelPlayerController : MonoBehaviour
         teleportAction.AddBinding("<Mouse>/leftButton");
         teleportAction.performed += ctx => TryTeleport();
         teleportAction.Enable();
+
+        shootAction = new InputAction("Shoot", InputActionType.Button);
+        shootAction.AddBinding("<Keyboard>/space");
+        shootAction.performed += ctx => Shoot();
+        shootAction.Enable();
     }
 
     private void OnDisable()
@@ -67,6 +86,7 @@ public class SubLevelPlayerController : MonoBehaviour
         moveRightAction?.Disable();
         sprintAction?.Disable();
         teleportAction?.Disable();
+        shootAction?.Disable();
     }
 
     private void Start()
@@ -81,6 +101,7 @@ public class SubLevelPlayerController : MonoBehaviour
     {
         MoveForward();
         MoveToLane();
+        UpdateShake();
     }
 
     private void ChangeLane(int direction)
@@ -114,11 +135,34 @@ public class SubLevelPlayerController : MonoBehaviour
         float distance = Random.Range(teleportMinDistance, teleportMaxDistance);
         Vector3 pos = transform.position;
         pos.z += distance;
-
         transform.position = pos;
         hasPower = false;
 
+        shakeTimer = shakeDuration;
         Debug.Log("Teletransporte activado. Distancia: " + distance);
+    }
+
+    private void UpdateShake()
+    {
+        if (shakeTimer > 0f)
+        {
+            shakeTimer -= Time.deltaTime;
+            Camera cam = Camera.main;
+            if (cam != null)
+            {
+                Vector3 offset = Random.insideUnitSphere * shakeIntensity;
+                cam.transform.localPosition = new Vector3(offset.x, 1f + offset.y, cam.transform.localPosition.z);
+            }
+        }
+    }
+
+    private void Shoot()
+    {
+        if (Time.time < nextFireTime) return;
+        nextFireTime = Time.time + fireRate;
+
+        Vector3 spawnPos = transform.position + Vector3.up * 1f + Vector3.forward * 1.5f;
+        Projectile.Spawn(spawnPos, transform.forward);
     }
 
     // === Public API ===
@@ -128,11 +172,16 @@ public class SubLevelPlayerController : MonoBehaviour
         currentHealth -= cantidad;
         Debug.Log("Jugador danado: -" + cantidad + " vida. Restante: " + currentHealth);
 
+        // Integration: Notify Kevin's health system
+        // OnHealthChanged?.Invoke(currentHealth);
+
         if (currentHealth <= 0)
         {
             Debug.Log("Jugador derrotado.");
             currentHealth = 0;
             Time.timeScale = 0f;
+            // Integration: Trigger death event
+            // OnPlayerDeath?.Invoke();
         }
     }
 

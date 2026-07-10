@@ -856,14 +856,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1346019165}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 3}
+  m_Script: {fileID: 11500000, guid: 3473094f19857ed4c88cf9891f99252e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DestinoNivel
-  speed: 3
-  player: {fileID: 0}
-  collisionDistance: 1.2
-  stompThreshold: -0.5
-  stompAngleThreshold: 0.3
+  m_EditorClassIdentifier: 
+  siguienteNivel: 
 --- !u!1 &800575917
 GameObject:
   m_ObjectHideFlags: 0
@@ -1376,6 +1372,7 @@ GameObject:
   - component: {fileID: 1620057601}
   - component: {fileID: 1620057600}
   - component: {fileID: 1620057599}
+  - component: {fileID: 700000003}
   m_Layer: 0
   m_Name: Cable_derecho
   m_TagString: Untagged
@@ -1808,6 +1805,7 @@ GameObject:
   - component: {fileID: 1972840906}
   - component: {fileID: 1972840905}
   - component: {fileID: 1972840904}
+  - component: {fileID: 700000002}
   m_Layer: 0
   m_Name: Cable_central
   m_TagString: Untagged
@@ -1920,6 +1918,7 @@ GameObject:
   - component: {fileID: 2028828623}
   - component: {fileID: 2028828622}
   - component: {fileID: 2028828621}
+  - component: {fileID: 700000001}
   m_Layer: 0
   m_Name: Cable_izquierdo
   m_TagString: Untagged
@@ -2241,3 +2240,69 @@ SceneRoots:
   - {fileID: 400000004}
   - {fileID: 400000006}
   - {fileID: 400000008}
+  - {fileID: 700000001}
+  - {fileID: 700000002}
+  - {fileID: 700000003}
+--- !u!114 &700000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2028828620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cableRenderer: {fileID: 2028828622}
+  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
+  electricParticles: {fileID: 0}
+  electricLight: {fileID: 0}
+  minTimeBetweenChanges: 5
+  maxTimeBetweenChanges: 15
+  electrifyDuration: 3
+  damageAmount: 1
+  damageCooldown: 1
+--- !u!114 &700000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1972840903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cableRenderer: {fileID: 1972840905}
+  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
+  electricParticles: {fileID: 0}
+  electricLight: {fileID: 0}
+  minTimeBetweenChanges: 5
+  maxTimeBetweenChanges: 15
+  electrifyDuration: 3
+  damageAmount: 1
+  damageCooldown: 1
+--- !u!114 &700000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620057598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cableRenderer: {fileID: 1620057600}
+  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
+  electricParticles: {fileID: 0}
+  electricLight: {fileID: 0}
+  minTimeBetweenChanges: 5
+  maxTimeBetweenChanges: 15
+  electrifyDuration: 3
+  damageAmount: 1
+  damageCooldown: 1
