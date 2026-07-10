@@ -5,7 +5,7 @@ public class SubLevelPlayerController : MonoBehaviour
 {
     [Header("Lane System")]
     [SerializeField] private float[] lanePositions = { -2f, 0f, 2f };
-    [SerializeField] private float laneChangeSpeed = 10f;
+    [SerializeField] private float laneChangeSpeed = 25f;
 
     [Header("Forward Movement")]
     [SerializeField] private float forwardSpeed = 20f;
@@ -16,9 +16,8 @@ public class SubLevelPlayerController : MonoBehaviour
     private int currentHealth;
 
     [Header("Teleport Power")]
-    [SerializeField] private float teleportDistance = 15f;
-    [SerializeField] private float teleportCooldown = 2f;
-    private float teleportTimer = 0f;
+    [SerializeField] private float teleportMinDistance = 10f;
+    [SerializeField] private float teleportMaxDistance = 40f;
     private bool hasPower = false;
 
     private int currentLane = 1;
@@ -57,7 +56,7 @@ public class SubLevelPlayerController : MonoBehaviour
         sprintAction.Enable();
 
         teleportAction = new InputAction("Teleport", InputActionType.Button);
-        teleportAction.AddBinding("<Keyboard>/space");
+        teleportAction.AddBinding("<Mouse>/leftButton");
         teleportAction.performed += ctx => TryTeleport();
         teleportAction.Enable();
     }
@@ -82,7 +81,6 @@ public class SubLevelPlayerController : MonoBehaviour
     {
         MoveForward();
         MoveToLane();
-        UpdateCooldowns();
     }
 
     private void ChangeLane(int direction)
@@ -109,25 +107,18 @@ public class SubLevelPlayerController : MonoBehaviour
         transform.position = pos;
     }
 
-    private void UpdateCooldowns()
-    {
-        if (teleportTimer > 0f)
-            teleportTimer -= Time.deltaTime;
-    }
-
     private void TryTeleport()
     {
-        if (hasPower && teleportTimer <= 0f)
-        {
-            Vector3 pos = transform.position;
-            pos.z += teleportDistance;
-            transform.position = pos;
+        if (!hasPower) return;
 
-            hasPower = false;
-            teleportTimer = teleportCooldown;
+        float distance = Random.Range(teleportMinDistance, teleportMaxDistance);
+        Vector3 pos = transform.position;
+        pos.z += distance;
 
-            Debug.Log("Teletransporte activado. Distancia: " + teleportDistance);
-        }
+        transform.position = pos;
+        hasPower = false;
+
+        Debug.Log("Teletransporte activado. Distancia: " + distance);
     }
 
     // === Public API ===
