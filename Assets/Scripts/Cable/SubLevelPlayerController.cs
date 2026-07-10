@@ -8,8 +8,8 @@ public class SubLevelPlayerController : MonoBehaviour
     [SerializeField] private float laneChangeSpeed = 10f;
 
     [Header("Forward Movement")]
-    [SerializeField] private float forwardSpeed = 10f;
-    [SerializeField] private float sprintSpeed = 16f;
+    [SerializeField] private float forwardSpeed = 20f;
+    [SerializeField] private float sprintSpeed = 30f;
 
     [Header("Health")]
     [SerializeField] private int maxHealth = 3;
