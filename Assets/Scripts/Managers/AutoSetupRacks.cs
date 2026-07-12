@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// AutoSetupRacks - Se ejecuta al inicio de la escena.
-/// Crea racks, managers y conexiones automaticamente.
-/// </summary>
 public class AutoSetupRacks : MonoBehaviour
 {
     private static bool alreadySetup = false;
@@ -21,145 +17,171 @@ public class AutoSetupRacks : MonoBehaviour
         if (alreadySetup) return;
         alreadySetup = true;
 
-        Debug.Log("[AutoSetupRacks] Iniciando setup...");
+        Debug.Log("[AutoSetupRacks] Iniciando setup con racks de escena...");
 
-        // --- PlayerMode + Rigidbody en el Player ---
-        GameObject player = GameObject.Find("Player");
-        PlayerMode playerMode = null;
-        if (player != null)
+        SetupPlayer();
+        SetupManagers();
+        SetupSceneRacks();
+
+        Debug.Log("[AutoSetupRacks] Setup completo.");
+    }
+
+    static void SetupPlayer()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null)
         {
-            // Tag "Player" para que los triggers lo detecten
-            try { player.tag = "Player"; } catch { }
-
-            playerMode = player.GetComponent<PlayerMode>();
-            if (playerMode == null)
-            {
-                playerMode = player.AddComponent<PlayerMode>();
-                Debug.Log("[AutoSetupRacks] PlayerMode agregado al Player");
-            }
-
-            // Rigidbody kinematic necesario para OnTriggerEnter
-            Rigidbody rb = player.GetComponent<Rigidbody>();
-            if (rb == null)
-            {
-                rb = player.AddComponent<Rigidbody>();
-                rb.isKinematic = true;
-                rb.useGravity = false;
-                Debug.Log("[AutoSetupRacks] Rigidbody kinematico agregado al Player");
-            }
+            player = GameObject.Find("Player");
         }
-        else
+
+        if (player == null)
         {
             Debug.LogWarning("[AutoSetupRacks] No se encontro Player en la escena");
+            return;
         }
 
-        // --- GameManager ---
+        try { player.tag = "Player"; } catch { }
+
+        PlayerMode playerMode = player.GetComponent<PlayerMode>();
+        if (playerMode == null)
+        {
+            playerMode = player.AddComponent<PlayerMode>();
+        }
+
+        Rigidbody rb = player.GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = player.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
+
+        PlayerInteract playerInteract = player.GetComponent<PlayerInteract>();
+        if (playerInteract == null)
+        {
+            playerInteract = player.AddComponent<PlayerInteract>();
+        }
+    }
+
+    static void SetupManagers()
+    {
         if (GameManager.Instance == null)
         {
             GameObject gmGO = new GameObject("GameManager");
             gmGO.AddComponent<GameManager>();
-            Debug.Log("[AutoSetupRacks] GameManager creado");
         }
 
-        // --- PuzzleMana ---
-        PuzzleMana puzzleMana = null;
-        GameObject puzzleManaGO = GameObject.Find("PuzzleMana");
-        if (puzzleManaGO == null)
+        GameObject puzzleManagerGO = GameObject.Find("PuzzleManager");
+        if (puzzleManagerGO == null)
         {
-            puzzleManaGO = new GameObject("PuzzleMana");
+            puzzleManagerGO = new GameObject("PuzzleManager");
         }
-        puzzleMana = puzzleManaGO.GetComponent<PuzzleMana>();
-        if (puzzleMana == null)
+        PuzzleManager puzzleManager = puzzleManagerGO.GetComponent<PuzzleManager>();
+        if (puzzleManager == null)
         {
-            puzzleMana = puzzleManaGO.AddComponent<PuzzleMana>();
+            puzzleManager = puzzleManagerGO.AddComponent<PuzzleManager>();
         }
 
-        // --- PythonPuzzleManager ---
-        PythonPuzzleManager pythonMgr = null;
-        GameObject pythonGO = GameObject.Find("PythonPuzzleManager");
-        if (pythonGO == null)
+        GameObject puzzleUIGO = GameObject.Find("PuzzleUI");
+        if (puzzleUIGO == null)
         {
-            pythonGO = new GameObject("PythonPuzzleManager");
+            puzzleUIGO = new GameObject("PuzzleUI");
         }
-        pythonMgr = pythonGO.GetComponent<PythonPuzzleManager>();
-        if (pythonMgr == null)
+        PuzzleUI puzzleUI = puzzleUIGO.GetComponent<PuzzleUI>();
+        if (puzzleUI == null)
         {
-            pythonMgr = pythonGO.AddComponent<PythonPuzzleManager>();
+            puzzleUI = puzzleUIGO.AddComponent<PuzzleUI>();
         }
 
-        // Conectar referencias
-        puzzleMana.playerMode = playerMode;
-        puzzleMana.pythonPuzzleManager = pythonMgr;
-
-        // --- RackCheckpoint (cubo azul) ---
-        GameObject rackC = null;
-        if (GameObject.Find("Rack_C") == null)
-        {
-            rackC = CreateRack("Rack_C", RackController.TipoRack.Checkpoint, new Vector3(0f, 1f, 20f),
-                new Color(0.2f, 0.6f, 1f));
-        }
-        else
-        {
-            rackC = GameObject.Find("Rack_C");
-        }
-
-        // --- RackFinal (cubo amarillo) ---
-        GameObject rackF = null;
-        if (GameObject.Find("Rack_F") == null)
-        {
-            rackF = CreateRack("Rack_F", RackController.TipoRack.Final, new Vector3(0f, 1f, 80f),
-                new Color(1f, 0.8f, 0.1f));
-        }
-        else
-        {
-            rackF = GameObject.Find("Rack_F");
-        }
-
-        // Conectar triggers
-        ConnectTrigger(rackC, puzzleMana);
-        ConnectTrigger(rackF, puzzleMana);
-
-        Debug.Log("[AutoSetupRacks] Setup completo.");
-        Debug.Log("[AutoSetupRacks] Rack_C (azul) en z=20 - Checkpoint");
-        Debug.Log("[AutoSetupRacks] Rack_F (amarillo) en z=80 - Final");
+        SetupCanvas(puzzleUI);
     }
 
-    static GameObject CreateRack(string name, RackController.TipoRack tipo, Vector3 pos, Color color)
+    static void SetupCanvas(PuzzleUI puzzleUI)
     {
-        GameObject rack = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        rack.name = name;
-        rack.transform.position = pos;
-        rack.transform.localScale = new Vector3(2f, 2f, 2f);
+        Canvas existingCanvas = FindAnyObjectByType<Canvas>();
+        if (existingCanvas == null)
+        {
+            GameObject canvasGO = new GameObject("PuzzleCanvas");
+            Canvas canvas = canvasGO.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 100;
 
-        Renderer rend = rack.GetComponent<Renderer>();
-        Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        if (mat.shader == null) mat = new Material(Shader.Find("Standard"));
-        mat.color = color;
-        rend.sharedMaterial = mat;
-
-        BoxCollider col = rack.GetComponent<BoxCollider>();
-        if (col == null) col = rack.AddComponent<BoxCollider>();
-        col.isTrigger = true;
-
-        RackController rc = rack.AddComponent<RackController>();
-        rc.tipoRack = tipo;
-
-        rack.AddComponent<RackTrigger>();
-
-        return rack;
+            UnityEngine.EventSystems.EventSystem eventSystem = FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
+            if (eventSystem == null)
+            {
+                GameObject esGO = new GameObject("EventSystem");
+                esGO.AddComponent<UnityEngine.EventSystems.EventSystem>();
+                esGO.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+            }
+        }
     }
 
-    static void ConnectTrigger(GameObject rack, PuzzleMana puzzleMana)
+    static void SetupSceneRacks()
     {
-        if (rack == null) return;
+        string[] rackNames = { "ServerRack_0", "ServerRack_1", "ServerRack_2", "ServerRack_3", "ServerRack_4", "ServerRack_5" };
+        string[] puzzleTypes = { "cables", "dispatcher", "nave", "trafico", "patchcore" };
 
-        RackTrigger trigger = rack.GetComponent<RackTrigger>();
-        RackController controller = rack.GetComponent<RackController>();
+        PuzzleManager puzzleManager = FindAnyObjectByType<PuzzleManager>();
 
-        if (trigger != null)
+        int[] shuffledPuzzleIndices = new int[puzzleTypes.Length];
+        for (int i = 0; i < puzzleTypes.Length; i++)
+            shuffledPuzzleIndices[i] = i;
+        for (int i = puzzleTypes.Length - 1; i > 0; i--)
         {
-            trigger.puzzleMana = puzzleMana;
-            trigger.rackController = controller;
+            int j = Random.Range(0, i + 1);
+            int temp = shuffledPuzzleIndices[i];
+            shuffledPuzzleIndices[i] = shuffledPuzzleIndices[j];
+            shuffledPuzzleIndices[j] = temp;
+        }
+
+        for (int i = 0; i < rackNames.Length; i++)
+        {
+            GameObject rackGO = GameObject.Find(rackNames[i]);
+            if (rackGO == null)
+            {
+                Debug.LogWarning("[AutoSetupRacks] No se encontro: " + rackNames[i]);
+                continue;
+            }
+
+            RackInteractable rackInteractable = rackGO.GetComponent<RackInteractable>();
+            if (rackInteractable == null)
+            {
+                rackInteractable = rackGO.AddComponent<RackInteractable>();
+            }
+
+            string assignedPuzzle = puzzleTypes[shuffledPuzzleIndices[i % shuffledPuzzleIndices.Length]];
+            rackInteractable.SetPuzzleName(assignedPuzzle);
+
+            if (puzzleManager != null)
+            {
+                rackInteractable.SetPuzzleManager(puzzleManager);
+            }
+
+            BoxCollider col = rackGO.GetComponent<BoxCollider>();
+            if (col == null)
+            {
+                col = rackGO.AddComponent<BoxCollider>();
+            }
+
+            Debug.Log("[AutoSetupRacks] Rack configurado: " + rackNames[i] + " -> puzzle: " + assignedPuzzle);
+        }
+
+        int totalRacks = GameObject.FindObjectsByType<RackInteractable>(FindObjectsSortMode.None).Length;
+        Debug.Log("[AutoSetupRacks] Total racks interactivos: " + totalRacks);
+
+        FixDuplicateAudioListeners();
+    }
+
+    static void FixDuplicateAudioListeners()
+    {
+        AudioListener[] listeners = FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
+        if (listeners.Length > 1)
+        {
+            for (int i = 1; i < listeners.Length; i++)
+            {
+                Debug.Log("[AutoSetupRacks] AudioListener duplicado desactivado de: " + listeners[i].gameObject.name);
+                listeners[i].enabled = false;
+            }
         }
     }
 }

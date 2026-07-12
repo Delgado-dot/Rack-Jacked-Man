@@ -2625,7 +2625,7 @@ MonoBehaviour:
   priority: 0
   blendDistance: 0
   weight: 1
-  sharedProfile: {fileID: 0}
+  sharedProfile: {fileID: 11400000, guid: ab09877e2e707104187f6f83e2f62510, type: 2}
 --- !u!4 &345842343
 Transform:
   m_ObjectHideFlags: 0
@@ -3212,7 +3212,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 500000101}
-  - component: {fileID: 500000102}
   - component: {fileID: 500000103}
   - component: {fileID: 500000104}
   - component: {fileID: 500000105}
@@ -3241,28 +3240,6 @@ Transform:
   - {fileID: 500000131}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &500000102
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 500000100}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &500000103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3302,7 +3279,7 @@ MonoBehaviour:
   maxLives: 3
   currentLives: 3
   invulnerabilityDuration: 1
-  spawnPoint: {fileID: 0}
+  spawnPoint: {fileID: 726398329}
 --- !u!143 &500000105
 CharacterController:
   m_ObjectHideFlags: 0
@@ -3722,7 +3699,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraFollow
   target: {fileID: 500000101}
-  offset: {x: 0, y: 1.5, z: -4.75}
+  offset: {x: 0, y: 1.5, z: -4.489}
   smoothSpeed: 5
   useBounds: 0
   minX: -10
@@ -3754,7 +3731,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -3784,7 +3761,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 500000301}
-  - component: {fileID: 500000302}
   - component: {fileID: 500000303}
   - component: {fileID: 500000304}
   m_Layer: 0
@@ -3810,28 +3786,6 @@ Transform:
   - {fileID: 500000311}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
---- !u!95 &500000302
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 500000300}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &500000303
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3845,7 +3799,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 3
-  player: {fileID: 0}
+  player: {fileID: 500000101}
   collisionDistance: 1.2
   damageCooldown: 1.5
   stompThreshold: -0.5
@@ -3990,7 +3944,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 500000401}
-  - component: {fileID: 500000402}
   - component: {fileID: 500000403}
   - component: {fileID: 500000404}
   m_Layer: 0
@@ -4016,28 +3969,6 @@ Transform:
   - {fileID: 500000411}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
---- !u!95 &500000402
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 500000400}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &500000403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4051,7 +3982,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 3
-  player: {fileID: 0}
+  player: {fileID: 500000101}
   collisionDistance: 1.2
   damageCooldown: 1.5
   stompThreshold: -0.5
