@@ -100,6 +100,17 @@ public class AutoSetupRacks : MonoBehaviour
             GameObject hudGO = new GameObject("InteractHUD");
             hudGO.AddComponent<InteractHUD>();
         }
+
+        GameObject door = GameObject.Find("ObjectiveDoor");
+        if (door != null)
+        {
+            ObjectiveDoorController doorCtrl = door.GetComponent<ObjectiveDoorController>();
+            if (doorCtrl == null)
+            {
+                door.AddComponent<ObjectiveDoorController>();
+                Debug.Log("[AutoSetupRacks] ObjectiveDoorController agregado a ObjectiveDoor");
+            }
+        }
     }
 
     static void SetupSceneRacks()
@@ -121,6 +132,12 @@ public class AutoSetupRacks : MonoBehaviour
             if (rackInteractable == null)
             {
                 rackInteractable = rackGO.AddComponent<RackInteractable>();
+            }
+
+            RackState rackState = rackGO.GetComponent<RackState>();
+            if (rackState == null)
+            {
+                rackGO.AddComponent<RackState>();
             }
 
             BoxCollider col = rackGO.GetComponent<BoxCollider>();
