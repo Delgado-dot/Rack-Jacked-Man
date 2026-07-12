@@ -94,6 +94,12 @@ public class AutoSetupRacks : MonoBehaviour
             if (player != null) playerMode = player.GetComponent<PlayerMode>();
         }
         puzzleMana.playerMode = playerMode;
+
+        if (FindAnyObjectByType<InteractHUD>() == null)
+        {
+            GameObject hudGO = new GameObject("InteractHUD");
+            hudGO.AddComponent<InteractHUD>();
+        }
     }
 
     static void SetupSceneRacks()

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Runtime.InteropServices;
 using Diagnostics = System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -7,6 +8,9 @@ using UnityEngine;
 
 public class PythonPuzzleManager : MonoBehaviour
 {
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
     [Header("Carpeta dentro de StreamingAssets")]
     public string carpetaPuzzles = "Puzzles_Python";
 
@@ -92,6 +96,17 @@ public class PythonPuzzleManager : MonoBehaviour
             UnityEngine.Debug.LogException(e);
             callback?.Invoke("error");
             yield break;
+        }
+
+        if (proceso != null && !proceso.HasExited)
+        {
+            yield return new WaitForSecondsRealtime(0.5f);
+            try
+            {
+                if (proceso.MainWindowHandle != IntPtr.Zero)
+                    SetForegroundWindow(proceso.MainWindowHandle);
+            }
+            catch { }
         }
 
         if (proceso == null)

@@ -20,6 +20,8 @@ public class PuzzleMana : MonoBehaviour
         if (playerMode != null)
             playerMode.ChangeMode(PlayerMode.Mode.Puzzle);
 
+        Time.timeScale = 0f;
+
         string puzzleElegido = pythonPuzzleManager.ElegirPuzzleAleatorio();
         Debug.Log("Puzzle elegido: " + puzzleElegido);
 
@@ -29,6 +31,8 @@ public class PuzzleMana : MonoBehaviour
     private void OnPuzzleFinished(string resultado)
     {
         Debug.Log("Resultado puzzle: " + resultado);
+
+        Time.timeScale = 1f;
 
         if (resultado == "resuelto")
             PuzzleCompleted();
