@@ -71,68 +71,36 @@ public class AutoSetupRacks : MonoBehaviour
             gmGO.AddComponent<GameManager>();
         }
 
-        GameObject puzzleManagerGO = GameObject.Find("PuzzleManager");
-        if (puzzleManagerGO == null)
+        PuzzleMana puzzleMana = FindAnyObjectByType<PuzzleMana>();
+        if (puzzleMana == null)
         {
-            puzzleManagerGO = new GameObject("PuzzleManager");
-        }
-        PuzzleManager puzzleManager = puzzleManagerGO.GetComponent<PuzzleManager>();
-        if (puzzleManager == null)
-        {
-            puzzleManager = puzzleManagerGO.AddComponent<PuzzleManager>();
+            GameObject pmGO = new GameObject("PuzzleMana");
+            puzzleMana = pmGO.AddComponent<PuzzleMana>();
         }
 
-        GameObject puzzleUIGO = GameObject.Find("PuzzleUI");
-        if (puzzleUIGO == null)
+        PythonPuzzleManager pythonMgr = FindAnyObjectByType<PythonPuzzleManager>();
+        if (pythonMgr == null)
         {
-            puzzleUIGO = new GameObject("PuzzleUI");
-        }
-        PuzzleUI puzzleUI = puzzleUIGO.GetComponent<PuzzleUI>();
-        if (puzzleUI == null)
-        {
-            puzzleUI = puzzleUIGO.AddComponent<PuzzleUI>();
+            GameObject pyGO = new GameObject("PythonPuzzleManager");
+            pythonMgr = pyGO.AddComponent<PythonPuzzleManager>();
         }
 
-        SetupCanvas(puzzleUI);
-    }
+        puzzleMana.pythonPuzzleManager = pythonMgr;
 
-    static void SetupCanvas(PuzzleUI puzzleUI)
-    {
-        Canvas existingCanvas = FindAnyObjectByType<Canvas>();
-        if (existingCanvas == null)
+        PlayerMode playerMode = FindAnyObjectByType<PlayerMode>();
+        if (playerMode == null)
         {
-            GameObject canvasGO = new GameObject("PuzzleCanvas");
-            Canvas canvas = canvasGO.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 100;
-
-            UnityEngine.EventSystems.EventSystem eventSystem = FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>();
-            if (eventSystem == null)
-            {
-                GameObject esGO = new GameObject("EventSystem");
-                esGO.AddComponent<UnityEngine.EventSystems.EventSystem>();
-                esGO.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
-            }
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null) playerMode = player.GetComponent<PlayerMode>();
         }
+        puzzleMana.playerMode = playerMode;
     }
 
     static void SetupSceneRacks()
     {
         string[] rackNames = { "ServerRack_0", "ServerRack_1", "ServerRack_2", "ServerRack_3", "ServerRack_4", "ServerRack_5" };
-        string[] puzzleTypes = { "cables", "dispatcher", "nave", "trafico", "patchcore" };
 
-        PuzzleManager puzzleManager = FindAnyObjectByType<PuzzleManager>();
-
-        int[] shuffledPuzzleIndices = new int[puzzleTypes.Length];
-        for (int i = 0; i < puzzleTypes.Length; i++)
-            shuffledPuzzleIndices[i] = i;
-        for (int i = puzzleTypes.Length - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            int temp = shuffledPuzzleIndices[i];
-            shuffledPuzzleIndices[i] = shuffledPuzzleIndices[j];
-            shuffledPuzzleIndices[j] = temp;
-        }
+        PuzzleMana puzzleMana = FindAnyObjectByType<PuzzleMana>();
 
         for (int i = 0; i < rackNames.Length; i++)
         {
@@ -149,24 +117,16 @@ public class AutoSetupRacks : MonoBehaviour
                 rackInteractable = rackGO.AddComponent<RackInteractable>();
             }
 
-            string assignedPuzzle = puzzleTypes[shuffledPuzzleIndices[i % shuffledPuzzleIndices.Length]];
-            rackInteractable.SetPuzzleName(assignedPuzzle);
-
-            if (puzzleManager != null)
-            {
-                rackInteractable.SetPuzzleManager(puzzleManager);
-            }
-
             BoxCollider col = rackGO.GetComponent<BoxCollider>();
             if (col == null)
             {
                 col = rackGO.AddComponent<BoxCollider>();
             }
 
-            Debug.Log("[AutoSetupRacks] Rack configurado: " + rackNames[i] + " -> puzzle: " + assignedPuzzle);
+            Debug.Log("[AutoSetupRacks] Rack configurado: " + rackNames[i]);
         }
 
-        int totalRacks = GameObject.FindObjectsByType<RackInteractable>(FindObjectsSortMode.None).Length;
+        int totalRacks = GameObject.FindObjectsByType<RackInteractable>().Length;
         Debug.Log("[AutoSetupRacks] Total racks interactivos: " + totalRacks);
 
         FixDuplicateAudioListeners();
@@ -174,7 +134,7 @@ public class AutoSetupRacks : MonoBehaviour
 
     static void FixDuplicateAudioListeners()
     {
-        AudioListener[] listeners = FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
+        AudioListener[] listeners = FindObjectsByType<AudioListener>();
         if (listeners.Length > 1)
         {
             for (int i = 1; i < listeners.Length; i++)

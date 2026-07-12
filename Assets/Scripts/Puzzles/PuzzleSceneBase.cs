@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class PuzzleSceneBase : MonoBehaviour
 {
@@ -35,8 +34,12 @@ public class PuzzleSceneBase : MonoBehaviour
 
         puzzleCompleted = true;
         Debug.Log("Puzzle completado: " + puzzleName);
-        NotifyManager(true);
-        UnloadThisPuzzleScene();
+
+        PuzzleManager puzzleManager = FindAnyObjectByType<PuzzleManager>();
+        if (puzzleManager != null)
+        {
+            puzzleManager.PuzzleCompleted();
+        }
     }
 
     public virtual void Fail()
@@ -45,33 +48,11 @@ public class PuzzleSceneBase : MonoBehaviour
 
         puzzleFailed = true;
         Debug.Log("Puzzle fallido: " + puzzleName);
-        NotifyManager(false);
-        UnloadThisPuzzleScene();
-    }
 
-    private void NotifyManager(bool completed)
-    {
         PuzzleManager puzzleManager = FindAnyObjectByType<PuzzleManager>();
         if (puzzleManager != null)
         {
-            if (completed)
-                puzzleManager.PuzzleCompleted();
-            else
-                puzzleManager.PuzzleFailed();
-        }
-    }
-
-    private void UnloadThisPuzzleScene()
-    {
-        string mySceneName = gameObject.scene.name;
-        Scene myScene = SceneManager.GetSceneByName(mySceneName);
-        if (myScene.IsValid() && myScene.isLoaded)
-        {
-            SceneManager.UnloadSceneAsync(myScene);
-        }
-        else
-        {
-            SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene());
+            puzzleManager.PuzzleFailed();
         }
     }
 

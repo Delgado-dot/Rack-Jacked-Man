@@ -1,16 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// PuzzleManager - Orquestador de minijuegos Unity.
-/// Reemplaza al PythonPuzzleManager para puzzles dentro de Unity.
-/// </summary>
 public class PuzzleManager : MonoBehaviour
 {
-    [Header("Referencias")]
-    [SerializeField] private PlayerMode playerMode;
-    [SerializeField] private PuzzleUI puzzleUI;
-
     [Header("Puzzles disponibles")]
     [SerializeField] private string[] puzzleScenes = {
         "Puzzle_Cables",
@@ -27,22 +19,12 @@ public class PuzzleManager : MonoBehaviour
     private RackInteractable currentRack;
     private float puzzleTimer = 0f;
     private bool timerRunning = false;
+    private string loadedPuzzleScene = "";
+    private PuzzleUI puzzleUI;
 
     private void Start()
     {
-        if (playerMode == null)
-        {
-            GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null)
-            {
-                playerMode = player.GetComponent<PlayerMode>();
-            }
-        }
-
-        if (puzzleUI == null)
-        {
-            puzzleUI = FindAnyObjectByType<PuzzleUI>();
-        }
+        puzzleUI = FindAnyObjectByType<PuzzleUI>();
     }
 
     private void Update()
@@ -71,6 +53,7 @@ public class PuzzleManager : MonoBehaviour
 
         Debug.Log("PuzzleManager: Iniciando puzzle para rack " + rack.GetRackIndex());
 
+        PlayerMode playerMode = FindAnyObjectByType<PlayerMode>();
         if (playerMode != null)
         {
             playerMode.ChangeMode(PlayerMode.Mode.Puzzle);
@@ -81,15 +64,15 @@ public class PuzzleManager : MonoBehaviour
 
         puzzleTimer = puzzleTimeLimit;
         timerRunning = true;
+        loadedPuzzleScene = puzzleScene;
 
         if (puzzleUI != null)
         {
-            puzzleUI.ShowPuzzlePanel("Rack " + rack.GetRackIndex() + " - " + rack.GetPuzzleName());
+            puzzleUI.ShowPuzzlePanel(rack.GetPuzzleName().ToUpper());
         }
 
         if (puzzleScene != null && SceneExists(puzzleScene))
         {
-            SceneManager.sceneLoaded += OnPuzzleSceneLoaded;
             SceneManager.LoadScene(puzzleScene, LoadSceneMode.Additive);
         }
         else
@@ -97,12 +80,6 @@ public class PuzzleManager : MonoBehaviour
             Debug.LogWarning("PuzzleManager: Escena '" + puzzleScene + "' no encontrada. Completando puzzle automaticamente.");
             PuzzleCompleted();
         }
-    }
-
-    private void OnPuzzleSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        SceneManager.sceneLoaded -= OnPuzzleSceneLoaded;
-        Debug.Log("PuzzleManager: Escena de puzzle cargada: " + scene.name);
     }
 
     public void PuzzleCompleted()
@@ -124,6 +101,7 @@ public class PuzzleManager : MonoBehaviour
             currentRack.Repair();
         }
 
+        UnloadPuzzleScene();
         ReturnToMainScene();
     }
 
@@ -146,11 +124,33 @@ public class PuzzleManager : MonoBehaviour
             currentRack.OnPuzzleFailed();
         }
 
+        UnloadPuzzleScene();
         ReturnToMainScene();
+    }
+
+    public void ClosePuzzle()
+    {
+        if (!puzzleActive) return;
+        PuzzleFailed();
+    }
+
+    private void UnloadPuzzleScene()
+    {
+        if (!string.IsNullOrEmpty(loadedPuzzleScene))
+        {
+            Scene scene = SceneManager.GetSceneByName(loadedPuzzleScene);
+            if (scene.IsValid() && scene.isLoaded)
+            {
+                SceneManager.UnloadSceneAsync(scene);
+                Debug.Log("PuzzleManager: Escena " + loadedPuzzleScene + " descargada");
+            }
+            loadedPuzzleScene = "";
+        }
     }
 
     private void ReturnToMainScene()
     {
+        PlayerMode playerMode = FindAnyObjectByType<PlayerMode>();
         if (playerMode != null)
         {
             playerMode.ChangeMode(PlayerMode.Mode.Normal);

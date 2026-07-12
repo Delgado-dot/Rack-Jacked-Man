@@ -1,50 +1,28 @@
 using UnityEngine;
 
-/// <summary>
-/// RackInteractable - Se adjunta a cada ServerRack para hacerlo interactuable.
-/// Detecta proximidad del jugador y activa el puzzle.
-/// </summary>
-[RequireComponent(typeof(BoxCollider))]
 public class RackInteractable : MonoBehaviour
 {
-    public enum RackType
-    {
-        Checkpoint,
-        Final
-    }
+    public enum RackType { Checkpoint, Final }
 
-    [Header("Configuracion del rack")]
+    [Header("Configuracion")]
     [SerializeField] private RackType rackType = RackType.Checkpoint;
     [SerializeField] private int rackIndex = 0;
-    [SerializeField] private string puzzleName = "cables";
 
     [Header("Estado")]
     [SerializeField] private bool repaired = false;
     [SerializeField] private bool puzzleActive = false;
 
     [Header("Referencias")]
-    [SerializeField] private PuzzleManager puzzleManager;
+    [SerializeField] private PuzzleMana puzzleMana;
 
     private Renderer rackRenderer;
-    private Material originalMaterial;
 
     private void Start()
     {
         rackRenderer = GetComponent<Renderer>();
-        if (rackRenderer != null)
+        if (puzzleMana == null)
         {
-            originalMaterial = rackRenderer.sharedMaterial;
-        }
-
-        BoxCollider col = GetComponent<BoxCollider>();
-        if (col != null)
-        {
-            col.isTrigger = false;
-        }
-
-        if (puzzleManager == null)
-        {
-            puzzleManager = FindAnyObjectByType<PuzzleManager>();
+            puzzleMana = FindAnyObjectByType<PuzzleMana>();
         }
     }
 
@@ -56,7 +34,7 @@ public class RackInteractable : MonoBehaviour
     public void OnHoverEnter()
     {
         if (!IsInteractable()) return;
-        Debug.Log("Hover sobre rack " + rackIndex + ": " + puzzleName);
+        Debug.Log("Hover sobre rack " + rackIndex);
     }
 
     public void OnHoverExit()
@@ -67,14 +45,15 @@ public class RackInteractable : MonoBehaviour
     public void Interact()
     {
         if (!IsInteractable()) return;
-
-        Debug.Log("Interactuando con rack " + rackIndex + ": " + puzzleName);
-        puzzleActive = true;
-
-        if (puzzleManager != null)
+        if (puzzleMana == null)
         {
-            puzzleManager.StartPuzzle(this);
+            Debug.LogWarning("RackInteractable: PuzzleMana no encontrado");
+            return;
         }
+
+        Debug.Log("RackInteractable: Iniciando puzzle para rack " + rackIndex);
+        puzzleActive = true;
+        puzzleMana.StartPuzzle(this);
     }
 
     public void Repair()
@@ -83,16 +62,13 @@ public class RackInteractable : MonoBehaviour
         puzzleActive = false;
         Debug.Log("Rack " + rackIndex + " reparado!");
 
-        if (GameManager.Instance != null)
+        if (rackType == RackType.Checkpoint && GameManager.Instance != null)
         {
-            if (rackType == RackType.Checkpoint)
-            {
-                GameManager.Instance.RegisterCheckpoint(transform);
-            }
-            else if (rackType == RackType.Final)
-            {
-                GameManager.Instance.LevelCompleted();
-            }
+            GameManager.Instance.RegisterCheckpoint(transform);
+        }
+        else if (rackType == RackType.Final && GameManager.Instance != null)
+        {
+            GameManager.Instance.LevelCompleted();
         }
     }
 
@@ -102,18 +78,8 @@ public class RackInteractable : MonoBehaviour
         Debug.Log("Puzzle fallido en rack " + rackIndex);
     }
 
-    public void SetPuzzleManager(PuzzleManager manager)
-    {
-        puzzleManager = manager;
-    }
-
-    public void SetPuzzleName(string name)
-    {
-        puzzleName = name;
-    }
-
     public int GetRackIndex() { return rackIndex; }
     public RackType GetRackType() { return rackType; }
-    public string GetPuzzleName() { return puzzleName; }
     public bool IsRepaired() { return repaired; }
+    public string GetPuzzleName() { return "random"; }
 }

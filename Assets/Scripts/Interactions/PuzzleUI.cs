@@ -197,7 +197,7 @@ public class PuzzleUI : MonoBehaviour
         closeBtn.onClick.AddListener(() =>
         {
             PuzzleManager pm = FindAnyObjectByType<PuzzleManager>();
-            if (pm != null) pm.PuzzleFailed();
+            if (pm != null) pm.ClosePuzzle();
         });
     }
 

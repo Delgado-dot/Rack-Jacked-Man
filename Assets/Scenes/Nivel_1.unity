@@ -3256,7 +3256,7 @@ MonoBehaviour:
   acceleration: 20
   deceleration: 25
   subnivel: 0
-  jumpHeight: 3
+  jumpHeight: 1.5
   gravity: -35
   rotationSpeed: 720
   groundCheck: {fileID: 500000121}
@@ -3699,7 +3699,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraFollow
   target: {fileID: 500000101}
-  offset: {x: 0, y: 1.5, z: -4.489}
+  offset: {x: 0, y: 1.5, z: -2.431}
   smoothSpeed: 5
   useBounds: 0
   minX: -10

@@ -1,278 +1,338 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// TraficoPuzzle - Dirigir carros al carril correcto por color.
-/// Hay 3 carriles de colores y carros que aparecen abajo.
-/// Click en un carro, luego click en el carril correcto.
-/// </summary>
 public class TraficoPuzzle : PuzzleSceneBase
 {
-    [Header("Configuracion")]
-    [SerializeField] private int totalCars = 6;
-    [SerializeField] private int laneCount = 3;
-
-    private int carsDirected = 0;
-    private int selectedCar = -1;
-    private GameObject[] carObjects;
-    private int[] carLaneAssignment;
-    private bool[] carDirected;
-    private GameObject[] laneObjects;
-    private GameObject puzzleArea;
+    private GameObject canvas;
     private Text statusText;
+    private System.Collections.Generic.List<PacketData> packets = new();
+    private System.Collections.Generic.List<BinData> bins = new();
+    private int grabbedPacket = -1;
+    private int totalPackets = 4;
 
-    private Color[] laneColors = {
-        new Color(0.9f, 0.2f, 0.2f),
-        new Color(0.2f, 0.6f, 0.9f),
-        new Color(0.2f, 0.8f, 0.2f)
+    private struct BinDef { public string name; public Color color; }
+    private BinDef[] BIN_DEFS = {
+        new BinDef { name = "HTTP", color = new Color(1f, 0.78f, 0.39f) },
+        new BinDef { name = "DNS",  color = new Color(0.71f, 0.51f, 1f) },
+        new BinDef { name = "FTP",  color = new Color(0.51f, 0.86f, 0.71f) },
+        new BinDef { name = "SSH",  color = new Color(1f, 0.59f, 0.78f) },
     };
+
+    private string[] HTTP_PAYLOADS = { "GET /index.html", "POST /login", "PUT /api/v1/users", "HTTP/1.1 200 OK", "GET /styles.css" };
+    private string[] DNS_PAYLOADS = { "DNS ?google.com", "DNS ?youtube.com", "DNS A example.org", "DNS PTR 8.8.8.8", "DNS MX gmail.com" };
+    private string[] FTP_PAYLOADS = { "USER admin", "PASS ****", "RETR file.zip", "LIST -la", "STOR upload.txt" };
+    private string[] SSH_PAYLOADS = { "SSH-2.0-OpenSSH", "RSA key exchange", "AES-256-GCM", "auth password", "client banner" };
+
+    private struct PacketData
+    {
+        public string protocol;
+        public string snippet;
+        public Color color;
+        public GameObject obj;
+        public int binIdx;
+    }
+    private struct BinData
+    {
+        public string name;
+        public Color color;
+        public GameObject obj;
+        public Image img;
+    }
 
     protected override void Start()
     {
         base.Start();
-        puzzleName = "Trafico";
-        CreatePuzzleArea();
-        CreateLanes();
-        CreateCars();
-        CreateStatusText();
+        puzzleName = "TRAFICO DE RED";
+        timeLimit = 45f;
+        timer = timeLimit;
+        canvas = FindOrCreateCanvas();
+        CreateUI();
     }
 
-    private void CreatePuzzleArea()
+    private GameObject FindOrCreateCanvas()
     {
-        GameObject canvas = GameObject.Find("PuzzleCanvas");
-        if (canvas == null) return;
-
-        puzzleArea = new GameObject("TrafficArea");
-        puzzleArea.transform.SetParent(canvas.transform, false);
-
-        RectTransform areaRect = puzzleArea.AddComponent<RectTransform>();
-        areaRect.anchorMin = new Vector2(0.05f, 0.1f);
-        areaRect.anchorMax = new Vector2(0.95f, 0.85f);
-        areaRect.sizeDelta = Vector2.zero;
-
-        Image areaBg = puzzleArea.AddComponent<Image>();
-        areaBg.color = new Color(0.1f, 0.12f, 0.15f, 0.9f);
-    }
-
-    private void CreateLanes()
-    {
-        laneObjects = new GameObject[laneCount];
-
-        for (int i = 0; i < laneCount; i++)
+        GameObject go = GameObject.Find("PuzzleCanvas");
+        if (go != null) return go;
+        go = new GameObject("PuzzleCanvas");
+        Canvas c = go.AddComponent<Canvas>();
+        c.renderMode = RenderMode.ScreenSpaceOverlay;
+        c.sortingOrder = 200;
+        CanvasScaler sc = go.AddComponent<CanvasScaler>();
+        sc.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        sc.referenceResolution = new Vector2(1280, 720);
+        go.AddComponent<GraphicRaycaster>();
+        if (FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
         {
-            GameObject lane = new GameObject("Lane_" + i);
-            lane.transform.SetParent(puzzleArea.transform, false);
-
-            RectTransform laneRect = lane.AddComponent<RectTransform>();
-            float x = 0.1f + (i * 0.28f);
-            laneRect.anchorMin = new Vector2(x, 0.15f);
-            laneRect.anchorMax = new Vector2(x + 0.24f, 0.82f);
-            laneRect.sizeDelta = Vector2.zero;
-
-            Image laneBg = lane.AddComponent<Image>();
-            laneBg.color = new Color(laneColors[i].r, laneColors[i].g, laneColors[i].b, 0.25f);
-
-            Button laneBtn = lane.AddComponent<Button>();
-            laneBtn.targetGraphic = laneBg;
-            laneBtn.transition = Selectable.Transition.None;
-
-            int laneIndex = i;
-            laneBtn.onClick.AddListener(() => OnLaneClicked(laneIndex));
-
-            GameObject labelObj = new GameObject("Label");
-            labelObj.transform.SetParent(lane.transform, false);
-            Text labelText = labelObj.AddComponent<Text>();
-            labelText.text = "Carril " + (i + 1);
-            labelText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            labelText.fontSize = 18;
-            labelText.fontStyle = FontStyle.Bold;
-            labelText.alignment = TextAnchor.MiddleCenter;
-            labelText.color = laneColors[i];
-            RectTransform labelRect = labelObj.GetComponent<RectTransform>();
-            labelRect.anchorMin = new Vector2(0, 0.9f);
-            labelRect.anchorMax = new Vector2(1, 1);
-            labelRect.sizeDelta = Vector2.zero;
-
-            Outline outline = labelObj.AddComponent<Outline>();
-            outline.effectColor = Color.black;
-            outline.effectDistance = new Vector2(1, -1);
-
-            laneObjects[i] = lane;
+            GameObject es = new GameObject("EventSystem");
+            es.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            es.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
         }
+        return go;
     }
 
-    private void CreateCars()
+    private void CreateUI()
     {
-        carObjects = new GameObject[totalCars];
-        carLaneAssignment = new int[totalCars];
-        carDirected = new bool[totalCars];
-
-        for (int i = 0; i < totalCars; i++)
+        for (int i = 0; i < BIN_DEFS.Length; i++)
         {
-            carLaneAssignment[i] = Random.Range(0, laneCount);
-            CreateCar(i);
+            CreateBin(i, BIN_DEFS[i]);
         }
+
+        string[] protocols = { "HTTP", "DNS", "FTP", "SSH" };
+        string[][] allPayloads = { HTTP_PAYLOADS, DNS_PAYLOADS, FTP_PAYLOADS, SSH_PAYLOADS };
+
+        for (int i = 0; i < totalPackets; i++)
+        {
+            int protIdx = i % 4;
+            string proto = protocols[protIdx];
+            string snippet = allPayloads[protIdx][Random.Range(0, allPayloads[protIdx].Length)];
+            Color c = BIN_DEFS[protIdx].color;
+            CreatePacket(i, proto, snippet, c);
+        }
+
+        GameObject statusObj = new GameObject("Status");
+        statusObj.transform.SetParent(canvas.transform, false);
+        statusText = statusObj.AddComponent<Text>();
+        statusText.text = "TRAFICO DE RED  |  Arrastra paquetes al bin correcto  |  0/" + totalPackets;
+        statusText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        statusText.fontSize = 20;
+        statusText.fontStyle = FontStyle.Bold;
+        statusText.alignment = TextAnchor.MiddleCenter;
+        statusText.color = new Color(0.9f, 0.95f, 1f);
+        Outline ol = statusObj.AddComponent<Outline>();
+        ol.effectColor = new Color(0.05f, 0.05f, 0.15f);
+        ol.effectDistance = new Vector2(1, -1);
+        RectTransform sRect = statusObj.GetComponent<RectTransform>();
+        sRect.anchorMin = new Vector2(0.05f, 0.92f);
+        sRect.anchorMax = new Vector2(0.95f, 0.98f);
+        sRect.sizeDelta = Vector2.zero;
     }
 
-    private void CreateCar(int index)
+    private void CreateBin(int idx, BinDef def)
     {
-        GameObject car = new GameObject("Car_" + index);
-        car.transform.SetParent(puzzleArea.transform, false);
+        float[] xPositions = { 0.58f, 0.78f, 0.58f, 0.78f };
+        float[] yPositions = { 0.55f, 0.55f, 0.2f, 0.2f };
 
-        RectTransform carRect = car.AddComponent<RectTransform>();
-        float x = 0.1f + (index * 0.13f);
-        carRect.anchorMin = new Vector2(x, 0.02f);
-        carRect.anchorMax = new Vector2(x + 0.1f, 0.13f);
-        carRect.sizeDelta = Vector2.zero;
+        GameObject go = new GameObject("Bin_" + def.name);
+        go.transform.SetParent(canvas.transform, false);
+        Image img = go.AddComponent<Image>();
+        img.color = new Color(def.color.r, def.color.g, def.color.b, 0.15f);
+        RectTransform rect = go.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(xPositions[idx] - 0.1f, yPositions[idx] - 0.15f);
+        rect.anchorMax = new Vector2(xPositions[idx] + 0.1f, yPositions[idx] + 0.15f);
+        rect.sizeDelta = Vector2.zero;
 
-        Image carBg = car.AddComponent<Image>();
-        carBg.color = laneColors[carLaneAssignment[index]];
+        Image borderImg = go.AddComponent<Image>();
+        borderImg.color = def.color;
+        borderImg.raycastTarget = false;
 
-        Button btn = car.AddComponent<Button>();
-        btn.targetGraphic = carBg;
+        GameObject labelGO = new GameObject("Label");
+        labelGO.transform.SetParent(go.transform, false);
+        Text t = labelGO.AddComponent<Text>();
+        t.text = def.name + "\nDROP HERE";
+        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        t.fontSize = 14;
+        t.fontStyle = FontStyle.Bold;
+        t.alignment = TextAnchor.MiddleCenter;
+        t.color = def.color;
+        RectTransform tRect = labelGO.GetComponent<RectTransform>();
+        tRect.anchorMin = Vector2.zero;
+        tRect.anchorMax = Vector2.one;
+        tRect.sizeDelta = Vector2.zero;
 
-        GameObject carLabel = new GameObject("Label");
-        carLabel.transform.SetParent(car.transform, false);
-        Text carText = carLabel.AddComponent<Text>();
-        carText.text = "Car";
-        carText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        carText.fontSize = 12;
-        carText.fontStyle = FontStyle.Bold;
-        carText.alignment = TextAnchor.MiddleCenter;
-        carText.color = Color.white;
-        RectTransform carLabelRect = carLabel.GetComponent<RectTransform>();
-        carLabelRect.anchorMin = Vector2.zero;
-        carLabelRect.anchorMax = Vector2.one;
-        carLabelRect.sizeDelta = Vector2.zero;
-
-        Outline outline = carLabel.AddComponent<Outline>();
-        outline.effectColor = Color.black;
-        outline.effectDistance = new Vector2(1, -1);
-
-        int carIndex = index;
-        btn.onClick.AddListener(() => OnCarClicked(carIndex));
-
-        carObjects[index] = car;
+        bins.Add(new BinData { name = def.name, color = def.color, obj = go, img = img });
     }
 
-    private void OnCarClicked(int index)
+    private void CreatePacket(int idx, string protocol, string snippet, Color color)
+    {
+        float yPos = 0.82f - idx * 0.13f;
+
+        GameObject go = new GameObject("Packet_" + idx);
+        go.transform.SetParent(canvas.transform, false);
+        Image bg = go.AddComponent<Image>();
+        bg.color = new Color(color.r, color.g, color.b, 0.2f);
+
+        Button btn = go.AddComponent<Button>();
+        btn.targetGraphic = bg;
+        int capturedIdx = idx;
+        btn.onClick.AddListener(() => OnPacketClicked(capturedIdx));
+
+        RectTransform rect = go.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.05f, yPos - 0.05f);
+        rect.anchorMax = new Vector2(0.45f, yPos + 0.05f);
+        rect.sizeDelta = Vector2.zero;
+
+        Image accentBar = go.AddComponent<Image>();
+        accentBar.color = color;
+        accentBar.raycastTarget = false;
+        RectTransform accentRect = accentBar.GetComponent<RectTransform>();
+        accentRect.anchorMin = new Vector2(0, 0);
+        accentRect.anchorMax = new Vector2(0.02f, 1);
+        accentRect.sizeDelta = Vector2.zero;
+
+        GameObject labelGO = new GameObject("Label");
+        labelGO.transform.SetParent(go.transform, false);
+        Text t = labelGO.AddComponent<Text>();
+        t.text = protocol + "\n" + snippet;
+        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        t.fontSize = 13;
+        t.fontStyle = FontStyle.Bold;
+        t.alignment = TextAnchor.MiddleLeft;
+        t.color = Color.white;
+        RectTransform tRect = labelGO.GetComponent<RectTransform>();
+        tRect.anchorMin = new Vector2(0.04f, 0.1f);
+        tRect.anchorMax = new Vector2(0.95f, 0.9f);
+        tRect.sizeDelta = Vector2.zero;
+
+        Outline tOl = labelGO.AddComponent<Outline>();
+        tOl.effectColor = Color.black;
+        tOl.effectDistance = new Vector2(1, -1);
+
+        packets.Add(new PacketData { protocol = protocol, snippet = snippet, color = color, obj = go, binIdx = -1 });
+    }
+
+    private void OnPacketClicked(int idx)
     {
         if (puzzleCompleted || puzzleFailed) return;
-        if (carDirected[index]) return;
+        if (packets[idx].binIdx >= 0) return;
 
-        if (selectedCar >= 0)
+        if (grabbedPacket >= 0 && grabbedPacket != idx)
         {
-            HighlightCar(selectedCar, false);
+            ReturnPacket(grabbedPacket);
         }
 
-        selectedCar = index;
-        HighlightCar(index, true);
-
-        UpdateStatus("Selecciona el carril " + GetColorName(carLaneAssignment[index]));
+        grabbedPacket = idx;
+        packets[idx].obj.transform.SetAsLastSibling();
+        packets[idx].obj.transform.localScale = Vector3.one * 1.05f;
     }
 
-    private void OnLaneClicked(int laneIndex)
+    private new void Update()
     {
+        base.Update();
         if (puzzleCompleted || puzzleFailed) return;
-        if (selectedCar < 0) return;
 
-        if (carLaneAssignment[selectedCar] == laneIndex)
+        if (grabbedPacket >= 0 && grabbedPacket < packets.Count)
         {
-            carDirected[selectedCar] = true;
-            carsDirected++;
+            RectTransform pRect = packets[grabbedPacket].obj.GetComponent<RectTransform>();
+            Vector2 mousePos;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvas.GetComponent<RectTransform>(), Input.mousePosition, null, out mousePos);
 
-            Image carImg = carObjects[selectedCar].GetComponent<Image>();
-            carImg.color = new Color(carImg.color.r, carImg.color.g, carImg.color.b, 0.3f);
+            Vector2 canvasSize = canvas.GetComponent<RectTransform>().rect.size;
+            float normX = (mousePos.x + canvasSize.x / 2f) / canvasSize.x;
+            float normY = (mousePos.y + canvasSize.y / 2f) / canvasSize.y;
+            pRect.anchorMin = new Vector2(normX - 0.2f, normY - 0.04f);
+            pRect.anchorMax = new Vector2(normX + 0.2f, normY + 0.04f);
 
-            Button carBtn = carObjects[selectedCar].GetComponent<Button>();
-            carBtn.interactable = false;
-
-            Text carLabel = carObjects[selectedCar].transform.Find("Label").GetComponent<Text>();
-            carLabel.text = "OK";
-
-            RectTransform carRect = carObjects[selectedCar].GetComponent<RectTransform>();
-            float laneX = 0.1f + (laneIndex * 0.28f) + 0.08f;
-            carRect.anchorMin = new Vector2(laneX, 0.4f);
-            carRect.anchorMax = new Vector2(laneX + 0.08f, 0.55f);
-
-            selectedCar = -1;
-
-            Debug.Log("Trafico: Carro dirigido al carril " + (laneIndex + 1));
-
-            if (carsDirected >= totalCars)
+            if (Input.GetMouseButtonDown(1))
             {
-                Debug.Log("Trafico: Todos los carros dirigidos!");
-                Complete();
+                ReturnPacket(grabbedPacket);
+                grabbedPacket = -1;
                 return;
             }
 
-            UpdateStatus("Carros restantes: " + (totalCars - carsDirected));
+            for (int b = 0; b < bins.Count; b++)
+            {
+                RectTransform bRect = bins[b].obj.GetComponent<RectTransform>();
+                Vector2 bCenter = (bRect.anchorMin + bRect.anchorMax) / 2f;
+                float dist = Vector2.Distance(new Vector2(normX, normY), bCenter);
+
+                if (dist < 0.12f && Input.GetMouseButtonDown(0))
+                {
+                    TryDropInBin(grabbedPacket, b);
+                    return;
+                }
+            }
+        }
+
+        if (Input.GetMouseButtonDown(0) && grabbedPacket < 0)
+        {
+            for (int i = 0; i < packets.Count; i++)
+            {
+                if (packets[i].binIdx >= 0) continue;
+                RectTransform pRect = packets[i].obj.GetComponent<RectTransform>();
+                Vector2 center = (pRect.anchorMin + pRect.anchorMax) / 2f;
+                Vector2 mouseNorm = ScreenToNorm(Input.mousePosition);
+                float dist = Vector2.Distance(center, mouseNorm);
+                if (dist < 0.1f)
+                {
+                    grabbedPacket = i;
+                    packets[i].obj.transform.SetAsLastSibling();
+                    packets[i].obj.transform.localScale = Vector3.one * 1.05f;
+                    break;
+                }
+            }
+        }
+    }
+
+    private Vector2 ScreenToNorm(Vector3 screenPos)
+    {
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvas.GetComponent<RectTransform>(), screenPos, null, out localPoint);
+        Vector2 canvasSize = canvas.GetComponent<RectTransform>().rect.size;
+        return new Vector2(
+            (localPoint.x + canvasSize.x / 2f) / canvasSize.x,
+            (localPoint.y + canvasSize.y / 2f) / canvasSize.y
+        );
+    }
+
+    private void TryDropInBin(int packetIdx, int binIdx)
+    {
+        PacketData p = packets[packetIdx];
+        BinData b = bins[binIdx];
+
+        if (p.protocol == b.name)
+        {
+            p.binIdx = binIdx;
+            p.obj.transform.localScale = Vector3.one;
+            RectTransform bRect = b.obj.GetComponent<RectTransform>();
+            p.obj.GetComponent<RectTransform>().anchorMin = bRect.anchorMin + new Vector2(0.01f, 0.01f);
+            p.obj.GetComponent<RectTransform>().anchorMax = bRect.anchorMax - new Vector2(0.01f, 0.01f);
+            p.obj.GetComponent<Button>().interactable = false;
+
+            StartCoroutine(FlashBin(binIdx, new Color(0.47f, 1f, 0.71f), 0.4f));
+
+            int deposited = 0;
+            for (int i = 0; i < packets.Count; i++)
+            {
+                if (packets[i].binIdx >= 0) deposited++;
+            }
+            if (deposited >= totalPackets)
+            {
+                Complete();
+                return;
+            }
+            UpdateStatus(deposited);
         }
         else
         {
-            Debug.Log("Trafico: Carril incorrecto!");
-            StartCoroutine(FlashWrong());
+            ReturnPacket(packetIdx);
+            StartCoroutine(FlashBin(binIdx, new Color(1f, 0.31f, 0.31f), 0.4f));
         }
+        grabbedPacket = -1;
     }
 
-    private System.Collections.IEnumerator FlashWrong()
+    private void ReturnPacket(int idx)
     {
-        if (selectedCar >= 0)
-        {
-            Image img = carObjects[selectedCar].GetComponent<Image>();
-            Color orig = img.color;
-            img.color = Color.red;
-            yield return new WaitForSeconds(0.3f);
-            img.color = orig;
-            HighlightCar(selectedCar, false);
-            selectedCar = -1;
-        }
-        UpdateStatus("Carril incorrecto! Intenta de nuevo");
+        PacketData p = packets[idx];
+        float yPos = 0.82f - idx * 0.13f;
+        p.obj.GetComponent<RectTransform>().anchorMin = new Vector2(0.05f, yPos - 0.05f);
+        p.obj.GetComponent<RectTransform>().anchorMax = new Vector2(0.45f, yPos + 0.05f);
+        p.obj.transform.localScale = Vector3.one;
     }
 
-    private void HighlightCar(int index, bool highlight)
+    private System.Collections.IEnumerator FlashBin(int binIdx, Color flashColor, float duration)
     {
-        if (carObjects[index] == null) return;
-        carObjects[index].transform.localScale = highlight ? Vector3.one * 1.15f : Vector3.one;
+        BinData b = bins[binIdx];
+        Color original = b.img.color;
+        b.img.color = new Color(flashColor.r, flashColor.g, flashColor.b, 0.4f);
+        yield return new WaitForSeconds(duration);
+        b.img.color = original;
     }
 
-    private string GetColorName(int laneIndex)
-    {
-        switch (laneIndex)
-        {
-            case 0: return "ROJO";
-            case 1: return "AZUL";
-            case 2: return "VERDE";
-            default: return "?";
-        }
-    }
-
-    private void CreateStatusText()
-    {
-        GameObject statusObj = new GameObject("StatusText");
-        statusObj.transform.SetParent(puzzleArea.transform, false);
-
-        statusText = statusObj.AddComponent<Text>();
-        statusText.text = "Click en un carro, luego en su carril";
-        statusText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        statusText.fontSize = 18;
-        statusText.fontStyle = FontStyle.Bold;
-        statusText.alignment = TextAnchor.MiddleCenter;
-        statusText.color = Color.yellow;
-
-        Outline outline = statusObj.AddComponent<Outline>();
-        outline.effectColor = Color.black;
-        outline.effectDistance = new Vector2(1, -1);
-
-        RectTransform rect = statusObj.GetComponent<RectTransform>();
-        rect.anchorMin = new Vector2(0.1f, 0.88f);
-        rect.anchorMax = new Vector2(0.9f, 0.97f);
-        rect.sizeDelta = Vector2.zero;
-    }
-
-    private void UpdateStatus(string msg)
+    private void UpdateStatus(int deposited)
     {
         if (statusText != null)
-            statusText.text = msg;
+            statusText.text = "TRAFICO DE RED  |  Arrastra paquetes al bin correcto  |  " + deposited + "/" + totalPackets;
     }
 }

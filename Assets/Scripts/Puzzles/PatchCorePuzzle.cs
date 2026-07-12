@@ -1,282 +1,321 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// PatchCorePuzzle - Memoria: encontrar pares de colores.
-/// Click en una carta para voltearla, luego en otra. Si son iguales, se quedan.
-/// </summary>
 public class PatchCorePuzzle : PuzzleSceneBase
 {
-    [Header("Configuracion")]
-    [SerializeField] private int rows = 4;
-    [SerializeField] private int cols = 4;
+    [SerializeField] private int totalPieces = 6;
 
-    private int totalPairs;
-    private int matchedPairs = 0;
-    private int firstCard = -1;
-    private int secondCard = -1;
-    private bool waitingForFlip = false;
-    private float flipTimer = 0f;
-
-    private int[] cardValues;
-    private bool[] cardRevealed;
-    private bool[] cardMatched;
-    private Button[] cardButtons;
-    private Image[] cardImages;
-    private Text[] cardLabels;
-    private GameObject puzzleArea;
+    private GameObject canvas;
     private Text statusText;
+    private GameObject[] slots;
+    private GameObject[] pieces;
+    private int[] slotContents;
+    private int[] pieceOrder;
+    private int selectedPiece = -1;
+    private Color[] pieceColors;
 
-    private Color[] pairColors = {
-        new Color(0.9f, 0.2f, 0.2f),
-        new Color(0.2f, 0.8f, 0.2f),
-        new Color(0.2f, 0.4f, 0.9f),
-        new Color(0.9f, 0.9f, 0.1f),
-        new Color(0.9f, 0.5f, 0.1f),
-        new Color(0.7f, 0.2f, 0.8f),
-        new Color(0.1f, 0.9f, 0.9f),
-        new Color(0.9f, 0.3f, 0.6f)
+    private static readonly Color[] COLORS = {
+        new Color(1f, 0.35f, 0.35f),
+        new Color(1f, 0.71f, 0.27f),
+        new Color(1f, 0.9f, 0.35f),
+        new Color(0.47f, 0.9f, 0.59f),
+        new Color(0.35f, 0.82f, 1f),
+        new Color(0.59f, 0.59f, 1f),
+        new Color(0.86f, 0.51f, 1f),
+        new Color(1f, 0.51f, 0.75f),
+        new Color(0.51f, 0.96f, 0.9f),
+        new Color(0.86f, 0.9f, 0.94f),
     };
-
-    private Color cardBackColor = new Color(0.2f, 0.2f, 0.4f);
-    private Color cardMatchedColor = new Color(0.15f, 0.15f, 0.15f);
 
     protected override void Start()
     {
         base.Start();
-        puzzleName = "PatchCore";
-        totalPairs = (rows * cols) / 2;
-        CreatePuzzleArea();
-        CreateCards();
-        CreateStatusText();
+        puzzleName = "PATCHCORD ROTO";
+        timeLimit = 45f;
+        timer = timeLimit;
+        canvas = FindOrCreateCanvas();
+        CreateUI();
     }
 
-    protected override void Update()
+    private GameObject FindOrCreateCanvas()
     {
-        base.Update();
-        if (puzzleCompleted || puzzleFailed) return;
-
-        if (waitingForFlip)
+        GameObject go = GameObject.Find("PuzzleCanvas");
+        if (go != null) return go;
+        go = new GameObject("PuzzleCanvas");
+        Canvas c = go.AddComponent<Canvas>();
+        c.renderMode = RenderMode.ScreenSpaceOverlay;
+        c.sortingOrder = 200;
+        CanvasScaler sc = go.AddComponent<CanvasScaler>();
+        sc.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        sc.referenceResolution = new Vector2(1280, 720);
+        go.AddComponent<GraphicRaycaster>();
+        if (FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
         {
-            flipTimer -= Time.deltaTime;
-            if (flipTimer <= 0f)
-            {
-                HideCards();
-                waitingForFlip = false;
-            }
+            GameObject es = new GameObject("EventSystem");
+            es.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            es.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
         }
+        return go;
     }
 
-    private void CreatePuzzleArea()
+    private void CreateUI()
     {
-        GameObject canvas = GameObject.Find("PuzzleCanvas");
-        if (canvas == null) return;
+        pieceColors = new Color[totalPieces];
+        for (int i = 0; i < totalPieces; i++) pieceColors[i] = COLORS[i % COLORS.Length];
 
-        puzzleArea = new GameObject("MemoryArea");
-        puzzleArea.transform.SetParent(canvas.transform, false);
+        slotContents = new int[totalPieces];
+        for (int i = 0; i < totalPieces; i++) slotContents[i] = -1;
 
-        RectTransform areaRect = puzzleArea.AddComponent<RectTransform>();
-        areaRect.anchorMin = new Vector2(0.05f, 0.1f);
-        areaRect.anchorMax = new Vector2(0.95f, 0.85f);
-        areaRect.sizeDelta = Vector2.zero;
-
-        Image areaBg = puzzleArea.AddComponent<Image>();
-        areaBg.color = new Color(0.08f, 0.08f, 0.15f, 0.9f);
-    }
-
-    private void CreateCards()
-    {
-        int totalCards = rows * cols;
-        cardValues = new int[totalCards];
-        cardRevealed = new bool[totalCards];
-        cardMatched = new bool[totalCards];
-        cardButtons = new Button[totalCards];
-        cardImages = new Image[totalCards];
-        cardLabels = new Text[totalCards];
-
-        for (int i = 0; i < totalPairs; i++)
-        {
-            cardValues[i * 2] = i;
-            cardValues[i * 2 + 1] = i;
-        }
-
-        for (int i = totalCards - 1; i > 0; i--)
+        int[] shuffled = new int[totalPieces];
+        for (int i = 0; i < totalPieces; i++) shuffled[i] = i;
+        for (int i = totalPieces - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
-            int temp = cardValues[i];
-            cardValues[i] = cardValues[j];
-            cardValues[j] = temp;
+            int t = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = t;
         }
 
-        float cardWidth = 0.7f / cols;
-        float cardHeight = 0.65f / rows;
-        float startX = 0.15f;
-        float startY = 0.78f;
+        slots = new GameObject[totalPieces];
+        pieces = new GameObject[totalPieces];
 
-        for (int r = 0; r < rows; r++)
+        float slotW = 0.9f / totalPieces;
+        float slotStartX = 0.05f;
+        float slotY = 0.72f;
+        float slotH = 0.12f;
+
+        GameObject patchcordBase = new GameObject("PatchcordBase");
+        patchcordBase.transform.SetParent(canvas.transform, false);
+        Image patchcordImg = patchcordBase.AddComponent<Image>();
+        patchcordImg.color = new Color(0.15f, 0.15f, 0.2f);
+        patchcordImg.raycastTarget = false;
+        RectTransform pRect = patchcordBase.GetComponent<RectTransform>();
+        pRect.anchorMin = new Vector2(slotStartX - 0.01f, slotY - 0.02f);
+        pRect.anchorMax = new Vector2(slotStartX + slotW * totalPieces + 0.01f, slotY + slotH + 0.02f);
+        pRect.sizeDelta = Vector2.zero;
+
+        for (int i = 0; i < totalPieces; i++)
         {
-            for (int c = 0; c < cols; c++)
-            {
-                int index = r * cols + c;
-                float x = startX + c * (cardWidth + 0.02f);
-                float y = startY - r * (cardHeight + 0.02f);
-                CreateCard(index, new Vector2(x, y), new Vector2(x + cardWidth, y - cardHeight));
-            }
+            float x = slotStartX + i * slotW;
+            CreateSlot(i, x, slotY, slotW - 0.005f, slotH);
         }
-    }
 
-    private void CreateCard(int index, Vector2 anchorMin, Vector2 anchorMax)
-    {
-        GameObject card = new GameObject("Card_" + index);
-        card.transform.SetParent(puzzleArea.transform, false);
-
-        RectTransform rect = card.AddComponent<RectTransform>();
-        rect.anchorMin = anchorMin;
-        rect.anchorMax = anchorMax;
-        rect.sizeDelta = Vector2.zero;
-
-        Image bg = card.AddComponent<Image>();
-        bg.color = cardBackColor;
-        cardImages[index] = bg;
-
-        Button btn = card.AddComponent<Button>();
-        btn.targetGraphic = bg;
-        cardButtons[index] = btn;
-
-        GameObject labelObj = new GameObject("Label");
-        labelObj.transform.SetParent(card.transform, false);
-        Text label = labelObj.AddComponent<Text>();
-        label.text = "?";
-        label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        label.fontSize = 28;
-        label.fontStyle = FontStyle.Bold;
-        label.alignment = TextAnchor.MiddleCenter;
-        label.color = Color.white;
-        cardLabels[index] = label;
-
-        RectTransform labelRect = labelObj.GetComponent<RectTransform>();
-        labelRect.anchorMin = Vector2.zero;
-        labelRect.anchorMax = Vector2.one;
-        labelRect.sizeDelta = Vector2.zero;
-
-        Outline outline = labelObj.AddComponent<Outline>();
-        outline.effectColor = new Color(0, 0, 0, 0.5f);
-        outline.effectDistance = new Vector2(1, -1);
-
-        int cardIndex = index;
-        btn.onClick.AddListener(() => OnCardClicked(cardIndex));
-    }
-
-    private void OnCardClicked(int index)
-    {
-        if (puzzleCompleted || puzzleFailed) return;
-        if (waitingForFlip) return;
-        if (cardRevealed[index] || cardMatched[index]) return;
-
-        RevealCard(index);
-
-        if (firstCard == -1)
+        float bankY = 0.2f;
+        float bankPieceW = 0.9f / totalPieces;
+        for (int i = 0; i < totalPieces; i++)
         {
-            firstCard = index;
-        }
-        else
-        {
-            secondCard = index;
-            CheckMatch();
-        }
-    }
-
-    private void RevealCard(int index)
-    {
-        cardRevealed[index] = true;
-        int colorIndex = cardValues[index];
-        if (colorIndex < pairColors.Length)
-        {
-            cardImages[index].color = pairColors[colorIndex];
-        }
-        cardLabels[index].text = (cardValues[index] + 1).ToString();
-    }
-
-    private void HideCards()
-    {
-        for (int i = 0; i < cardRevealed.Length; i++)
-        {
-            if (cardRevealed[i] && !cardMatched[i])
-            {
-                cardRevealed[i] = false;
-                cardImages[i].color = cardBackColor;
-                cardLabels[i].text = "?";
-            }
+            int pieceIdx = shuffled[i];
+            float x = 0.05f + i * bankPieceW;
+            CreatePiece(pieceIdx, x, bankY, bankPieceW - 0.005f, 0.1f);
         }
 
-        firstCard = -1;
-        secondCard = -1;
-    }
-
-    private void CheckMatch()
-    {
-        if (cardValues[firstCard] == cardValues[secondCard])
-        {
-            cardMatched[firstCard] = true;
-            cardMatched[secondCard] = true;
-            matchedPairs++;
-
-            cardImages[firstCard].color = cardMatchedColor;
-            cardImages[secondCard].color = cardMatchedColor;
-            cardLabels[firstCard].text = "OK";
-            cardLabels[secondCard].text = "OK";
-            cardLabels[firstCard].color = Color.green;
-            cardLabels[secondCard].color = Color.green;
-
-            cardButtons[firstCard].interactable = false;
-            cardButtons[secondCard].interactable = false;
-
-            Debug.Log("PatchCore: Par encontrado! (" + matchedPairs + "/" + totalPairs + ")");
-
-            if (matchedPairs >= totalPairs)
-            {
-                Debug.Log("PatchCore: Todos los pares encontrados!");
-                Complete();
-                return;
-            }
-
-            UpdateStatus("Pares: " + matchedPairs + "/" + totalPairs);
-            firstCard = -1;
-            secondCard = -1;
-        }
-        else
-        {
-            waitingForFlip = true;
-            flipTimer = 0.8f;
-        }
-    }
-
-    private void CreateStatusText()
-    {
-        GameObject statusObj = new GameObject("StatusText");
-        statusObj.transform.SetParent(puzzleArea.transform, false);
-
+        GameObject statusObj = new GameObject("Status");
+        statusObj.transform.SetParent(canvas.transform, false);
         statusText = statusObj.AddComponent<Text>();
-        statusText.text = "Encuentra los pares: 0/" + totalPairs;
+        statusText.text = "PATCHCORD ROTO  |  Coloca piezas en orden  |  0/" + totalPieces;
         statusText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         statusText.fontSize = 20;
         statusText.fontStyle = FontStyle.Bold;
         statusText.alignment = TextAnchor.MiddleCenter;
-        statusText.color = Color.yellow;
+        statusText.color = new Color(0.9f, 0.95f, 1f);
+        Outline ol = statusObj.AddComponent<Outline>();
+        ol.effectColor = new Color(0.05f, 0.05f, 0.15f);
+        ol.effectDistance = new Vector2(1, -1);
+        RectTransform sRect = statusObj.GetComponent<RectTransform>();
+        sRect.anchorMin = new Vector2(0.05f, 0.92f);
+        sRect.anchorMax = new Vector2(0.95f, 0.98f);
+        sRect.sizeDelta = Vector2.zero;
 
-        Outline outline = statusObj.AddComponent<Outline>();
-        outline.effectColor = Color.black;
-        outline.effectDistance = new Vector2(1, -1);
-
-        RectTransform rect = statusObj.GetComponent<RectTransform>();
-        rect.anchorMin = new Vector2(0.1f, 0.88f);
-        rect.anchorMax = new Vector2(0.9f, 0.97f);
-        rect.sizeDelta = Vector2.zero;
+        GameObject hintObj = new GameObject("Hint");
+        hintObj.transform.SetParent(canvas.transform, false);
+        Text hint = hintObj.AddComponent<Text>();
+        hint.text = "Click pieza, luego click slot para colocar";
+        hint.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        hint.fontSize = 14;
+        hint.alignment = TextAnchor.MiddleCenter;
+        hint.color = new Color(0.6f, 0.65f, 0.7f);
+        RectTransform hRect = hintObj.GetComponent<RectTransform>();
+        hRect.anchorMin = new Vector2(0.05f, 0.87f);
+        hRect.anchorMax = new Vector2(0.95f, 0.92f);
+        hRect.sizeDelta = Vector2.zero;
     }
 
-    private void UpdateStatus(string msg)
+    private void CreateSlot(int idx, float x, float y, float w, float h)
+    {
+        GameObject go = new GameObject("Slot_" + idx);
+        go.transform.SetParent(canvas.transform, false);
+        Image bg = go.AddComponent<Image>();
+        bg.color = new Color(0.2f, 0.2f, 0.25f, 0.8f);
+        RectTransform rect = go.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(x, y);
+        rect.anchorMax = new Vector2(x + w, y + h);
+        rect.sizeDelta = Vector2.zero;
+
+        Button btn = go.AddComponent<Button>();
+        btn.targetGraphic = bg;
+        int capturedIdx = idx;
+        btn.onClick.AddListener(() => OnSlotClicked(capturedIdx));
+
+        GameObject numGO = new GameObject("Num");
+        numGO.transform.SetParent(go.transform, false);
+        Text numText = numGO.AddComponent<Text>();
+        numText.text = (idx + 1).ToString("D2");
+        numText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        numText.fontSize = 16;
+        numText.fontStyle = FontStyle.Bold;
+        numText.alignment = TextAnchor.MiddleCenter;
+        numText.color = new Color(0.4f, 0.4f, 0.5f);
+        RectTransform nRect = numGO.GetComponent<RectTransform>();
+        nRect.anchorMin = Vector2.zero;
+        nRect.anchorMax = Vector2.one;
+        nRect.sizeDelta = Vector2.zero;
+
+        slots[idx] = go;
+    }
+
+    private void CreatePiece(int idx, float x, float y, float w, float h)
+    {
+        GameObject go = new GameObject("Piece_" + idx);
+        go.transform.SetParent(canvas.transform, false);
+        Image bg = go.AddComponent<Image>();
+        bg.color = pieceColors[idx];
+        RectTransform rect = go.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(x, y);
+        rect.anchorMax = new Vector2(x + w, y + h);
+        rect.sizeDelta = Vector2.zero;
+
+        Button btn = go.AddComponent<Button>();
+        btn.targetGraphic = bg;
+        int capturedIdx = idx;
+        btn.onClick.AddListener(() => OnPieceClicked(capturedIdx));
+
+        GameObject numGO = new GameObject("Num");
+        numGO.transform.SetParent(go.transform, false);
+        Text numText = numGO.AddComponent<Text>();
+        numText.text = (idx + 1).ToString("D2");
+        numText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        numText.fontSize = 18;
+        numText.fontStyle = FontStyle.Bold;
+        numText.alignment = TextAnchor.MiddleCenter;
+        numText.color = Color.white;
+        Outline nOl = numGO.AddComponent<Outline>();
+        nOl.effectColor = Color.black;
+        nOl.effectDistance = new Vector2(1, -1);
+        RectTransform nRect = numGO.GetComponent<RectTransform>();
+        nRect.anchorMin = Vector2.zero;
+        nRect.anchorMax = Vector2.one;
+        nRect.sizeDelta = Vector2.zero;
+
+        pieces[idx] = go;
+    }
+
+    private void OnPieceClicked(int pieceIdx)
+    {
+        if (puzzleCompleted || puzzleFailed) return;
+
+        if (selectedPiece >= 0)
+        {
+            pieces[selectedPiece].transform.localScale = Vector3.one;
+        }
+
+        if (selectedPiece == pieceIdx)
+        {
+            selectedPiece = -1;
+            return;
+        }
+
+        selectedPiece = pieceIdx;
+        pieces[pieceIdx].transform.SetAsLastSibling();
+        pieces[pieceIdx].transform.localScale = Vector3.one * 1.15f;
+    }
+
+    private void OnSlotClicked(int slotIdx)
+    {
+        if (puzzleCompleted || puzzleFailed) return;
+
+        if (selectedPiece < 0)
+        {
+            if (slotContents[slotIdx] >= 0)
+            {
+                selectedPiece = slotContents[slotIdx];
+                pieces[selectedPiece].transform.SetAsLastSibling();
+                pieces[selectedPiece].transform.localScale = Vector3.one * 1.15f;
+            }
+            return;
+        }
+
+        int pieceInSlot = slotContents[slotIdx];
+        int pieceSlot = GetSlotOfPiece(selectedPiece);
+
+        if (pieceSlot >= 0) slotContents[pieceSlot] = pieceInSlot;
+        if (pieceInSlot >= 0) pieces[pieceInSlot].GetComponent<RectTransform>().anchorMin = GetBankPosition(pieceInSlot);
+
+        slotContents[slotIdx] = selectedPiece;
+        RectTransform slotRect = slots[slotIdx].GetComponent<RectTransform>();
+        RectTransform pieceRect = pieces[selectedPiece].GetComponent<RectTransform>();
+        pieceRect.anchorMin = slotRect.anchorMin + new Vector2(0.005f, 0.005f);
+        pieceRect.anchorMax = slotRect.anchorMax - new Vector2(0.005f, 0.005f);
+
+        pieces[selectedPiece].transform.localScale = Vector3.one;
+        selectedPiece = -1;
+
+        if (pieceInSlot >= 0 && pieceSlot >= 0)
+        {
+            RectTransform oldSlotRect = slots[pieceSlot].GetComponent<RectTransform>();
+            RectTransform otherPieceRect = pieces[pieceInSlot].GetComponent<RectTransform>();
+            otherPieceRect.anchorMin = oldSlotRect.anchorMin + new Vector2(0.005f, 0.005f);
+            otherPieceRect.anchorMax = oldSlotRect.anchorMax - new Vector2(0.005f, 0.005f);
+        }
+
+        int correctCount = 0;
+        for (int i = 0; i < totalPieces; i++)
+        {
+            if (slotContents[i] == i) correctCount++;
+        }
+
+        if (correctCount == totalPieces)
+        {
+            Complete();
+            return;
+        }
+
+        UpdateStatus(correctCount);
+
+        if (slotContents[slotIdx] != slotIdx)
+        {
+            StartCoroutine(FlashSlot(slotIdx, new Color(1f, 0.3f, 0.3f)));
+        }
+        else
+        {
+            StartCoroutine(FlashSlot(slotIdx, new Color(0.3f, 1f, 0.5f)));
+        }
+    }
+
+    private int GetSlotOfPiece(int pieceIdx)
+    {
+        for (int i = 0; i < totalPieces; i++)
+        {
+            if (slotContents[i] == pieceIdx) return i;
+        }
+        return -1;
+    }
+
+    private Vector2 GetBankPosition(int pieceIdx)
+    {
+        float bankPieceW = 0.9f / totalPieces;
+        return new Vector2(0.05f + pieceIdx * bankPieceW, 0.2f);
+    }
+
+    private System.Collections.IEnumerator FlashSlot(int idx, Color color)
+    {
+        Image img = slots[idx].GetComponent<Image>();
+        Color original = img.color;
+        img.color = new Color(color.r, color.g, color.b, 0.6f);
+        yield return new WaitForSeconds(0.36f);
+        img.color = original;
+    }
+
+    private void UpdateStatus(int correct)
     {
         if (statusText != null)
-            statusText.text = msg;
+            statusText.text = "PATCHCORD ROTO  |  Coloca piezas en orden  |  " + correct + "/" + totalPieces;
     }
 }
