@@ -1,0 +1,12 @@
+{
+    "asset": "b28d3d80b258eba419df4d3f4216e6f8",
+    "fileName": "019f485c-33fb-7e93-a0de-5eb31256a913_Preview.jpg",
+    "prompt": "cyberpunk server rack front panel, detailed circuits, glowing LED indicators, dark metal, industrial, seamless texture style but focused on a panel layout",
+    "negativePrompt": "",
+    "model": "realistic-textures-3-0",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 1400634422,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}

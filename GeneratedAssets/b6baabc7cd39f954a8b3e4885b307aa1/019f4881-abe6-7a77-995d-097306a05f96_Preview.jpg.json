@@ -1,0 +1,12 @@
+{
+    "asset": "b6baabc7cd39f954a8b3e4885b307aa1",
+    "fileName": "019f4881-abe6-7a77-995d-097306a05f96_Preview.jpg",
+    "prompt": "Dark scratched industrial metal, seamless texture, cyberpunk scifi style, dark gray and black colors, tileable",
+    "negativePrompt": "",
+    "model": "realistic-textures-3-0",
+    "modelName": "Realistic Textures 3.0",
+    "customSeed": 320353929,
+    "w3CTraceId": "",
+    "feedback": 0,
+    "refinementMode": "Generation"
+}
