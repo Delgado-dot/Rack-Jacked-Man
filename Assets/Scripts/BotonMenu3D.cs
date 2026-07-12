@@ -82,7 +82,7 @@ public class BotonMenu3D : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         switch (action)
         {
             case ActionType.Jugar:
-                SceneManager.LoadScene("PlayerTest");
+                SceneManager.LoadScene("Nivel_1");
                 break;
             case ActionType.Ranking:
                 Debug.Log("Abrir ranking");

@@ -5,7 +5,7 @@ public class MenuPrincipal : MonoBehaviour
 {
     public void Jugar()
     {
-        SceneManager.LoadScene("PlayerTest");
+        SceneManager.LoadScene("Nivel_1");
     }
 
     public void Ranking()
