@@ -1,10 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// EnemyBug - Enemigo con estados: Patrullar y Persecucion.
-/// Patrulla por el piso actual. Al detectar jugador, lo persigue.
-/// El jugador puede matarlo saltando encima.
-/// </summary>
 [RequireComponent(typeof(CharacterController))]
 public class EnemyBug : MonoBehaviour
 {
@@ -27,9 +22,6 @@ public class EnemyBug : MonoBehaviour
     [SerializeField] private float patrolRadius = 5f;
     [SerializeField] private float patrolWaitTime = 2f;
 
-    [Header("Deteccion de colision")]
-    [SerializeField] private float collisionDistance = 1.2f;
-
     [Header("Cooldown de danio")]
     [SerializeField] private float damageCooldown = 1.5f;
 
@@ -51,25 +43,23 @@ public class EnemyBug : MonoBehaviour
     private void Start()
     {
         enemyController = GetComponent<CharacterController>();
+        enemyController.height = 0.8f;
+        enemyController.radius = 0.3f;
+        enemyController.center = new Vector3(0, 0.4f, 0);
+
         startPosition = transform.position;
 
         if (player == null)
         {
             GameObject playerObj = GameObject.FindWithTag("Player");
             if (playerObj == null)
-            {
                 playerObj = GameObject.Find("Player");
-            }
 
             if (playerObj != null)
             {
                 player = playerObj.transform;
                 playerController = playerObj.GetComponent<CharacterController>();
                 playerHealth = playerObj.GetComponent<PlayerHealth>();
-            }
-            else
-            {
-                Debug.LogWarning("EnemyBug: No se encontro el jugador.");
             }
         }
         else
@@ -84,14 +74,10 @@ public class EnemyBug : MonoBehaviour
     private void Update()
     {
         if (damageTimer > 0f)
-        {
             damageTimer -= Time.deltaTime;
-        }
 
         if (enemyController.isGrounded && velocity.y < 0)
-        {
             velocity.y = -5f;
-        }
 
         switch (estadoActual)
         {
@@ -107,7 +93,6 @@ public class EnemyBug : MonoBehaviour
         enemyController.Move(velocity * Time.deltaTime);
 
         CheckStomp();
-        CheckDamage();
     }
 
     private void UpdatePatrullar()
@@ -129,9 +114,7 @@ public class EnemyBug : MonoBehaviour
         {
             patrolTimer -= Time.deltaTime;
             if (patrolTimer <= 0f)
-            {
                 SetNewPatrolTarget();
-            }
         }
         else
         {
@@ -140,11 +123,7 @@ public class EnemyBug : MonoBehaviour
             if (direction != Vector3.zero)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
-                    targetRotation,
-                    5f * Time.deltaTime
-                );
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5f * Time.deltaTime);
             }
         }
     }
@@ -174,11 +153,7 @@ public class EnemyBug : MonoBehaviour
         if (direction != Vector3.zero)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(
-                transform.rotation,
-                targetRotation,
-                10f * Time.deltaTime
-            );
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 10f * Time.deltaTime);
         }
     }
 
@@ -195,34 +170,33 @@ public class EnemyBug : MonoBehaviour
         if (player == null) return;
 
         float distance = Vector3.Distance(transform.position, player.position);
-        if (distance > collisionDistance) return;
+        if (distance > enemyController.height) return;
 
         bool isFalling = false;
         if (playerController != null)
-        {
             isFalling = playerController.velocity.y < stompThreshold;
-        }
 
         Vector3 toPlayer3D = player.position - transform.position;
         bool isAbove = toPlayer3D.y > stompAngleThreshold;
 
         if (isFalling && isAbove)
-        {
             Destroy(gameObject);
-        }
     }
 
-    private void CheckDamage()
+    private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        if (player == null) return;
-
-        float distance = Vector3.Distance(transform.position, player.position);
-        if (distance > collisionDistance) return;
-
-        if (playerHealth != null && damageTimer <= 0f)
+        if (hit.gameObject.CompareTag("Player"))
         {
-            playerHealth.TakeDamage();
-            damageTimer = damageCooldown;
+            if (damageTimer <= 0f)
+            {
+                PlayerHealth ph = hit.gameObject.GetComponent<PlayerHealth>();
+                if (ph != null)
+                {
+                    ph.TakeDamage();
+                    damageTimer = damageCooldown;
+                    Debug.Log("EnemyBug: Danio al jugador por contacto fisico!");
+                }
+            }
         }
     }
 
@@ -232,10 +206,8 @@ public class EnemyBug : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, detectionRange);
 
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, collisionDistance);
-
-        Gizmos.color = Color.green;
-        Vector3 center = Application.isPlaying ? startPosition : transform.position;
-        Gizmos.DrawWireSphere(center, patrolRadius);
+        Vector3 center = Application.isPlaying ? transform.position + Vector3.up * 0.4f : transform.position;
+        Gizmos.DrawWireSphere(center, 0.3f);
+        Gizmos.DrawWireSphere(center + Vector3.up * 0.8f, 0.3f);
     }
 }
