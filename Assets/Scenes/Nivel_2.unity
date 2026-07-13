@@ -286,7 +286,6 @@ Transform:
   - {fileID: 7589819978652508738}
   - {fileID: 7589819977247383348}
   - {fileID: 7589819977992047663}
-  - {fileID: 7094443403254074429}
   - {fileID: 7589819978155906198}
   - {fileID: 7589819978120322844}
   - {fileID: 7589819977185698034}
@@ -350,7 +349,7 @@ GameObject:
   - component: {fileID: 158785618}
   - component: {fileID: 158785617}
   m_Layer: 0
-  m_Name: Luz_Racks_04
+  m_Name: Luz_Rack_N2_04
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1701,6 +1700,7 @@ Transform:
   - {fileID: 1632183082}
   - {fileID: 566875078}
   - {fileID: 158785619}
+  - {fileID: 7094443403254074429}
   m_Father: {fileID: 2018022894}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1042086464
@@ -2810,7 +2810,6 @@ Transform:
   - {fileID: 543450652938668329}
   - {fileID: 543450652138889988}
   - {fileID: 1091199586327160383}
-  - {fileID: 1435255905986754638}
   m_Father: {fileID: 2018022894}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1786741872
@@ -3045,6 +3044,7 @@ Transform:
   - {fileID: 543450652666419687}
   - {fileID: 543450651895844924}
   - {fileID: 543450651706972381}
+  - {fileID: 1435255905986754638}
   m_Father: {fileID: 2018022894}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2018022893
@@ -3387,7 +3387,7 @@ GameObject:
   - component: {fileID: 1840846998098298614}
   - component: {fileID: 1541015401}
   m_Layer: 0
-  m_Name: password_panel (1)
+  m_Name: Panel_Clave_N2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3482,7 +3482,7 @@ GameObject:
   - component: {fileID: 2265192838759882064}
   - component: {fileID: 2071121812}
   m_Layer: 0
-  m_Name: pencil (1)
+  m_Name: Lapiz_N2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4063,7 +4063,7 @@ GameObject:
   - component: {fileID: 1711813855307049811}
   - component: {fileID: 788705304494586412}
   m_Layer: 0
-  m_Name: screen
+  m_Name: Pantalla_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4082,7 +4082,7 @@ GameObject:
   - component: {fileID: 1711813855282471800}
   - component: {fileID: 3825293238639155795}
   m_Layer: 0
-  m_Name: mouse
+  m_Name: Mouse_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4101,7 +4101,7 @@ GameObject:
   - component: {fileID: 1711813855273593953}
   - component: {fileID: 2266413641752807207}
   m_Layer: 0
-  m_Name: Keyboard
+  m_Name: Teclado_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4120,7 +4120,7 @@ GameObject:
   - component: {fileID: 1711813854858706600}
   - component: {fileID: 6826357964103241485}
   m_Layer: 0
-  m_Name: display
+  m_Name: Monitor_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4215,7 +4215,7 @@ GameObject:
   - component: {fileID: 1711813854984217522}
   - component: {fileID: 1468653798741741664}
   m_Layer: 0
-  m_Name: tablet
+  m_Name: Tablet_N2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4234,7 +4234,7 @@ GameObject:
   - component: {fileID: 1711813854926591529}
   - component: {fileID: 3796969951634967037}
   m_Layer: 0
-  m_Name: display.002
+  m_Name: Monitor_N2_03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4253,7 +4253,7 @@ GameObject:
   - component: {fileID: 1711813854598114969}
   - component: {fileID: 7830090091336386923}
   m_Layer: 0
-  m_Name: box
+  m_Name: Caja_Decorativa_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4272,7 +4272,7 @@ GameObject:
   - component: {fileID: 1711813854596405896}
   - component: {fileID: 4033733207665094823}
   m_Layer: 0
-  m_Name: display.004
+  m_Name: Monitor_N2_04
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4291,7 +4291,7 @@ GameObject:
   - component: {fileID: 1711813854602099835}
   - component: {fileID: 5876519684291303061}
   m_Layer: 0
-  m_Name: desk
+  m_Name: ' Mesa_Control_N2_01'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4310,7 +4310,7 @@ GameObject:
   - component: {fileID: 1711813854553544942}
   - component: {fileID: 3784016915330962348}
   m_Layer: 0
-  m_Name: mousepad
+  m_Name: MousePad_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4348,7 +4348,7 @@ GameObject:
   - component: {fileID: 1711813854357099917}
   - component: {fileID: 1839121171275594693}
   m_Layer: 0
-  m_Name: display.001
+  m_Name: Monitor_N2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4367,7 +4367,7 @@ GameObject:
   - component: {fileID: 1711813854476802155}
   - component: {fileID: 6717569658158912083}
   m_Layer: 0
-  m_Name: pencilbox
+  m_Name: Caja_Lapices_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4386,7 +4386,7 @@ GameObject:
   - component: {fileID: 1711813856254222107}
   - component: {fileID: 101856985136954986}
   m_Layer: 0
-  m_Name: coffie
+  m_Name: ' Cafetera_N2_01'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4405,7 +4405,7 @@ GameObject:
   - component: {fileID: 1711813856201466648}
   - component: {fileID: 1030643952134300295}
   m_Layer: 0
-  m_Name: password_panel
+  m_Name: Panel_Clave_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4424,7 +4424,7 @@ GameObject:
   - component: {fileID: 1711813856341975876}
   - component: {fileID: 2733037466718982509}
   m_Layer: 0
-  m_Name: server_2
+  m_Name: RackGrande_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4443,7 +4443,7 @@ GameObject:
   - component: {fileID: 1711813856348795462}
   - component: {fileID: 625438786066227330}
   m_Layer: 0
-  m_Name: pencil
+  m_Name: Lapiz_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4462,7 +4462,7 @@ GameObject:
   - component: {fileID: 1711813855969203292}
   - component: {fileID: 5753814277744096158}
   m_Layer: 0
-  m_Name: fire_extinguisher
+  m_Name: Extintor_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4481,7 +4481,7 @@ GameObject:
   - component: {fileID: 1711813855893698354}
   - component: {fileID: 5528799027596919378}
   m_Layer: 0
-  m_Name: chair
+  m_Name: Silla_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4500,7 +4500,7 @@ GameObject:
   - component: {fileID: 1711813856079979144}
   - component: {fileID: 4323358400153524845}
   m_Layer: 0
-  m_Name: pc
+  m_Name: PC_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4519,7 +4519,7 @@ GameObject:
   - component: {fileID: 1711813856007702859}
   - component: {fileID: 5047246851218790850}
   m_Layer: 0
-  m_Name: electric cable
+  m_Name: Cable_Electrico_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4538,7 +4538,7 @@ GameObject:
   - component: {fileID: 1711813856022464446}
   - component: {fileID: 3123978108709169836}
   m_Layer: 0
-  m_Name: panel
+  m_Name: Panel_Decorativo_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4557,7 +4557,7 @@ GameObject:
   - component: {fileID: 1711813855679651521}
   - component: {fileID: 8159134778535516150}
   m_Layer: 0
-  m_Name: laptop
+  m_Name: Laptop_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4614,7 +4614,7 @@ GameObject:
   - component: {fileID: 1711813855449690546}
   - component: {fileID: 7989047586696147023}
   m_Layer: 0
-  m_Name: airvent
+  m_Name: Ventilacion_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -4633,7 +4633,7 @@ GameObject:
   - component: {fileID: 1711813855383924639}
   - component: {fileID: 5281328138168934331}
   m_Layer: 0
-  m_Name: server
+  m_Name: Rack_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4792,7 +4792,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1750395869}
+  m_Father: {fileID: 1973240513}
   m_LocalEulerAnglesHint: {x: -90.00001, y: 0, z: -75}
 --- !u!65 &1468653798741741664
 BoxCollider:
@@ -6729,7 +6729,7 @@ GameObject:
   - component: {fileID: 261245581056328481}
   - component: {fileID: 636121331}
   m_Layer: 0
-  m_Name: tablet (1)
+  m_Name: Tablet_N2_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7930,7 +7930,7 @@ GameObject:
   - component: {fileID: 4367097631664185057}
   - component: {fileID: 1555067891}
   m_Layer: 0
-  m_Name: panel (1)
+  m_Name: Panel_Decorativo_N2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8211,7 +8211,7 @@ GameObject:
   - component: {fileID: 3615307177734635282}
   - component: {fileID: 1334725947}
   m_Layer: 0
-  m_Name: server_2 (18)
+  m_Name: RackGrande_N2_19
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8230,7 +8230,7 @@ GameObject:
   - component: {fileID: 3615307177741589536}
   - component: {fileID: 1316072969}
   m_Layer: 0
-  m_Name: server_2 (1)
+  m_Name: RackGrande_N2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8249,7 +8249,7 @@ GameObject:
   - component: {fileID: 3615307177938411944}
   - component: {fileID: 1135924097}
   m_Layer: 0
-  m_Name: server_2 (9)
+  m_Name: RackGrande_N2_10
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8268,7 +8268,7 @@ GameObject:
   - component: {fileID: 3615307177898464481}
   - component: {fileID: 1103783624}
   m_Layer: 0
-  m_Name: server_2 (2)
+  m_Name: RackGrande_N2_03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8287,7 +8287,7 @@ GameObject:
   - component: {fileID: 3615307177551169707}
   - component: {fileID: 1520384642}
   m_Layer: 0
-  m_Name: server_2 (12)
+  m_Name: RackGrande_N2_14
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8306,7 +8306,7 @@ GameObject:
   - component: {fileID: 3615307177497799443}
   - component: {fileID: 1508481338}
   m_Layer: 0
-  m_Name: server_2 (17)
+  m_Name: RackGrande_N2_18
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8325,7 +8325,7 @@ GameObject:
   - component: {fileID: 3615307177681823857}
   - component: {fileID: 1390516824}
   m_Layer: 0
-  m_Name: server_2 (3)
+  m_Name: RackGrande_N2_04
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8344,7 +8344,7 @@ GameObject:
   - component: {fileID: 3615307177621421598}
   - component: {fileID: 1364184119}
   m_Layer: 0
-  m_Name: server_2 (19)
+  m_Name: RackGrande_N2_20
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8363,7 +8363,7 @@ GameObject:
   - component: {fileID: 3615307177408135507}
   - component: {fileID: 1645327226}
   m_Layer: 0
-  m_Name: server_2 (8)
+  m_Name: RackGrande_N2_09
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8382,7 +8382,7 @@ GameObject:
   - component: {fileID: 3615307177408018453}
   - component: {fileID: 1645709884}
   m_Layer: 0
-  m_Name: server_2 (6)
+  m_Name: RackGrande_N2_07
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8401,7 +8401,7 @@ GameObject:
   - component: {fileID: 3615307176921973665}
   - component: {fileID: 2132701576}
   m_Layer: 0
-  m_Name: server_2 (4)
+  m_Name: RackGrande_N2_05
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8420,7 +8420,7 @@ GameObject:
   - component: {fileID: 3615307176938893000}
   - component: {fileID: 2115525857}
   m_Layer: 0
-  m_Name: server_2 (7)
+  m_Name: RackGrande_N2_08
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8439,7 +8439,7 @@ GameObject:
   - component: {fileID: 3615307178610926208}
   - component: {fileID: 440570025}
   m_Layer: 0
-  m_Name: server_2 (10)
+  m_Name: RackGrande_N2_12
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8458,7 +8458,7 @@ GameObject:
   - component: {fileID: 3615307178616582034}
   - component: {fileID: 437837243}
   m_Layer: 0
-  m_Name: server_2 (13)
+  m_Name: 'RackGrande_N2_13 '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8477,7 +8477,7 @@ GameObject:
   - component: {fileID: 3615307178534240501}
   - component: {fileID: 523285212}
   m_Layer: 0
-  m_Name: server_2 (16)
+  m_Name: RackGrande_N2_17
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8496,7 +8496,7 @@ GameObject:
   - component: {fileID: 3615307178546675838}
   - component: {fileID: 511013463}
   m_Layer: 0
-  m_Name: server_2 (14)
+  m_Name: RackGrande_N2_15
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8515,7 +8515,7 @@ GameObject:
   - component: {fileID: 3615307178734455630}
   - component: {fileID: 321370471}
   m_Layer: 0
-  m_Name: server_2 (5)
+  m_Name: RackGrande_N2_06
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8534,7 +8534,7 @@ GameObject:
   - component: {fileID: 3615307178696235332}
   - component: {fileID: 291466093}
   m_Layer: 0
-  m_Name: server_2 (11)
+  m_Name: RackGrande_N2_11
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8553,7 +8553,7 @@ GameObject:
   - component: {fileID: 3615307178725046529}
   - component: {fileID: 278383400}
   m_Layer: 0
-  m_Name: server_2 (15)
+  m_Name: RackGrande_N2_16
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9483,7 +9483,7 @@ GameObject:
   - component: {fileID: 3145804246830505864}
   - component: {fileID: 5819671726119696506}
   m_Layer: 0
-  m_Name: box (1)
+  m_Name: Caja_Decorativa_N2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11720,7 +11720,7 @@ GameObject:
   - component: {fileID: 6347878891499634174}
   - component: {fileID: 53090876}
   m_Layer: 0
-  m_Name: fire_extinguisher (1)
+  m_Name: Extintor_N2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11754,7 +11754,7 @@ GameObject:
   - component: {fileID: 6812431470972979812}
   - component: {fileID: 1042086464}
   m_Layer: 0
-  m_Name: server (3)
+  m_Name: Rack_N2_04
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11773,7 +11773,7 @@ GameObject:
   - component: {fileID: 6812431470395913935}
   - component: {fileID: 464930539}
   m_Layer: 0
-  m_Name: server (4)
+  m_Name: Rack_N2_05
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11792,7 +11792,7 @@ GameObject:
   - component: {fileID: 6812431470399748522}
   - component: {fileID: 466340238}
   m_Layer: 0
-  m_Name: server (7)
+  m_Name: Rack_N2_08
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11811,7 +11811,7 @@ GameObject:
   - component: {fileID: 6812431470096245621}
   - component: {fileID: 97702737}
   m_Layer: 0
-  m_Name: server (8)
+  m_Name: Rack_N2_09
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11830,7 +11830,7 @@ GameObject:
   - component: {fileID: 6812431470143618757}
   - component: {fileID: 143625953}
   m_Layer: 0
-  m_Name: server (9)
+  m_Name: Rack_N2_10
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11849,7 +11849,7 @@ GameObject:
   - component: {fileID: 6812431472056229313}
   - component: {fileID: 2123361765}
   m_Layer: 0
-  m_Name: server (10)
+  m_Name: Rack_N2_11
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11868,7 +11868,7 @@ GameObject:
   - component: {fileID: 6812431471592573798}
   - component: {fileID: 1658993474}
   m_Layer: 0
-  m_Name: server (6)
+  m_Name: Rack_N2_07
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11887,7 +11887,7 @@ GameObject:
   - component: {fileID: 6812431471564638715}
   - component: {fileID: 1566112223}
   m_Layer: 0
-  m_Name: server (12)
+  m_Name: Rack_N2_12
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11906,7 +11906,7 @@ GameObject:
   - component: {fileID: 6812431471478273908}
   - component: {fileID: 1479722832}
   m_Layer: 0
-  m_Name: server (5)
+  m_Name: 'Rack_N2_06 '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11925,7 +11925,7 @@ GameObject:
   - component: {fileID: 6812431471442491866}
   - component: {fileID: 1511049726}
   m_Layer: 0
-  m_Name: server (11)
+  m_Name: Rack_N2_12
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11944,7 +11944,7 @@ GameObject:
   - component: {fileID: 6812431471094334410}
   - component: {fileID: 1095807982}
   m_Layer: 0
-  m_Name: server (2)
+  m_Name: Rack_N2_03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11963,7 +11963,7 @@ GameObject:
   - component: {fileID: 6812431471274494809}
   - component: {fileID: 1276623741}
   m_Layer: 0
-  m_Name: server (1)
+  m_Name: Rack_N2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11982,7 +11982,7 @@ GameObject:
   - component: {fileID: 6812431471209093490}
   - component: {fileID: 1208592726}
   m_Layer: 0
-  m_Name: server (13)
+  m_Name: Rack_N2_14
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12461,7 +12461,7 @@ GameObject:
   - component: {fileID: 5893797823309219283}
   - component: {fileID: 539333978}
   m_Layer: 0
-  m_Name: electric cable (1)
+  m_Name: Cable_Electrico_N2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15369,7 +15369,7 @@ GameObject:
   - component: {fileID: 8727793362105457565}
   - component: {fileID: 542268000}
   m_Layer: 0
-  m_Name: airvent (8)
+  m_Name: Ventilacion_N2_09
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15388,7 +15388,7 @@ GameObject:
   - component: {fileID: 8727793362031191131}
   - component: {fileID: 637347238}
   m_Layer: 0
-  m_Name: airvent (4)
+  m_Name: Ventilacion_N2_05
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15407,7 +15407,7 @@ GameObject:
   - component: {fileID: 8727793361735036921}
   - component: {fileID: 438709764}
   m_Layer: 0
-  m_Name: airvent (6)
+  m_Name: Ventilacion_N2_07
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15426,7 +15426,7 @@ GameObject:
   - component: {fileID: 8727793361699316851}
   - component: {fileID: 402990478}
   m_Layer: 0
-  m_Name: airvent (7)
+  m_Name: Ventilacion_N2_08
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15445,7 +15445,7 @@ GameObject:
   - component: {fileID: 8727793361875782386}
   - component: {fileID: 310561551}
   m_Layer: 0
-  m_Name: airvent (1)
+  m_Name: Ventilacion_N2_02
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15464,7 +15464,7 @@ GameObject:
   - component: {fileID: 8727793361840174912}
   - component: {fileID: 274888381}
   m_Layer: 0
-  m_Name: airvent (5)
+  m_Name: Ventilacion_N2_06
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15483,7 +15483,7 @@ GameObject:
   - component: {fileID: 8727793361462429395}
   - component: {fileID: 199722798}
   m_Layer: 0
-  m_Name: airvent (2)
+  m_Name: Ventilacion_N2_03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15502,7 +15502,7 @@ GameObject:
   - component: {fileID: 8727793363302029613}
   - component: {fileID: 2042468560}
   m_Layer: 0
-  m_Name: airvent (3)
+  m_Name: Ventilacion_N2_04
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15536,7 +15536,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 109272733}
+  m_Father: {fileID: 978863197}
   m_LocalEulerAnglesHint: {x: 0, y: -180.00002, z: 0}
 --- !u!4 &7129599250507699006
 Transform:
@@ -15866,7 +15866,7 @@ GameObject:
   - component: {fileID: 8232486056332457810}
   - component: {fileID: 276931456}
   m_Layer: 0
-  m_Name: security_camera (2)
+  m_Name: CamaraSeguridad_N2_03
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
