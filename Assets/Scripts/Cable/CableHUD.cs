@@ -9,7 +9,6 @@ public class CableHUD : MonoBehaviour
     [SerializeField] private TMP_Text healthText;
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private TMP_Text comboText;
-    [SerializeField] private TMP_Text cableStateText;
     [SerializeField] private Image damageOverlay;
     [SerializeField] private Image powerIndicator;
 
@@ -21,7 +20,6 @@ public class CableHUD : MonoBehaviour
     private float scorePopTimer = 0f;
     private float damageOverlayTimer = 0f;
     private int lastScore = 0;
-    private CableGroup[] cableGroups;
 
     private void Start()
     {
@@ -36,8 +34,6 @@ public class CableHUD : MonoBehaviour
             UpdateScore(playerController.GetScore());
         }
 
-        cableGroups = FindObjectsByType<CableGroup>(FindObjectsInactive.Exclude);
-
         if (damageOverlay != null)
             damageOverlay.enabled = false;
 
@@ -47,7 +43,6 @@ public class CableHUD : MonoBehaviour
 
     private void Update()
     {
-        UpdateCableStates();
         UpdateComboDisplay();
         UpdatePowerIndicator();
         UpdateDamageOverlay();
@@ -97,27 +92,6 @@ public class CableHUD : MonoBehaviour
         {
             comboText.gameObject.SetActive(false);
         }
-    }
-
-    private void UpdateCableStates()
-    {
-        if (cableStateText == null || cableGroups == null) return;
-
-        string states = "";
-        for (int i = 0; i < cableGroups.Length; i++)
-        {
-            CableGroup.GroupState state = cableGroups[i].GetCurrentState();
-            string color = state switch
-            {
-                CableGroup.GroupState.Idle => "<color=green>OFF</color>",
-                CableGroup.GroupState.Warning => "<color=yellow>ADVERTENCIA</color>",
-                CableGroup.GroupState.Active => "<color=red>Electrificado</color>",
-                CableGroup.GroupState.Cooldown => "<color=gray>Cooldown</color>",
-                _ => "???"
-            };
-            states += "Cable " + (i + 1) + ": " + color + "\n";
-        }
-        cableStateText.text = states;
     }
 
     private void UpdatePowerIndicator()
