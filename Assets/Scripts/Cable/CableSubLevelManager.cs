@@ -6,16 +6,7 @@ public class CableSubLevelManager : MonoBehaviour
     [SerializeField] private CableGroup[] cableGroups;
 
     [Header("Electrificacion")]
-    [SerializeField] private int maxCablesElectrificados = 2;
-
-    [Header("Dificultad")]
-    [SerializeField] private float intervaloAumentoDificultad = 30f;
-    [SerializeField] private float reduccionIntervaloSpawner = 0.1f;
-    [SerializeField] private int maxCablesPorNivel = 4;
-    private float timerDificultad;
-
-    [Header("Referencias")]
-    [SerializeField] private EnemySpawnerCable spawner;
+    [SerializeField] private int maxActiveGroups = 2;
 
     private void Start()
     {
@@ -24,49 +15,8 @@ public class CableSubLevelManager : MonoBehaviour
             cableGroups = FindObjectsByType<CableGroup>(FindObjectsInactive.Exclude);
         }
 
-        if (spawner == null)
-        {
-            spawner = FindAnyObjectByType<EnemySpawnerCable>();
-        }
+        CableGroup.SetMaxActiveGroups(maxActiveGroups);
 
-        maxCablesElectrificados = Mathf.Max(1, maxCablesElectrificados);
-        ElectrifiedCable.SetMaxActiveCables(maxCablesElectrificados);
-        timerDificultad = intervaloAumentoDificultad;
-
-        Debug.Log("[CableSubLevelManager] Start: " + cableGroups.Length + " CableGroups, " +
-            ElectrifiedCable.GetElectrifiedCount() + "/" + maxCablesElectrificados + " cables activos, " +
-            "spawner=" + (spawner != null ? "OK" : "null"));
-
-        int totalElectrifiedCables = FindObjectsByType<ElectrifiedCable>(FindObjectsInactive.Exclude).Length;
-        Debug.Log("[CableSubLevelManager] ElectrifiedCables en escena: " + totalElectrifiedCables);
+        Debug.Log("[CableSubLevelManager] Start: " + cableGroups.Length + " CableGroups, max activos=" + maxActiveGroups);
     }
-
-    private void Update()
-    {
-        timerDificultad -= Time.deltaTime;
-        if (timerDificultad <= 0f)
-        {
-            AumentarDificultad();
-            timerDificultad = intervaloAumentoDificultad;
-        }
-    }
-
-    private void AumentarDificultad()
-    {
-        if (spawner != null)
-        {
-            spawner.ReducirIntervalo(reduccionIntervaloSpawner);
-        }
-
-        if (maxCablesElectrificados < maxCablesPorNivel)
-        {
-            maxCablesElectrificados++;
-            ElectrifiedCable.SetMaxActiveCables(maxCablesElectrificados);
-        }
-
-        Debug.Log("[CableSubLevelManager] Dificultad aumentada. Max cables activos: " + maxCablesElectrificados);
-    }
-
-    public CableGroup[] GetCableGroups() => cableGroups;
-    public int GetMaxCablesElectrificados() => maxCablesElectrificados;
 }

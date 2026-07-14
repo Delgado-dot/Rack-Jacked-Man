@@ -31,7 +31,6 @@ public class EnemyBug : MonoBehaviour
 
     private CharacterController enemyController;
     private CharacterController playerController;
-    private PlayerHealth playerHealth;
     private Vector3 velocity;
     private float gravity = -20f;
     private float damageTimer = 0f;
@@ -59,13 +58,11 @@ public class EnemyBug : MonoBehaviour
             {
                 player = playerObj.transform;
                 playerController = playerObj.GetComponent<CharacterController>();
-                playerHealth = playerObj.GetComponent<PlayerHealth>();
             }
         }
         else
         {
             playerController = player.GetComponent<CharacterController>();
-            playerHealth = player.GetComponent<PlayerHealth>();
         }
 
         SetNewPatrolTarget();
@@ -189,13 +186,9 @@ public class EnemyBug : MonoBehaviour
         {
             if (damageTimer <= 0f)
             {
-                PlayerHealth ph = hit.gameObject.GetComponent<PlayerHealth>();
-                if (ph != null)
-                {
-                    ph.TakeDamage();
-                    damageTimer = damageCooldown;
-                    Debug.Log("EnemyBug: Danio al jugador por contacto fisico!");
-                }
+                PlayerHealth.TakeDamage();
+                damageTimer = damageCooldown;
+                Debug.Log("EnemyBug: Danio al jugador por contacto fisico!");
             }
         }
     }

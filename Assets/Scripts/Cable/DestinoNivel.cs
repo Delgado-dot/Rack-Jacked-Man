@@ -3,14 +3,13 @@ using UnityEngine.SceneManagement;
 
 public class DestinoNivel : MonoBehaviour
 {
-    [Header("Configuracion")]
     [SerializeField] private string siguienteNivel = "";
 
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player")) return;
 
-        Debug.Log("Destino alcanzado.");
+        Debug.Log("[DestinoNivel] Nivel completado.");
 
         if (!string.IsNullOrEmpty(siguienteNivel))
         {
@@ -26,10 +25,6 @@ public class DestinoNivel : MonoBehaviour
             else if (GameManager.Instance != null)
             {
                 GameManager.Instance.LevelCompleted();
-            }
-            else
-            {
-                Debug.Log("No hay siguiente nivel configurado.");
             }
         }
     }

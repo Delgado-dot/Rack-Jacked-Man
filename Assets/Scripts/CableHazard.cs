@@ -27,7 +27,6 @@ public class CableHazard : MonoBehaviour
     [Header("References")]
     private Renderer cableRenderer;
     private bool jugadorEnCable = false;
-    private PlayerHealth playerHealth;
 
     private void Awake()
     {
@@ -45,12 +44,12 @@ public class CableHazard : MonoBehaviour
 
     private void Update()
     {
-        if (jugadorEnCable && playerHealth != null && estadoActual == EstadoCable.ELECTRIFICADO)
+        if (jugadorEnCable && estadoActual == EstadoCable.ELECTRIFICADO)
         {
             danioTimer -= Time.deltaTime;
             if (danioTimer <= 0f)
             {
-                playerHealth.TakeDamage();
+                PlayerHealth.TakeDamage();
                 danioTimer = danioIntervalo;
             }
         }
@@ -120,12 +119,11 @@ public class CableHazard : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             jugadorEnCable = true;
-            playerHealth = other.GetComponent<PlayerHealth>();
             danioTimer = 0f;
 
-            if (estadoActual == EstadoCable.ELECTRIFICADO && playerHealth != null)
+            if (estadoActual == EstadoCable.ELECTRIFICADO)
             {
-                playerHealth.TakeDamage();
+                PlayerHealth.TakeDamage();
                 danioTimer = danioIntervalo;
             }
         }
@@ -136,7 +134,6 @@ public class CableHazard : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             jugadorEnCable = false;
-            playerHealth = null;
         }
     }
 }

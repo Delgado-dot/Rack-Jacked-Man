@@ -1,27 +1,35 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class CableGroup : MonoBehaviour
 {
     public enum GroupState { Idle, Warning, Active, Cooldown }
 
-    [Header("Cable References")]
-    [SerializeField] private ElectrifiedCable cablePrincipal;
-    [SerializeField] private ElectrifiedCable extremoIzquierdo;
-    [SerializeField] private ElectrifiedCable extremoDerecho;
+    [Header("Cables (Component con Renderer)")]
+    [SerializeField] private Component cablePrincipal;
+    [SerializeField] private Component extremoIzquierdo;
+    [SerializeField] private Component extremoDerecho;
 
-    [Header("Warning Phase")]
-    [SerializeField] private float warningDuration = 5f;
-    [SerializeField] private int warningSteps = 5;
+    [Header("Warning")]
+    [SerializeField] private float warningDuration = 3f;
+    [SerializeField] private int warningParpadeos = 5;
 
-    [Header("Active Phase")]
-    [SerializeField] private float activeDuration = 2f;
+    [Header("Active")]
+    [SerializeField] private float activeDuration = 2.5f;
 
-    [Header("Cooldown Phase")]
+    [Header("Cooldown")]
     [SerializeField] private float cooldownDuration = 0.5f;
 
-    [Header("Idle Timing")]
+    [Header("Timing")]
     [SerializeField] private float minTimeBetweenCycles = 8f;
     [SerializeField] private float maxTimeBetweenCycles = 20f;
+
+    [Header("Danio")]
+    [SerializeField] private int damageAmount = 1;
+    [SerializeField] private float damageCooldown = 1f;
+
+    [Header("Color")]
+    [SerializeField] private Color electricColor = new Color(0f, 0.7f, 1f, 1f);
 
     [Header("Test")]
     [SerializeField] private bool testMode = false;
@@ -29,35 +37,32 @@ public class CableGroup : MonoBehaviour
     private GroupState currentState = GroupState.Idle;
     private float stateTimer = 0f;
     private float nextCycleTime;
-    private int currentWarningStep = 0;
-    private bool groupCountClaimed = false;
-    private ElectrifiedCable[] allCables;
+    private float nextDamageTime = 0f;
+    private Color originalColor;
+
+    private Renderer[] cables;
+    private Material[] materials;
+
+    private static int activeGroupCount = 0;
+    private static int maxActiveGroups = 2;
+    private bool isActiveGroup = false;
 
     private void Awake()
     {
-        AutoDiscoverCables();
-        ForceValidValues();
-
-        foreach (var cable in allCables)
-        {
-            if (cable != null)
-                cable.SetManagedByGroup(true);
-        }
-
-        Debug.Log("[CableGroup] " + name + " Awake: " + CountNonNullCables() + "/3 cables asignados");
+        CollectRenderers();
+        CloneMaterials();
+        ClampValues();
     }
 
     private void Start()
     {
         ScheduleNextCycle();
-        Debug.Log("[CableGroup] " + name + " Start: próximo ciclo en " + (nextCycleTime - Time.time) + "s");
     }
 
     private void Update()
     {
         if (testMode && Input.GetKeyDown(KeyCode.T))
         {
-            Debug.Log("[CableGroup] " + name + " TEST: Forzar activación");
             ForceActivate();
         }
 
@@ -78,195 +83,200 @@ public class CableGroup : MonoBehaviour
         }
     }
 
-    private void AutoDiscoverCables()
+    // ─── Coleccionar Renderers ────────────────────────────────────
+
+    private void CollectRenderers()
     {
-        if (cablePrincipal != null && extremoIzquierdo != null && extremoDerecho != null)
+        List<Renderer> list = new List<Renderer>();
+
+        Component[] refs = { cablePrincipal, extremoIzquierdo, extremoDerecho };
+        foreach (Component c in refs)
         {
-            allCables = new ElectrifiedCable[] { cablePrincipal, extremoIzquierdo, extremoDerecho };
+            if (c == null) continue;
+            Renderer r = c.GetComponent<Renderer>();
+            if (r == null) r = c.GetComponentInChildren<Renderer>();
+            if (r != null) list.Add(r);
+        }
+
+        if (list.Count > 0)
+        {
+            cables = list.ToArray();
             return;
         }
 
-        Debug.LogWarning("[CableGroup] " + name + ": Referencias a ElectrifiedCables son null. Buscando hijos...");
-
-        ElectrifiedCable[] found = GetComponentsInChildren<ElectrifiedCable>();
-
-        if (found.Length >= 3)
-        {
-            cablePrincipal = found[0];
-            extremoIzquierdo = found[1];
-            extremoDerecho = found[2];
-            allCables = new ElectrifiedCable[] { cablePrincipal, extremoIzquierdo, extremoDerecho };
-            Debug.Log("[CableGroup] " + name + ": Encontrados " + found.Length + " ElectrifiedCables en hijos");
-        }
-        else if (found.Length > 0)
-        {
-            allCables = found;
-            Debug.LogWarning("[CableGroup] " + name + ": Solo " + found.Length + " ElectrifiedCables encontrados (se necesitan 3)");
-        }
-        else
-        {
-            ElectrifiedCable[] sceneCables = FindObjectsByType<ElectrifiedCable>(FindObjectsInactive.Exclude);
-            allCables = new ElectrifiedCable[0];
-            Debug.LogWarning("[CableGroup] " + name + ": No se encontraron ElectrifiedCables como hijos. Fallback deshabilitado para evitar conflictos entre groups.");
-        }
+        Renderer[] found = GetComponentsInChildren<Renderer>();
+        cables = found.Length > 0 ? found : new Renderer[0];
     }
 
-    private void ForceValidValues()
+    private void CloneMaterials()
     {
-        warningDuration = Mathf.Max(1f, warningDuration);
-        warningSteps = Mathf.Max(2, warningSteps);
+        materials = new Material[cables.Length];
+        for (int i = 0; i < cables.Length; i++)
+        {
+            if (cables[i] == null) continue;
+            materials[i] = new Material(cables[i].material);
+            cables[i].material = materials[i];
+        }
+
+        if (materials.Length > 0 && materials[0] != null)
+            originalColor = materials[0].color;
+    }
+
+    private void ClampValues()
+    {
+        warningDuration = Mathf.Max(0.5f, warningDuration);
+        warningParpadeos = Mathf.Max(1, warningParpadeos);
         activeDuration = Mathf.Max(0.5f, activeDuration);
         cooldownDuration = Mathf.Max(0.1f, cooldownDuration);
         minTimeBetweenCycles = Mathf.Max(1f, minTimeBetweenCycles);
         maxTimeBetweenCycles = Mathf.Max(minTimeBetweenCycles + 1f, maxTimeBetweenCycles);
     }
 
-    private int CountNonNullCables()
-    {
-        int count = 0;
-        if (allCables == null) return 0;
-        foreach (var c in allCables)
-            if (c != null) count++;
-        return count;
-    }
+    // ─── Idle ─────────────────────────────────────────────────────
 
     private void UpdateIdle()
     {
-        if (Time.time >= nextCycleTime && ElectrifiedCable.GetElectrifiedCount() < ElectrifiedCable.GetMaxActiveCables())
+        if (Time.time >= nextCycleTime && activeGroupCount < maxActiveGroups)
         {
-            Debug.Log("[CableGroup] " + name + " IDLE→WARNING (electrifiedCount=" + ElectrifiedCable.GetElectrifiedCount() + ", max=" + ElectrifiedCable.GetMaxActiveCables() + ")");
-            StartWarning();
+            EnterWarning();
         }
     }
 
-    private void StartWarning()
+    // ─── Warning ──────────────────────────────────────────────────
+
+    private void EnterWarning()
     {
         currentState = GroupState.Warning;
         stateTimer = 0f;
-        currentWarningStep = 0;
-        ElectrifiedCable.IncrementElectrifiedCount();
-        groupCountClaimed = true;
-        SetAllCables(true, 0f);
-        Debug.Log("[CableGroup] " + name + " → WARNING (duración=" + warningDuration + "s)");
     }
 
     private void UpdateWarning()
     {
         stateTimer += Time.deltaTime;
         float progress = Mathf.Clamp01(stateTimer / warningDuration);
+        int paso = Mathf.FloorToInt(progress * warningParpadeos);
+        bool encendido = paso % 2 == 0;
 
-        int step = Mathf.FloorToInt(progress * warningSteps);
-        if (step != currentWarningStep)
-            currentWarningStep = step;
-
-        float t = (float)currentWarningStep / Mathf.Max(1, warningSteps - 1);
-        SetAllCables(true, t);
+        SetColor(encendido ? electricColor : originalColor);
 
         if (stateTimer >= warningDuration)
         {
-            Debug.Log("[CableGroup] " + name + " WARNING→ACTIVE");
-            StartActive();
+            EnterActive();
         }
     }
 
-    private void StartActive()
+    // ─── Active ───────────────────────────────────────────────────
+
+    private void EnterActive()
     {
         currentState = GroupState.Active;
         stateTimer = 0f;
-        SetAllCables(true, 1f);
-        SetAllCanDamage(true);
-        Debug.Log("[CableGroup] " + name + " → ACTIVE (daño ON, duración=" + activeDuration + "s, cables=" + CountNonNullCables() + ")");
+        nextDamageTime = 0f;
+        isActiveGroup = true;
+        activeGroupCount++;
+
+        SetColor(electricColor);
     }
 
     private void UpdateActive()
     {
         stateTimer += Time.deltaTime;
-
         if (stateTimer >= activeDuration)
         {
-            Debug.Log("[CableGroup] " + name + " ACTIVE→COOLDOWN");
-            StartCooldown();
+            EnterCooldown();
         }
     }
 
-    private void StartCooldown()
+    // ─── Cooldown ─────────────────────────────────────────────────
+
+    private void EnterCooldown()
     {
         currentState = GroupState.Cooldown;
         stateTimer = 0f;
-        SetAllCanDamage(false);
-        if (groupCountClaimed)
+
+        if (isActiveGroup)
         {
-            ElectrifiedCable.DecrementElectrifiedCount();
-            groupCountClaimed = false;
+            activeGroupCount = Mathf.Max(0, activeGroupCount - 1);
+            isActiveGroup = false;
         }
-        Debug.Log("[CableGroup] " + name + " → COOLDOWN (duración=" + cooldownDuration + "s)");
     }
 
     private void UpdateCooldown()
     {
         stateTimer += Time.deltaTime;
         float t = 1f - Mathf.Clamp01(stateTimer / cooldownDuration);
-        SetAllCables(true, t);
+        SetColor(Color.Lerp(originalColor, electricColor, t));
 
         if (stateTimer >= cooldownDuration)
         {
-            Debug.Log("[CableGroup] " + name + " COOLDOWN→IDLE");
-            EndCooldown();
+            EnterIdle();
         }
     }
 
-    private void EndCooldown()
+    private void EnterIdle()
     {
         currentState = GroupState.Idle;
-        SetAllCables(false, 0f);
+        SetColor(originalColor);
         ScheduleNextCycle();
-        Debug.Log("[CableGroup] " + name + " → IDLE (próximo en " + (nextCycleTime - Time.time) + "s)");
     }
+
+    // ─── Danio ────────────────────────────────────────────────────
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+        if (currentState != GroupState.Active) return;
+        if (Time.time < nextDamageTime) return;
+
+        SubLevelPlayerController slpc = other.GetComponent<SubLevelPlayerController>();
+        if (slpc != null)
+        {
+            slpc.TakeDamage(damageAmount);
+        }
+        else
+        {
+            PlayerHealth.TakeDamage(damageAmount);
+        }
+
+        nextDamageTime = Time.time + damageCooldown;
+    }
+
+    // ─── Utilidades ───────────────────────────────────────────────
 
     private void ScheduleNextCycle()
     {
         nextCycleTime = Time.time + Random.Range(minTimeBetweenCycles, maxTimeBetweenCycles);
     }
 
-    private void SetAllCables(bool electrified, float intensity)
+    private void SetColor(Color color)
     {
-        if (allCables == null) return;
-        foreach (var cable in allCables)
+        for (int i = 0; i < materials.Length; i++)
         {
-            if (cable != null)
-                cable.SetElectrified(electrified, intensity);
+            if (materials[i] != null)
+                materials[i].color = color;
         }
     }
 
-    private void SetAllCanDamage(bool value)
-    {
-        if (allCables == null) return;
-        int setCount = 0;
-        foreach (var cable in allCables)
-        {
-            if (cable != null)
-            {
-                cable.SetCanDamage(value);
-                setCount++;
-            }
-        }
-        Debug.Log("[CableGroup] " + name + " SetCanDamage(" + value + ") → " + setCount + " cables actualizados");
-    }
+    // ─── API publica ──────────────────────────────────────────────
 
     public GroupState GetCurrentState() => currentState;
 
     public void ForceActivate()
     {
         if (currentState != GroupState.Idle) return;
-        StartWarning();
+        EnterWarning();
     }
+
+    public static void SetMaxActiveGroups(int value) => maxActiveGroups = Mathf.Max(1, value);
+
+    // ─── Lifecycle ────────────────────────────────────────────────
 
     private void OnDestroy()
     {
-        if (groupCountClaimed)
+        if (isActiveGroup)
         {
-            ElectrifiedCable.DecrementElectrifiedCount();
-            groupCountClaimed = false;
+            activeGroupCount = Mathf.Max(0, activeGroupCount - 1);
+            isActiveGroup = false;
         }
     }
 }

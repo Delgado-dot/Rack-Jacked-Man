@@ -55,7 +55,13 @@ public class SubLevelGameManager : MonoBehaviour
     {
         if (isGameOver) return;
         isGameOver = true;
-        Debug.Log("[SubLevelGameManager] Game Over");
+
+        if (cableManager != null)
+            cableManager.enabled = false;
+        if (spawner != null)
+            spawner.enabled = false;
+
+        Debug.Log("[SubLevelGameManager] Game Over - spawner y cableManager deshabilitados");
     }
 
     public void CompleteLevel()

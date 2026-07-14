@@ -41,19 +41,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        if (playerHealth == null)
-        {
-            GameObject player = GameObject.Find("Player");
-            if (player != null)
-            {
-                playerHealth = player.GetComponent<PlayerHealth>();
-            }
-        }
-
-        if (playerHealth != null)
-        {
-            initialSpawnPosition = playerHealth.transform.position;
-        }
+        FindPlayerHealth();
 
         if (lastCheckpoint == null)
         {
@@ -63,6 +51,18 @@ public class GameManager : MonoBehaviour
                 lastCheckpoint = rackStart.transform;
                 initialSpawnPosition = rackStart.transform.position;
             }
+        }
+    }
+
+    private void FindPlayerHealth()
+    {
+        if (playerHealth != null) return;
+
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player != null)
+        {
+            playerHealth = player.GetComponent<PlayerHealth>();
+            initialSpawnPosition = player.transform.position;
         }
     }
 
@@ -76,6 +76,9 @@ public class GameManager : MonoBehaviour
     {
         if (isGameOver) return;
 
+        if (playerHealth == null)
+            FindPlayerHealth();
+
         Vector3 respawnPosition = initialSpawnPosition;
 
         if (lastCheckpoint != null)
@@ -86,7 +89,7 @@ public class GameManager : MonoBehaviour
         if (playerHealth != null)
         {
             playerHealth.transform.position = respawnPosition;
-            playerHealth.ResetDeath();
+            PlayerHealth.ResetDeath();
             Debug.Log("Jugador respawneado en: " + respawnPosition);
         }
     }

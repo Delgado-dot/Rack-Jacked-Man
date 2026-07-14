@@ -17,7 +17,6 @@ public class CableHUD : MonoBehaviour
     [SerializeField] private float scorePopDuration = 0.3f;
     [SerializeField] private float damageOverlayDuration = 0.3f;
 
-    private PlayerHealth playerHealth;
     private SubLevelPlayerController playerController;
     private float scorePopTimer = 0f;
     private float damageOverlayTimer = 0f;
@@ -26,14 +25,10 @@ public class CableHUD : MonoBehaviour
 
     private void Start()
     {
-        playerHealth = FindAnyObjectByType<PlayerHealth>();
         playerController = FindAnyObjectByType<SubLevelPlayerController>();
 
-        if (playerHealth != null)
-        {
-            playerHealth.OnHealthChanged += UpdateHealth;
-            UpdateHealth(playerHealth.GetCurrentLives(), playerHealth.GetMaxLives());
-        }
+        PlayerHealth.OnHealthChanged += UpdateHealth;
+        UpdateHealth(PlayerHealth.GetCurrentLives(), PlayerHealth.GetMaxLives());
 
         if (playerController != null)
         {
@@ -152,8 +147,7 @@ public class CableHUD : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (playerHealth != null)
-            playerHealth.OnHealthChanged -= UpdateHealth;
+        PlayerHealth.OnHealthChanged -= UpdateHealth;
 
         if (playerController != null)
             playerController.OnScoreChanged -= UpdateScore;
