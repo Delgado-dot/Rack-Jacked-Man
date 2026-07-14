@@ -114,7 +114,6 @@ public class SubLevelPlayerController : MonoBehaviour
 
         teleportAction = new InputAction("Teleport", InputActionType.Button);
         teleportAction.AddBinding("<Mouse>/leftButton");
-        teleportAction.performed += ctx => TryTeleport();
         teleportAction.Enable();
 
         shootAction = new InputAction("Shoot", InputActionType.Button);
@@ -150,6 +149,9 @@ public class SubLevelPlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (teleportAction.triggered)
+            TryTeleport();
+
         ApplyMovement();
         UpdateCamera();
         UpdateDamageFeedback();
