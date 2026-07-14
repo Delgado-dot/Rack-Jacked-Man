@@ -18,7 +18,7 @@ public class EnemyCable : MonoBehaviour
 
     private void Update()
     {
-        transform.position += Vector3.back * velocidad * Time.deltaTime;
+        transform.position += Vector3.forward * velocidad * Time.deltaTime;
 
         float distancia = Vector3.Distance(transform.position, posicionInicial);
         if (distancia > distanciaMaxima)
@@ -26,6 +26,8 @@ public class EnemyCable : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
+    private bool destroyed = false;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -36,12 +38,34 @@ public class EnemyCable : MonoBehaviour
         {
             playerController.TakeDamage(danoAlContacto);
         }
+        else
+        {
+            PlayerHealth health = other.GetComponent<PlayerHealth>();
+            if (health != null) health.TakeDamage();
+        }
 
-        Destroy(gameObject);
+        DestroyEnemy();
     }
 
     public void TakeDamage(int amount)
     {
+        DestroyEnemy();
+    }
+
+    private void DestroyEnemy()
+    {
+        if (destroyed) return;
+        destroyed = true;
+        EnemySpawnerCable.DecrementarEnemigos();
         Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        if (!destroyed)
+        {
+            destroyed = true;
+            EnemySpawnerCable.DecrementarEnemigos();
+        }
     }
 }

@@ -25,6 +25,8 @@ public class CableSegment : MonoBehaviour
     private bool jugadorEnZona = false;
     private SubLevelPlayerController playerController;
 
+    private PlayerHealth playerHealth;
+
     private void Awake()
     {
         rend = GetComponent<Renderer>();
@@ -39,12 +41,19 @@ public class CableSegment : MonoBehaviour
 
     private void Update()
     {
-        if (jugadorEnZona && estadoActual == Estado.ELECTRIFICADO && playerController != null)
+        if (jugadorEnZona && estadoActual == Estado.ELECTRIFICADO)
         {
             timerDanio -= Time.deltaTime;
             if (timerDanio <= 0f)
             {
-                playerController.TakeDamage(danoPorSegundo);
+                if (playerController != null)
+                {
+                    playerController.TakeDamage(danoPorSegundo);
+                }
+                else if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage();
+                }
                 timerDanio = danioCooldown;
             }
         }
@@ -93,11 +102,19 @@ public class CableSegment : MonoBehaviour
 
         jugadorEnZona = true;
         playerController = other.GetComponent<SubLevelPlayerController>();
+        playerHealth = other.GetComponent<PlayerHealth>();
         timerDanio = 0f;
 
-        if (estadoActual == Estado.ELECTRIFICADO && playerController != null)
+        if (estadoActual == Estado.ELECTRIFICADO)
         {
-            playerController.TakeDamage(danoPorSegundo);
+            if (playerController != null)
+            {
+                playerController.TakeDamage(danoPorSegundo);
+            }
+            else if (playerHealth != null)
+            {
+                playerHealth.TakeDamage();
+            }
             timerDanio = danioCooldown;
         }
     }
@@ -107,5 +124,6 @@ public class CableSegment : MonoBehaviour
         if (!other.CompareTag("Player")) return;
         jugadorEnZona = false;
         playerController = null;
+        playerHealth = null;
     }
 }

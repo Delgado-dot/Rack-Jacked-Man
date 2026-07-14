@@ -15,13 +15,22 @@ public class SubLevelPlayerController : MonoBehaviour
     [SerializeField] private int maxHealth = 3;
     private int currentHealth;
 
-    // Integration: Connect to Kevin's health system
-    // public event System.Action<int> OnHealthChanged;
-    // public event System.Action OnPlayerDeath;
+    [Header("Damage Feedback")]
+    [SerializeField] private float damageFlashDuration = 0.2f;
+    [SerializeField] private float damageShakeIntensity = 0.15f;
+    [SerializeField] private float invulnerabilityDuration = 1.0f;
+    private float damageFlashTimer = 0f;
+    private float invulnerabilityTimer = 0f;
+    private Renderer playerRenderer;
+    private Color originalColor;
+    private bool isInvulnerable = false;
 
     [Header("Shooting")]
     [SerializeField] private float fireRate = 0.2f;
     private float nextFireTime = 0f;
+
+    [Header("Scoring")]
+    [SerializeField] private int pointsPerLevel = 500;
 
     [Header("Teleport Power")]
     [SerializeField] private float teleportMinDistance = 10f;
@@ -39,6 +48,9 @@ public class SubLevelPlayerController : MonoBehaviour
     [SerializeField] private float bobFrequency = 10f;
     private float bobTimer = 0f;
 
+    [Header("Level Limit")]
+    [SerializeField] private float limiteZ = 500f;
+
     [Header("Camera Lane Tilt")]
     [SerializeField] private float tiltAngle = 1.5f;
     [SerializeField] private float tiltSpeed = 6f;
@@ -50,6 +62,15 @@ public class SubLevelPlayerController : MonoBehaviour
     private CharacterController cc;
     private bool isSprinting;
 
+    public event System.Action<int, int> OnHealthChanged;
+    public event System.Action<int> OnScoreChanged;
+    public event System.Action OnPlayerDeath;
+
+    private int score = 0;
+    private int combo = 0;
+    private float comboTimer = 0f;
+    private float comboTimeout = 2f;
+
     private InputAction moveLeftAction;
     private InputAction moveRightAction;
     private InputAction sprintAction;
@@ -59,6 +80,19 @@ public class SubLevelPlayerController : MonoBehaviour
     private void Awake()
     {
         cc = GetComponent<CharacterController>();
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = gameObject.AddComponent<Rigidbody>();
+        }
+        rb.isKinematic = true;
+        rb.useGravity = false;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+        playerRenderer = GetComponentInChildren<Renderer>();
+        if (playerRenderer != null)
+            originalColor = playerRenderer.material.color;
     }
 
     private void OnEnable()
@@ -113,6 +147,17 @@ public class SubLevelPlayerController : MonoBehaviour
             cameraBaseLocalPos = cam.transform.localPosition;
 
         prevTargetX = targetX;
+
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        OnScoreChanged?.Invoke(score);
+
+        Collider col = GetComponent<Collider>();
+        Rigidbody rb = GetComponent<Rigidbody>();
+        Debug.Log("[SubLevelPlayerController] Start: " +
+            "tag=" + tag +
+            ", rb=" + (rb != null ? "YES(isKinematic=" + rb.isKinematic + ")" : "NO") +
+            ", collider=" + (col != null ? "YES(isTrigger=" + col.isTrigger + ")" : "NO") +
+            ", health=" + currentHealth + "/" + maxHealth);
     }
 
     private void Update()
@@ -120,6 +165,35 @@ public class SubLevelPlayerController : MonoBehaviour
         MoveForward();
         MoveToLane();
         UpdateCameraEffects();
+        VerificarLimites();
+        UpdateDamageFeedback();
+        UpdateCombo();
+    }
+
+    private void UpdateCombo()
+    {
+        if (combo > 0)
+        {
+            comboTimer -= Time.deltaTime;
+            if (comboTimer <= 0f)
+            {
+                combo = 0;
+            }
+        }
+    }
+
+    private void VerificarLimites()
+    {
+        if (transform.position.z > limiteZ)
+        {
+            Debug.Log("Limite alcanzado. Subnivel completado.");
+            AddScore(pointsPerLevel);
+            Time.timeScale = 0f;
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.LevelCompleted();
+            }
+        }
     }
 
     private void ChangeLane(int direction)
@@ -216,12 +290,10 @@ public class SubLevelPlayerController : MonoBehaviour
 
         Vector3 offset = Vector3.zero;
 
-        // Head bob
         float speed = isSprinting ? sprintSpeed : forwardSpeed;
         bobTimer += Time.deltaTime * bobFrequency * (speed / forwardSpeed);
         offset.y += Mathf.Sin(bobTimer) * bobAmplitude;
 
-        // Lane tilt
         float laneDelta = targetX - prevTargetX;
         float targetTilt = laneDelta != 0f ? -Mathf.Sign(laneDelta) * tiltAngle : 0f;
         currentTilt = Mathf.Lerp(currentTilt, targetTilt, tiltSpeed * Time.deltaTime);
@@ -229,7 +301,6 @@ public class SubLevelPlayerController : MonoBehaviour
         cam.transform.localRotation = Quaternion.Euler(0f, 0f, currentTilt);
         prevTargetX = targetX;
 
-        // Shake
         if (shakeTimer > 0f)
         {
             shakeTimer -= Time.deltaTime;
@@ -241,6 +312,30 @@ public class SubLevelPlayerController : MonoBehaviour
         cam.transform.localPosition = cameraBaseLocalPos + offset;
     }
 
+    private void UpdateDamageFeedback()
+    {
+        if (invulnerabilityTimer > 0f)
+        {
+            invulnerabilityTimer -= Time.deltaTime;
+            if (invulnerabilityTimer <= 0f)
+            {
+                isInvulnerable = false;
+                if (playerRenderer != null)
+                    playerRenderer.material.color = originalColor;
+            }
+            else if (playerRenderer != null)
+            {
+                float flash = Mathf.Sin(Time.time * 20f) > 0f ? 1f : 0.3f;
+                playerRenderer.material.color = Color.Lerp(originalColor, Color.red, flash);
+            }
+        }
+
+        if (damageFlashTimer > 0f)
+        {
+            damageFlashTimer -= Time.deltaTime;
+        }
+    }
+
     private void Shoot()
     {
         if (Time.time < nextFireTime) return;
@@ -250,24 +345,41 @@ public class SubLevelPlayerController : MonoBehaviour
         Projectile.Spawn(spawnPos, transform.forward);
     }
 
-    // === Public API ===
-
     public void TakeDamage(int cantidad)
     {
+        if (isInvulnerable) return;
+
         currentHealth -= cantidad;
         Debug.Log("Jugador danado: -" + cantidad + " vida. Restante: " + currentHealth);
 
-        // Integration: Notify Kevin's health system
-        // OnHealthChanged?.Invoke(currentHealth);
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+
+        isInvulnerable = true;
+        invulnerabilityTimer = invulnerabilityDuration;
+        damageFlashTimer = damageFlashDuration;
+        shakeTimer = damageShakeIntensity;
 
         if (currentHealth <= 0)
         {
             Debug.Log("Jugador derrotado.");
             currentHealth = 0;
+            OnPlayerDeath?.Invoke();
             Time.timeScale = 0f;
-            // Integration: Trigger death event
-            // OnPlayerDeath?.Invoke();
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.GameOver();
+            }
         }
+    }
+
+    public void AddScore(int points)
+    {
+        combo++;
+        comboTimer = comboTimeout;
+        int multiplied = points * Mathf.Max(1, combo);
+        score += multiplied;
+        OnScoreChanged?.Invoke(score);
+        Debug.Log("Score +" + multiplied + " (x" + combo + " combo). Total: " + score);
     }
 
     public void ActivarPoder()
@@ -286,4 +398,7 @@ public class SubLevelPlayerController : MonoBehaviour
     public float GetForwardSpeed() => isSprinting ? sprintSpeed : forwardSpeed;
     public int GetCurrentHealth() => currentHealth;
     public int GetMaxHealth() => maxHealth;
+    public int GetScore() => score;
+    public int GetCombo() => combo;
+    public bool IsInvulnerable() => isInvulnerable;
 }

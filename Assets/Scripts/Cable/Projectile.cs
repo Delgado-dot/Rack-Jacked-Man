@@ -37,6 +37,10 @@ public class Projectile : MonoBehaviour
             {
                 enemy.TakeDamage(damage);
             }
+
+            SubLevelPlayerController player = FindAnyObjectByType<SubLevelPlayerController>();
+            if (player != null) player.AddScore(100);
+
             SpawnImpact(transform.position);
             Destroy(gameObject);
         }
@@ -56,7 +60,7 @@ public class Projectile : MonoBehaviour
         var main = ps.main;
         main.startLifetime = 0.3f;
         main.startSpeed = 3f;
-        main.startSize = 0.3f;
+        main.startSize = 0.45f;
         main.startColor = new Color(0f, 0.8f, 1f, 1f);
         main.maxParticles = 15;
         main.loop = false;
@@ -86,7 +90,7 @@ public class Projectile : MonoBehaviour
         GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         obj.transform.position = position;
         obj.transform.forward = forward;
-        obj.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
+        obj.transform.localScale = new Vector3(0.375f, 0.375f, 0.375f);
 
         Renderer r = obj.GetComponent<Renderer>();
         Color celeste = new Color(0f, 0.85f, 1f, 1f);
@@ -110,7 +114,7 @@ public class Projectile : MonoBehaviour
         light.type = LightType.Point;
         light.color = celeste;
         light.intensity = 1.5f;
-        light.range = 5f;
+        light.range = 7.5f;
 
         Projectile proj = obj.AddComponent<Projectile>();
     }

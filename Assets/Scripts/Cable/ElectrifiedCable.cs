@@ -16,7 +16,7 @@ public class ElectrifiedCable : MonoBehaviour
     [SerializeField] private int warningSteps = 5;
 
     [Header("Active Phase")]
-    [SerializeField] private float activeDuration = 0.5f;
+    [SerializeField] private float activeDuration = 2f;
 
     [Header("Cooldown Phase")]
     [SerializeField] private float cooldownDuration = 0.1f;
@@ -40,13 +40,16 @@ public class ElectrifiedCable : MonoBehaviour
     private float lightBaseIntensity;
     private bool managedByGroup = false;
     private bool countClaimed = false;
-    private bool canDamage = true;
+    private bool canDamage = false;
 
     private static int electrifiedCount = 0;
     private static int maxActiveCables = 2;
 
     private void Awake()
     {
+        EnsureCollider();
+        ForceValidValues();
+
         if (cableRenderer == null)
             cableRenderer = GetComponent<Renderer>();
 
@@ -60,7 +63,6 @@ public class ElectrifiedCable : MonoBehaviour
 
         if (electricParticles != null)
             electricParticles.Stop();
-
         if (warningParticles != null)
             warningParticles.Stop();
 
@@ -69,12 +71,41 @@ public class ElectrifiedCable : MonoBehaviour
             electricLight.enabled = false;
             lightBaseIntensity = electricLight.intensity;
         }
+
+        Debug.Log("[ElectrifiedCable] " + name + " Awake: collider=" + (GetComponent<Collider>() != null) +
+            ", managedByGroup=" + managedByGroup + ", canDamage=" + canDamage);
     }
 
     private void Start()
     {
         if (!managedByGroup)
             ScheduleNextCycle();
+    }
+
+    private void EnsureCollider()
+    {
+        Collider col = GetComponent<Collider>();
+        if (col == null)
+        {
+            BoxCollider box = gameObject.AddComponent<BoxCollider>();
+            box.isTrigger = true;
+            box.size = new Vector3(1f, 2f, 1f);
+            box.center = Vector3.zero;
+        }
+        else if (!col.isTrigger)
+        {
+            col.isTrigger = true;
+        }
+    }
+
+    private void ForceValidValues()
+    {
+        warningDuration = Mathf.Max(1f, warningDuration);
+        warningSteps = Mathf.Max(2, warningSteps);
+        activeDuration = Mathf.Max(0.5f, activeDuration);
+        cooldownDuration = Mathf.Max(0.1f, cooldownDuration);
+        minTimeBetweenCycles = Mathf.Max(1f, minTimeBetweenCycles);
+        maxTimeBetweenCycles = Mathf.Max(minTimeBetweenCycles + 1f, maxTimeBetweenCycles);
     }
 
     private void Update()
@@ -84,7 +115,8 @@ public class ElectrifiedCable : MonoBehaviour
         switch (currentState)
         {
             case CableState.Inactive:
-                UpdateInactive();
+                if (Time.time >= nextCycleTime && electrifiedCount < maxActiveCables)
+                    StartWarning();
                 break;
             case CableState.Warning:
                 UpdateWarning();
@@ -96,14 +128,6 @@ public class ElectrifiedCable : MonoBehaviour
                 UpdateCooldown();
                 break;
         }
-    }
-
-    // --- Autonomous cycle ---
-
-    private void UpdateInactive()
-    {
-        if (Time.time >= nextCycleTime && electrifiedCount < maxActiveCables)
-            StartWarning();
     }
 
     private void StartWarning()
@@ -120,19 +144,12 @@ public class ElectrifiedCable : MonoBehaviour
     {
         stateTimer += Time.deltaTime;
         float progress = Mathf.Clamp01(stateTimer / warningDuration);
-
         int step = Mathf.FloorToInt(progress * warningSteps);
-        if (step != currentWarningStep)
-            currentWarningStep = step;
-
-        float t = (float)currentWarningStep / (warningSteps - 1);
+        float t = (float)step / Mathf.Max(1, warningSteps - 1);
         ApplyVisualState(t);
 
-        if (warningParticles != null)
-        {
-            if (t > 0f && !warningParticles.isPlaying)
-                warningParticles.Play();
-        }
+        if (warningParticles != null && t > 0f && !warningParticles.isPlaying)
+            warningParticles.Play();
 
         if (stateTimer >= warningDuration)
             StartActive();
@@ -143,18 +160,17 @@ public class ElectrifiedCable : MonoBehaviour
         currentState = CableState.Active;
         stateTimer = 0f;
         ApplyVisualState(1f);
+        canDamage = true;
     }
 
     private void UpdateActive()
     {
         stateTimer += Time.deltaTime;
-
         if (electricLight != null)
         {
             float flicker = Mathf.Sin(Time.time * 20f) * 0.3f + 0.7f;
             electricLight.intensity = lightBaseIntensity * 2f * flicker;
         }
-
         if (stateTimer >= activeDuration)
             StartCooldown();
     }
@@ -163,6 +179,7 @@ public class ElectrifiedCable : MonoBehaviour
     {
         currentState = CableState.Cooldown;
         stateTimer = 0f;
+        canDamage = false;
         electrifiedCount--;
         countClaimed = false;
     }
@@ -174,14 +191,11 @@ public class ElectrifiedCable : MonoBehaviour
         ApplyVisualState(t);
 
         if (stateTimer >= cooldownDuration)
-            EndCooldown();
-    }
-
-    private void EndCooldown()
-    {
-        currentState = CableState.Inactive;
-        ResetVisual();
-        ScheduleNextCycle();
+        {
+            currentState = CableState.Inactive;
+            ResetVisual();
+            ScheduleNextCycle();
+        }
     }
 
     private void ScheduleNextCycle()
@@ -189,19 +203,15 @@ public class ElectrifiedCable : MonoBehaviour
         nextCycleTime = Time.time + Random.Range(minTimeBetweenCycles, maxTimeBetweenCycles);
     }
 
-    // --- Visual state ---
-
     private void ApplyVisualState(float intensity)
     {
         if (cableRenderer != null && runtimeMaterial != null)
         {
             runtimeMaterial.color = Color.Lerp(originalColor, electricColor, intensity);
-
             float emissionStrength = intensity * 3f;
             runtimeMaterial.SetColor("_EmissionColor", electricColor * emissionStrength);
             runtimeMaterial.EnableKeyword("_EMISSION");
         }
-
         if (electricLight != null)
         {
             electricLight.enabled = intensity > 0f;
@@ -217,144 +227,65 @@ public class ElectrifiedCable : MonoBehaviour
             runtimeMaterial.color = originalColor;
             runtimeMaterial.SetColor("_EmissionColor", Color.black);
         }
-
-        if (electricParticles != null)
-            electricParticles.Stop();
-
-        if (warningParticles != null)
-            warningParticles.Stop();
-
-        if (electricLight != null)
-            electricLight.enabled = false;
+        if (electricParticles != null) electricParticles.Stop();
+        if (warningParticles != null) warningParticles.Stop();
+        if (electricLight != null) electricLight.enabled = false;
     }
-
-    // --- Public API for CableGroup and external control ---
 
     public void SetElectrified(bool value)
     {
-        if (value)
-        {
-            if (!managedByGroup && currentState == CableState.Inactive && !countClaimed)
-            {
-                electrifiedCount++;
-                countClaimed = true;
-            }
-
-            currentState = CableState.Active;
-            ApplyVisualState(1f);
-        }
-        else
-        {
-            if (!managedByGroup && countClaimed)
-            {
-                electrifiedCount--;
-                countClaimed = false;
-            }
-
-            currentState = CableState.Inactive;
-            ResetVisual();
-        }
+        ApplyVisualState(value ? 1f : 0f);
+        if (!value) ResetVisual();
     }
 
     public void SetElectrified(bool value, float intensity)
     {
         if (value)
-        {
-            if (!managedByGroup && currentState == CableState.Inactive && !countClaimed)
-            {
-                electrifiedCount++;
-                countClaimed = true;
-            }
-
-            currentState = CableState.Active;
             ApplyVisualState(Mathf.Clamp01(intensity));
-        }
         else
-        {
-            if (!managedByGroup && countClaimed)
-            {
-                electrifiedCount--;
-                countClaimed = false;
-            }
-
-            currentState = CableState.Inactive;
             ResetVisual();
-        }
     }
 
     public void SetManagedByGroup(bool value)
     {
         managedByGroup = value;
-        if (value) canDamage = false;
     }
 
     public void SetCanDamage(bool value)
     {
         canDamage = value;
+        Debug.Log("[ElectrifiedCable] " + name + " SetCanDamage(" + value + ") currentState=" + currentState);
     }
-
-    // --- Damage ---
 
     private void OnTriggerStay(Collider other)
     {
+        if (!other.CompareTag("Player")) return;
         if (!canDamage) return;
-        if (currentState != CableState.Active) return;
         if (Time.time < nextDamageTime) return;
 
-        if (other.CompareTag("Player"))
+        Debug.Log("[ElectrifiedCable] " + name + " → DAÑANDO a " + other.name + " (canDamage=" + canDamage + ")");
+        SubLevelPlayerController player = other.GetComponent<SubLevelPlayerController>();
+        if (player != null)
         {
-            SubLevelPlayerController player = other.GetComponent<SubLevelPlayerController>();
-            if (player != null)
-            {
-                player.TakeDamage(damageAmount);
-                nextDamageTime = Time.time + damageCooldown;
-            }
+            player.TakeDamage(damageAmount);
         }
+        else
+        {
+            PlayerHealth health = other.GetComponent<PlayerHealth>();
+            if (health != null) health.TakeDamage();
+        }
+        nextDamageTime = Time.time + damageCooldown;
     }
 
-    // --- Public queries ---
-
-    public CableState GetCurrentState()
-    {
-        return currentState;
-    }
-
-    public bool IsElectrified()
-    {
-        return currentState == CableState.Active;
-    }
-
-    public bool IsManagedByGroup()
-    {
-        return managedByGroup;
-    }
-
-    // --- Static count management ---
-
-    public static int GetElectrifiedCount()
-    {
-        return electrifiedCount;
-    }
-
-    public static int GetMaxActiveCables()
-    {
-        return maxActiveCables;
-    }
-
-    public static void SetMaxActiveCables(int value)
-    {
-        maxActiveCables = Mathf.Max(1, value);
-    }
-
-    public static void IncrementElectrifiedCount()
-    {
-        electrifiedCount++;
-    }
-
-    public static void DecrementElectrifiedCount()
-    {
-        electrifiedCount = Mathf.Max(0, electrifiedCount - 1);
-    }
+    public CableState GetCurrentState() => currentState;
+    public bool IsElectrified() => currentState == CableState.Active;
+    public bool IsManagedByGroup() => managedByGroup;
+    public bool CanDamage() => canDamage;
+    public static int GetElectrifiedCount() => electrifiedCount;
+    public static int GetMaxActiveCables() => maxActiveCables;
+    public static void SetMaxActiveCables(int value) => maxActiveCables = Mathf.Max(1, value);
+    public static void IncrementElectrifiedCount() => electrifiedCount++;
+    public static void DecrementElectrifiedCount() => electrifiedCount = Mathf.Max(0, electrifiedCount - 1);
 
     private void OnDestroy()
     {

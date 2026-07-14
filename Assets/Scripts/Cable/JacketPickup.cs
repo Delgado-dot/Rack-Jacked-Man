@@ -5,9 +5,6 @@ public class JacketPickup : MonoBehaviour
     [Header("Prefab del powerup (recomendado)")]
     [SerializeField] private GameObject pickupPrefab;
 
-    [Header("Fallback: si no hay prefab, crea un cubo")]
-    [SerializeField] private float escalaInicial = 1.2f;
-
     [Header("Configuracion")]
     [SerializeField] private float tiempoReaparicion = 10f;
     [SerializeField] private float alturaFlotacion = 1.5f;

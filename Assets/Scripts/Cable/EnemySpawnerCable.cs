@@ -26,10 +26,12 @@ public class EnemySpawnerCable : MonoBehaviour
     [SerializeField] private int maxEnemigosActivos = 5;
 
     private float spawnTimer;
+    private static int enemigosActivos = 0;
 
     private void Start()
     {
         spawnTimer = tiempoEntreEnemigos;
+        enemigosActivos = 0;
 
         if (jugador == null)
         {
@@ -42,8 +44,6 @@ public class EnemySpawnerCable : MonoBehaviour
     {
         if (jugador == null) return;
 
-        int enemigosActivos = GameObject.FindGameObjectsWithTag("Enemy").Length;
-
         spawnTimer -= Time.deltaTime;
         if (spawnTimer <= 0f && enemigosActivos < maxEnemigosActivos)
         {
@@ -55,6 +55,21 @@ public class EnemySpawnerCable : MonoBehaviour
     public void ReducirIntervalo(float cantidad)
     {
         tiempoEntreEnemigos = Mathf.Max(0.5f, tiempoEntreEnemigos - cantidad);
+    }
+
+    public static void IncrementarEnemigos()
+    {
+        enemigosActivos++;
+    }
+
+    public static void DecrementarEnemigos()
+    {
+        enemigosActivos = Mathf.Max(0, enemigosActivos - 1);
+    }
+
+    public static int GetEnemigosActivos()
+    {
+        return enemigosActivos;
     }
 
     private void SpawnEnemigo()
@@ -83,6 +98,8 @@ public class EnemySpawnerCable : MonoBehaviour
         {
             enemigo.AddComponent<EnemyCable>();
         }
+
+        enemigosActivos++;
     }
 
     private GameObject CreateFallbackEnemy(Vector3 position)

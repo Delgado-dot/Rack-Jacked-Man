@@ -8,7 +8,6 @@ public class SubLevelManager : MonoBehaviour
 {
     [Header("Configuracion SubNivel")]
     [SerializeField] private string subLevelName = "";
-    [SerializeField] private int subLevelIndex = 0;
 
     [Header("Referencias")]
     [SerializeField] private Transform entryPoint;

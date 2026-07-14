@@ -102,7 +102,7 @@ public class SetupSubLevel_Cable_01 : EditorWindow
         cc.radius = 0.3f;
         cc.center = new Vector3(0f, 1f, 0f);
 
-        player.AddComponent<PlayerCableMovement>();
+        player.AddComponent<SubLevelPlayerController>();
         player.AddComponent<PlayerHealth>();
 
         // Camera dentro del jugador
