@@ -263,19 +263,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cableRenderer: {fileID: 134667182}
-  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
-  electricParticles: {fileID: 0}
-  warningParticles: {fileID: 0}
-  electricLight: {fileID: 0}
-  warningDuration: 5
-  warningSteps: 5
-  activeDuration: 0.5
-  cooldownDuration: 0.1
-  minTimeBetweenCycles: 8
-  maxTimeBetweenCycles: 20
-  damageAmount: 1
-  damageCooldown: 1
 --- !u!65 &134667181
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -401,19 +388,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cableRenderer: {fileID: 171444486}
-  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
-  electricParticles: {fileID: 0}
-  warningParticles: {fileID: 0}
-  electricLight: {fileID: 0}
-  warningDuration: 5
-  warningSteps: 5
-  activeDuration: 0.5
-  cooldownDuration: 0.1
-  minTimeBetweenCycles: 8
-  maxTimeBetweenCycles: 20
-  damageAmount: 1
-  damageCooldown: 1
 --- !u!65 &171444485
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1601,19 +1575,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cableRenderer: {fileID: 2028828622}
-  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
-  electricParticles: {fileID: 0}
-  warningParticles: {fileID: 0}
-  electricLight: {fileID: 0}
-  warningDuration: 5
-  warningSteps: 5
-  activeDuration: 0.5
-  cooldownDuration: 0.1
-  minTimeBetweenCycles: 8
-  maxTimeBetweenCycles: 20
-  damageAmount: 1
-  damageCooldown: 1
 --- !u!114 &700000002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1626,19 +1587,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cableRenderer: {fileID: 1972840905}
-  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
-  electricParticles: {fileID: 0}
-  warningParticles: {fileID: 0}
-  electricLight: {fileID: 0}
-  warningDuration: 5
-  warningSteps: 5
-  activeDuration: 0.5
-  cooldownDuration: 0.1
-  minTimeBetweenCycles: 8
-  maxTimeBetweenCycles: 20
-  damageAmount: 1
-  damageCooldown: 1
 --- !u!114 &700000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1651,19 +1599,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cableRenderer: {fileID: 1620057600}
-  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
-  electricParticles: {fileID: 0}
-  warningParticles: {fileID: 0}
-  electricLight: {fileID: 0}
-  warningDuration: 5
-  warningSteps: 5
-  activeDuration: 0.5
-  cooldownDuration: 0.1
-  minTimeBetweenCycles: 8
-  maxTimeBetweenCycles: 20
-  damageAmount: 1
-  damageCooldown: 1
 --- !u!1 &794000224
 GameObject:
   m_ObjectHideFlags: 0
@@ -2058,19 +1993,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cableRenderer: {fileID: 892437770}
-  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
-  electricParticles: {fileID: 0}
-  warningParticles: {fileID: 0}
-  electricLight: {fileID: 0}
-  warningDuration: 5
-  warningSteps: 5
-  activeDuration: 0.5
-  cooldownDuration: 0.1
-  minTimeBetweenCycles: 8
-  maxTimeBetweenCycles: 20
-  damageAmount: 1
-  damageCooldown: 1
 --- !u!65 &892437769
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2534,19 +2456,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cableRenderer: {fileID: 1129390276}
-  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
-  electricParticles: {fileID: 0}
-  warningParticles: {fileID: 0}
-  electricLight: {fileID: 0}
-  warningDuration: 5
-  warningSteps: 5
-  activeDuration: 0.5
-  cooldownDuration: 0.1
-  minTimeBetweenCycles: 8
-  maxTimeBetweenCycles: 20
-  damageAmount: 1
-  damageCooldown: 1
 --- !u!65 &1129390275
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3178,19 +3087,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cableRenderer: {fileID: 1461328290}
-  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
-  electricParticles: {fileID: 0}
-  warningParticles: {fileID: 0}
-  electricLight: {fileID: 0}
-  warningDuration: 5
-  warningSteps: 5
-  activeDuration: 0.5
-  cooldownDuration: 0.1
-  minTimeBetweenCycles: 8
-  maxTimeBetweenCycles: 20
-  damageAmount: 1
-  damageCooldown: 1
 --- !u!65 &1461328289
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4254,19 +4150,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cableRenderer: {fileID: 1936929938}
-  electricColor: {r: 0, g: 0.7, b: 1, a: 1}
-  electricParticles: {fileID: 0}
-  warningParticles: {fileID: 0}
-  electricLight: {fileID: 0}
-  warningDuration: 5
-  warningSteps: 5
-  activeDuration: 0.5
-  cooldownDuration: 0.1
-  minTimeBetweenCycles: 8
-  maxTimeBetweenCycles: 20
-  damageAmount: 1
-  damageCooldown: 1
 --- !u!65 &1936929937
 BoxCollider:
   m_ObjectHideFlags: 0
