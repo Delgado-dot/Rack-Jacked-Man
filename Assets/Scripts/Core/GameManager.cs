@@ -97,7 +97,6 @@ public class GameManager : MonoBehaviour
 
         isGameOver = true;
         Debug.Log("GAME OVER");
-        Time.timeScale = 0f;
         SafeLoadScene(sceneGameOver);
     }
 
@@ -107,7 +106,6 @@ public class GameManager : MonoBehaviour
 
         isLevelCompleted = true;
         Debug.Log("NIVEL COMPLETADO!");
-        Time.timeScale = 0f;
         SafeLoadScene(sceneVictory);
     }
 
@@ -155,6 +153,7 @@ public class GameManager : MonoBehaviour
             string name = System.IO.Path.GetFileNameWithoutExtension(path);
             if (name == sceneName)
             {
+                Time.timeScale = 1f;
                 SceneManager.LoadScene(sceneName);
                 return;
             }

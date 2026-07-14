@@ -23,12 +23,18 @@ public class CableSegment : MonoBehaviour
     private Renderer rend;
     private Material runtimeMat;
     private bool jugadorEnZona = false;
-    private SubLevelPlayerController playerController;
-
     private PlayerHealth playerHealth;
 
     private void Awake()
     {
+        ElectrifiedCable electrified = GetComponent<ElectrifiedCable>();
+        if (electrified != null)
+        {
+            Debug.Log("[CableSegment] ElectrifiedCable detectado en " + name + ". Deshabilitando CableSegment para evitar doble daño.");
+            enabled = false;
+            return;
+        }
+
         rend = GetComponent<Renderer>();
         if (rend != null && rend.sharedMaterial != null)
             runtimeMat = new Material(rend.sharedMaterial);
@@ -46,13 +52,9 @@ public class CableSegment : MonoBehaviour
             timerDanio -= Time.deltaTime;
             if (timerDanio <= 0f)
             {
-                if (playerController != null)
+                if (playerHealth != null)
                 {
-                    playerController.TakeDamage(danoPorSegundo);
-                }
-                else if (playerHealth != null)
-                {
-                    playerHealth.TakeDamage();
+                    playerHealth.TakeDamage(danoPorSegundo);
                 }
                 timerDanio = danioCooldown;
             }
@@ -77,16 +79,25 @@ public class CableSegment : MonoBehaviour
         switch (estado)
         {
             case Estado.NORMAL:
+                if (runtimeMat != null) Destroy(runtimeMat);
                 if (materialNormal != null)
                     runtimeMat = new Material(materialNormal);
+                else
+                    runtimeMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
                 rend.material = runtimeMat;
                 if (particulas != null) particulas.Stop();
                 if (audioElectrico != null) audioElectrico.Stop();
                 break;
 
             case Estado.ELECTRIFICADO:
+                if (runtimeMat != null) Destroy(runtimeMat);
                 if (materialElectrificado != null)
                     runtimeMat = new Material(materialElectrificado);
+                else
+                {
+                    runtimeMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                    runtimeMat.color = Color.cyan;
+                }
                 runtimeMat.EnableKeyword("_EMISSION");
                 runtimeMat.SetColor("_EmissionColor", Color.cyan * 3f);
                 rend.material = runtimeMat;
@@ -101,19 +112,14 @@ public class CableSegment : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         jugadorEnZona = true;
-        playerController = other.GetComponent<SubLevelPlayerController>();
         playerHealth = other.GetComponent<PlayerHealth>();
         timerDanio = 0f;
 
         if (estadoActual == Estado.ELECTRIFICADO)
         {
-            if (playerController != null)
+            if (playerHealth != null)
             {
-                playerController.TakeDamage(danoPorSegundo);
-            }
-            else if (playerHealth != null)
-            {
-                playerHealth.TakeDamage();
+                playerHealth.TakeDamage(danoPorSegundo);
             }
             timerDanio = danioCooldown;
         }
@@ -123,7 +129,6 @@ public class CableSegment : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
         jugadorEnZona = false;
-        playerController = null;
         playerHealth = null;
     }
 }

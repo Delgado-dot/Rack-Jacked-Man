@@ -33,16 +33,8 @@ public class EnemyCable : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        SubLevelPlayerController playerController = other.GetComponent<SubLevelPlayerController>();
-        if (playerController != null)
-        {
-            playerController.TakeDamage(danoAlContacto);
-        }
-        else
-        {
-            PlayerHealth health = other.GetComponent<PlayerHealth>();
-            if (health != null) health.TakeDamage();
-        }
+        PlayerHealth health = other.GetComponent<PlayerHealth>();
+        if (health != null) health.TakeDamage(danoAlContacto);
 
         DestroyEnemy();
     }

@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// PlayerHealth - Sistema de vidas del jugador.
-/// Controla danio, invulnerabilidad, respawn y Game Over.
+/// PlayerHealth - Sistema de vidas global del jugador.
+/// Unico sistema de salud para todos los niveles.
 /// </summary>
 public class PlayerHealth : MonoBehaviour
 {
@@ -16,6 +16,9 @@ public class PlayerHealth : MonoBehaviour
     [Header("Referencias")]
     [SerializeField] private Transform spawnPoint;
 
+    public event System.Action<int, int> OnHealthChanged;
+    public event System.Action OnPlayerDeath;
+
     private Vector3 initialPosition;
     private float invulnerabilityTimer = 0f;
     private bool isInvulnerable = false;
@@ -24,13 +27,10 @@ public class PlayerHealth : MonoBehaviour
 
     private void Start()
     {
-        // Auto-setup racks y puzzles si no existen
         AutoSetupRacks.Setup();
 
-        // Guardar posicion inicial para respawn
         initialPosition = transform.position;
 
-        // Buscar spawn point por tag si no se asigno
         if (spawnPoint == null)
         {
             GameObject spawn = GameObject.Find("PlayerSpawn");
@@ -40,13 +40,11 @@ public class PlayerHealth : MonoBehaviour
             }
         }
 
-        // Referencia al movimiento del jugador para detenerlo en Game Over
         playerMovement = GetComponent<PlayerMovement>();
     }
 
     private void Update()
     {
-        // Reducir timer de invulnerabilidad
         if (isInvulnerable)
         {
             invulnerabilityTimer -= Time.deltaTime;
@@ -58,29 +56,37 @@ public class PlayerHealth : MonoBehaviour
     }
 
     /// <summary>
-    /// Recibir danio. Reduce 1 vida y activa invulnerabilidad.
-    /// Si las vidas llegan a 0, ejecuta Game Over.
+    /// Recibir 1 punto de danio.
     /// </summary>
     public void TakeDamage()
     {
-        // No recibir danio si esta invulnerable o muerto
+        TakeDamage(1);
+    }
+
+    /// <summary>
+    /// Recibir danio por cantidad. Reduce vidas y activa invulnerabilidad.
+    /// Si las vidas llegan a 0, ejecuta Game Over.
+    /// </summary>
+    public void TakeDamage(int amount)
+    {
         if (isInvulnerable || isDead) return;
 
-        currentLives--;
+        currentLives -= amount;
 
-        Debug.Log("Jugador recibio danio. Vidas restantes: " + currentLives);
+        Debug.Log("[PlayerHealth] " + gameObject.name + " recibio -" + amount + " vida. Restante: " + currentLives);
+
+        OnHealthChanged?.Invoke(currentLives, maxLives);
 
         if (currentLives <= 0)
         {
+            currentLives = 0;
             Die();
             return;
         }
 
-        // Activar invulnerabilidad
         isInvulnerable = true;
         invulnerabilityTimer = invulnerabilityDuration;
 
-        // Regresar al punto de aparicion
         Respawn();
     }
 
@@ -94,7 +100,8 @@ public class PlayerHealth : MonoBehaviour
         if (currentLives < maxLives)
         {
             currentLives++;
-            Debug.Log("Jugador curado. Vidas actuales: " + currentLives);
+            Debug.Log("[PlayerHealth] " + gameObject.name + " curado. Vidas actuales: " + currentLives);
+            OnHealthChanged?.Invoke(currentLives, maxLives);
         }
     }
 
@@ -104,17 +111,16 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         isDead = true;
-        currentLives = 0;
 
-        Debug.Log("GAME OVER");
+        Debug.Log("[PlayerHealth] " + gameObject.name + " GAME OVER");
 
-        // Detener movimiento del jugador
         if (playerMovement != null)
         {
             playerMovement.enabled = false;
         }
 
-        // Notificar al GameManager
+        OnPlayerDeath?.Invoke();
+
         if (GameManager.Instance != null)
         {
             GameManager.Instance.GameOver();
@@ -126,14 +132,12 @@ public class PlayerHealth : MonoBehaviour
     /// </summary>
     private void Respawn()
     {
-        // Usar GameManager si esta disponible
         if (GameManager.Instance != null)
         {
             GameManager.Instance.RespawnPlayer();
             return;
         }
 
-        // Fallback: usar posicion inicial o spawn point
         Vector3 targetPosition = initialPosition;
 
         if (spawnPoint != null)
@@ -155,7 +159,6 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-    // Getters para UI o otros sistemas
     public int GetCurrentLives() { return currentLives; }
     public int GetMaxLives() { return maxLives; }
     public bool IsInvulnerable() { return isInvulnerable; }

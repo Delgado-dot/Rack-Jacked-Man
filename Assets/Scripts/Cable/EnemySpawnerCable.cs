@@ -31,7 +31,6 @@ public class EnemySpawnerCable : MonoBehaviour
     private void Start()
     {
         spawnTimer = tiempoEntreEnemigos;
-        enemigosActivos = 0;
 
         if (jugador == null)
         {
@@ -55,11 +54,6 @@ public class EnemySpawnerCable : MonoBehaviour
     public void ReducirIntervalo(float cantidad)
     {
         tiempoEntreEnemigos = Mathf.Max(0.5f, tiempoEntreEnemigos - cantidad);
-    }
-
-    public static void IncrementarEnemigos()
-    {
-        enemigosActivos++;
     }
 
     public static void DecrementarEnemigos()

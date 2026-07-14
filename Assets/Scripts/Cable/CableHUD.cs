@@ -17,7 +17,8 @@ public class CableHUD : MonoBehaviour
     [SerializeField] private float scorePopDuration = 0.3f;
     [SerializeField] private float damageOverlayDuration = 0.3f;
 
-    private SubLevelPlayerController player;
+    private PlayerHealth playerHealth;
+    private SubLevelPlayerController playerController;
     private float scorePopTimer = 0f;
     private float damageOverlayTimer = 0f;
     private int lastScore = 0;
@@ -25,13 +26,19 @@ public class CableHUD : MonoBehaviour
 
     private void Start()
     {
-        player = FindAnyObjectByType<SubLevelPlayerController>();
-        if (player != null)
+        playerHealth = FindAnyObjectByType<PlayerHealth>();
+        playerController = FindAnyObjectByType<SubLevelPlayerController>();
+
+        if (playerHealth != null)
         {
-            player.OnHealthChanged += UpdateHealth;
-            player.OnScoreChanged += UpdateScore;
-            UpdateHealth(player.GetCurrentHealth(), player.GetMaxHealth());
-            UpdateScore(player.GetScore());
+            playerHealth.OnHealthChanged += UpdateHealth;
+            UpdateHealth(playerHealth.GetCurrentLives(), playerHealth.GetMaxLives());
+        }
+
+        if (playerController != null)
+        {
+            playerController.OnScoreChanged += UpdateScore;
+            UpdateScore(playerController.GetScore());
         }
 
         cableGroups = FindObjectsByType<CableGroup>(FindObjectsInactive.Exclude);
@@ -83,9 +90,9 @@ public class CableHUD : MonoBehaviour
 
     private void UpdateComboDisplay()
     {
-        if (comboText == null || player == null) return;
+        if (comboText == null || playerController == null) return;
 
-        int combo = player.GetCombo();
+        int combo = playerController.GetCombo();
         if (combo > 1)
         {
             comboText.text = "x" + combo + " COMBO";
@@ -120,8 +127,8 @@ public class CableHUD : MonoBehaviour
 
     private void UpdatePowerIndicator()
     {
-        if (powerIndicator == null || player == null) return;
-        powerIndicator.enabled = player.TienePoder();
+        if (powerIndicator == null || playerController == null) return;
+        powerIndicator.enabled = playerController.TienePoder();
     }
 
     private void UpdateDamageOverlay()
@@ -145,10 +152,10 @@ public class CableHUD : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (player != null)
-        {
-            player.OnHealthChanged -= UpdateHealth;
-            player.OnScoreChanged -= UpdateScore;
-        }
+        if (playerHealth != null)
+            playerHealth.OnHealthChanged -= UpdateHealth;
+
+        if (playerController != null)
+            playerController.OnScoreChanged -= UpdateScore;
     }
 }

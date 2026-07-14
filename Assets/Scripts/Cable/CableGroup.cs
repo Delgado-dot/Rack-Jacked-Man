@@ -106,8 +106,8 @@ public class CableGroup : MonoBehaviour
         else
         {
             ElectrifiedCable[] sceneCables = FindObjectsByType<ElectrifiedCable>(FindObjectsInactive.Exclude);
-            allCables = sceneCables;
-            Debug.LogWarning("[CableGroup] " + name + ": Usando " + sceneCables.Length + " ElectrifiedCables de toda la escena");
+            allCables = new ElectrifiedCable[0];
+            Debug.LogWarning("[CableGroup] " + name + ": No se encontraron ElectrifiedCables como hijos. Fallback deshabilitado para evitar conflictos entre groups.");
         }
     }
 
@@ -202,19 +202,6 @@ public class CableGroup : MonoBehaviour
         Debug.Log("[CableGroup] " + name + " → COOLDOWN (duración=" + cooldownDuration + "s)");
     }
 
-    private void SkipActivation()
-    {
-        SetAllCanDamage(false);
-        if (groupCountClaimed)
-        {
-            ElectrifiedCable.DecrementElectrifiedCount();
-            groupCountClaimed = false;
-        }
-        SetAllCables(false, 0f);
-        currentState = GroupState.Idle;
-        ScheduleNextCycle();
-    }
-
     private void UpdateCooldown()
     {
         stateTimer += Time.deltaTime;
@@ -272,19 +259,6 @@ public class CableGroup : MonoBehaviour
     {
         if (currentState != GroupState.Idle) return;
         StartWarning();
-    }
-
-    public void ForceDeactivate()
-    {
-        SetAllCanDamage(false);
-        if (groupCountClaimed)
-        {
-            ElectrifiedCable.DecrementElectrifiedCount();
-            groupCountClaimed = false;
-        }
-        SetAllCables(false, 0f);
-        currentState = GroupState.Idle;
-        ScheduleNextCycle();
     }
 
     private void OnDestroy()

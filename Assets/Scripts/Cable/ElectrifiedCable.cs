@@ -36,7 +36,6 @@ public class ElectrifiedCable : MonoBehaviour
     private float stateTimer = 0f;
     private float nextDamageTime = 0f;
     private float nextCycleTime;
-    private int currentWarningStep = 0;
     private float lightBaseIntensity;
     private bool managedByGroup = false;
     private bool countClaimed = false;
@@ -55,22 +54,17 @@ public class ElectrifiedCable : MonoBehaviour
 
         if (cableRenderer != null)
         {
+            if (cableRenderer.material == null)
+            {
+                cableRenderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            }
             originalMaterial = cableRenderer.material;
             originalColor = originalMaterial.color;
             runtimeMaterial = new Material(originalMaterial);
             cableRenderer.material = runtimeMaterial;
         }
 
-        if (electricParticles != null)
-            electricParticles.Stop();
-        if (warningParticles != null)
-            warningParticles.Stop();
-
-        if (electricLight != null)
-        {
-            electricLight.enabled = false;
-            lightBaseIntensity = electricLight.intensity;
-        }
+        CreateFallbackEffects();
 
         Debug.Log("[ElectrifiedCable] " + name + " Awake: collider=" + (GetComponent<Collider>() != null) +
             ", managedByGroup=" + managedByGroup + ", canDamage=" + canDamage);
@@ -108,6 +102,76 @@ public class ElectrifiedCable : MonoBehaviour
         maxTimeBetweenCycles = Mathf.Max(minTimeBetweenCycles + 1f, maxTimeBetweenCycles);
     }
 
+    private void CreateFallbackEffects()
+    {
+        if (electricLight == null)
+        {
+            GameObject lightObj = new GameObject("ElectricLight");
+            lightObj.transform.SetParent(transform, false);
+            lightObj.transform.localPosition = Vector3.up * 0.5f;
+            electricLight = lightObj.AddComponent<Light>();
+            electricLight.type = LightType.Point;
+            electricLight.color = electricColor;
+            electricLight.intensity = 2f;
+            electricLight.range = 3f;
+            electricLight.enabled = false;
+        }
+        lightBaseIntensity = electricLight.intensity;
+
+        if (electricParticles == null)
+        {
+            GameObject particlesObj = new GameObject("ElectricParticles");
+            particlesObj.transform.SetParent(transform, false);
+            particlesObj.transform.localPosition = Vector3.up * 0.3f;
+            electricParticles = particlesObj.AddComponent<ParticleSystem>();
+            var main = electricParticles.main;
+            main.startLifetime = 0.3f;
+            main.startSpeed = 1f;
+            main.startSize = 0.05f;
+            main.startColor = electricColor;
+            main.maxParticles = 15;
+            main.loop = true;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            var emission = electricParticles.emission;
+            emission.rateOverTime = 10;
+            var shape = electricParticles.shape;
+            shape.enabled = true;
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius = 0.5f;
+            var renderer = particlesObj.GetComponent<ParticleSystemRenderer>();
+            renderer.material = new Material(Shader.Find("Particles/Standard Unlit"));
+            renderer.material.color = electricColor;
+            renderer.material.SetColor("_EmissionColor", electricColor * 3f);
+            renderer.material.EnableKeyword("_EMISSION");
+            electricParticles.Stop();
+        }
+
+        if (warningParticles == null)
+        {
+            GameObject warnObj = new GameObject("WarningParticles");
+            warnObj.transform.SetParent(transform, false);
+            warnObj.transform.localPosition = Vector3.up * 0.3f;
+            warningParticles = warnObj.AddComponent<ParticleSystem>();
+            var main = warningParticles.main;
+            main.startLifetime = 0.2f;
+            main.startSpeed = 0.5f;
+            main.startSize = 0.03f;
+            main.startColor = Color.yellow;
+            main.maxParticles = 8;
+            main.loop = true;
+            var emission = warningParticles.emission;
+            emission.rateOverTime = 5;
+            var shape = warningParticles.shape;
+            shape.enabled = true;
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius = 0.3f;
+            var renderer = warnObj.GetComponent<ParticleSystemRenderer>();
+            renderer.material = new Material(Shader.Find("Particles/Standard Unlit"));
+            renderer.material.color = Color.yellow;
+            warningParticles.Stop();
+        }
+    }
+
     private void Update()
     {
         if (managedByGroup) return;
@@ -134,7 +198,6 @@ public class ElectrifiedCable : MonoBehaviour
     {
         currentState = CableState.Warning;
         stateTimer = 0f;
-        currentWarningStep = 0;
         electrifiedCount++;
         countClaimed = true;
         ApplyVisualState(0f);
@@ -264,15 +327,10 @@ public class ElectrifiedCable : MonoBehaviour
         if (Time.time < nextDamageTime) return;
 
         Debug.Log("[ElectrifiedCable] " + name + " → DAÑANDO a " + other.name + " (canDamage=" + canDamage + ")");
-        SubLevelPlayerController player = other.GetComponent<SubLevelPlayerController>();
-        if (player != null)
+        PlayerHealth health = other.GetComponent<PlayerHealth>();
+        if (health != null)
         {
-            player.TakeDamage(damageAmount);
-        }
-        else
-        {
-            PlayerHealth health = other.GetComponent<PlayerHealth>();
-            if (health != null) health.TakeDamage();
+            health.TakeDamage(damageAmount);
         }
         nextDamageTime = Time.time + damageCooldown;
     }

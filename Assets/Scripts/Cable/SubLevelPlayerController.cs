@@ -11,19 +11,13 @@ public class SubLevelPlayerController : MonoBehaviour
     [SerializeField] private float forwardSpeed = 20f;
     [SerializeField] private float sprintSpeed = 30f;
 
-    [Header("Health")]
-    [SerializeField] private int maxHealth = 3;
-    private int currentHealth;
-
     [Header("Damage Feedback")]
     [SerializeField] private float damageFlashDuration = 0.2f;
     [SerializeField] private float damageShakeIntensity = 0.15f;
-    [SerializeField] private float invulnerabilityDuration = 1.0f;
     private float damageFlashTimer = 0f;
-    private float invulnerabilityTimer = 0f;
+    private float shakeTimer = 0f;
     private Renderer playerRenderer;
     private Color originalColor;
-    private bool isInvulnerable = false;
 
     [Header("Shooting")]
     [SerializeField] private float fireRate = 0.2f;
@@ -40,7 +34,6 @@ public class SubLevelPlayerController : MonoBehaviour
     [Header("Teleport Feedback")]
     [SerializeField] private float shakeDuration = 0.2f;
     [SerializeField] private float shakeIntensity = 0.25f;
-    private float shakeTimer = 0f;
     private Vector3 cameraBaseLocalPos;
 
     [Header("Camera Head Bob")]
@@ -62,9 +55,10 @@ public class SubLevelPlayerController : MonoBehaviour
     private CharacterController cc;
     private bool isSprinting;
 
-    public event System.Action<int, int> OnHealthChanged;
     public event System.Action<int> OnScoreChanged;
     public event System.Action OnPlayerDeath;
+
+    private PlayerHealth playerHealth;
 
     private int score = 0;
     private int combo = 0;
@@ -80,6 +74,14 @@ public class SubLevelPlayerController : MonoBehaviour
     private void Awake()
     {
         cc = GetComponent<CharacterController>();
+        if (cc == null)
+        {
+            Debug.LogError("[SubLevelPlayerController] No se encontro CharacterController en " + name + "! Agregando uno automaticamente.");
+            cc = gameObject.AddComponent<CharacterController>();
+            cc.height = 2f;
+            cc.radius = 0.5f;
+            cc.center = new Vector3(0f, 1f, 0f);
+        }
 
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb == null)
@@ -137,7 +139,8 @@ public class SubLevelPlayerController : MonoBehaviour
 
     private void Start()
     {
-        currentHealth = maxHealth;
+        playerHealth = GetComponent<PlayerHealth>();
+
         currentLane = 1;
         targetX = lanePositions[currentLane];
         transform.position = new Vector3(targetX, transform.position.y, transform.position.z);
@@ -148,7 +151,6 @@ public class SubLevelPlayerController : MonoBehaviour
 
         prevTargetX = targetX;
 
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
         OnScoreChanged?.Invoke(score);
 
         Collider col = GetComponent<Collider>();
@@ -157,7 +159,7 @@ public class SubLevelPlayerController : MonoBehaviour
             "tag=" + tag +
             ", rb=" + (rb != null ? "YES(isKinematic=" + rb.isKinematic + ")" : "NO") +
             ", collider=" + (col != null ? "YES(isTrigger=" + col.isTrigger + ")" : "NO") +
-            ", health=" + currentHealth + "/" + maxHealth);
+            ", playerHealth=" + (playerHealth != null ? "YES" : "NO"));
     }
 
     private void Update()
@@ -314,20 +316,19 @@ public class SubLevelPlayerController : MonoBehaviour
 
     private void UpdateDamageFeedback()
     {
-        if (invulnerabilityTimer > 0f)
+        if (playerHealth == null) return;
+
+        if (playerHealth.IsInvulnerable())
         {
-            invulnerabilityTimer -= Time.deltaTime;
-            if (invulnerabilityTimer <= 0f)
-            {
-                isInvulnerable = false;
-                if (playerRenderer != null)
-                    playerRenderer.material.color = originalColor;
-            }
-            else if (playerRenderer != null)
+            if (playerRenderer != null)
             {
                 float flash = Mathf.Sin(Time.time * 20f) > 0f ? 1f : 0.3f;
                 playerRenderer.material.color = Color.Lerp(originalColor, Color.red, flash);
             }
+        }
+        else if (playerRenderer != null)
+        {
+            playerRenderer.material.color = originalColor;
         }
 
         if (damageFlashTimer > 0f)
@@ -347,28 +348,24 @@ public class SubLevelPlayerController : MonoBehaviour
 
     public void TakeDamage(int cantidad)
     {
-        if (isInvulnerable) return;
+        if (playerHealth == null) return;
 
-        currentHealth -= cantidad;
-        Debug.Log("Jugador danado: -" + cantidad + " vida. Restante: " + currentHealth);
+        bool wasInvulnerable = playerHealth.IsInvulnerable();
+        int livesBefore = playerHealth.GetCurrentLives();
 
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        playerHealth.TakeDamage(cantidad);
 
-        isInvulnerable = true;
-        invulnerabilityTimer = invulnerabilityDuration;
-        damageFlashTimer = damageFlashDuration;
-        shakeTimer = damageShakeIntensity;
+        if (playerHealth.GetCurrentLives() < livesBefore && !playerHealth.IsDead())
+        {
+            Debug.Log("Jugador danado: -" + cantidad + " vida. Restante: " + playerHealth.GetCurrentLives());
+            damageFlashTimer = damageFlashDuration;
+            shakeTimer = damageShakeIntensity;
+        }
 
-        if (currentHealth <= 0)
+        if (playerHealth.IsDead() && !wasInvulnerable)
         {
             Debug.Log("Jugador derrotado.");
-            currentHealth = 0;
             OnPlayerDeath?.Invoke();
-            Time.timeScale = 0f;
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.GameOver();
-            }
         }
     }
 
@@ -396,9 +393,9 @@ public class SubLevelPlayerController : MonoBehaviour
     public int GetCurrentLane() => currentLane;
     public float GetTargetX() => targetX;
     public float GetForwardSpeed() => isSprinting ? sprintSpeed : forwardSpeed;
-    public int GetCurrentHealth() => currentHealth;
-    public int GetMaxHealth() => maxHealth;
+    public int GetCurrentHealth() => playerHealth != null ? playerHealth.GetCurrentLives() : 0;
+    public int GetMaxHealth() => playerHealth != null ? playerHealth.GetMaxLives() : 3;
     public int GetScore() => score;
     public int GetCombo() => combo;
-    public bool IsInvulnerable() => isInvulnerable;
+    public bool IsInvulnerable() => playerHealth != null && playerHealth.IsInvulnerable();
 }
