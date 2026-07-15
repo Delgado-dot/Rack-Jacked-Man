@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace ScifiOffice {
+    [RequireComponent(typeof(Animator))]
     public class DemoDoor : MonoBehaviour {
         Animator anim;
 
@@ -11,7 +12,7 @@ namespace ScifiOffice {
         }
 
         private void OnTriggerEnter(Collider other) {
-            if(other.gameObject.name == "Player") {
+            if(anim != null && (other.CompareTag("Player") || other.transform.root.CompareTag("Player"))) {
                 anim.SetTrigger("Open");
             }
         }

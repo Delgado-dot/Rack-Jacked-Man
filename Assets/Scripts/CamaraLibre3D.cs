@@ -51,6 +51,6 @@ public class CamaraLibre3D : MonoBehaviour
         if (Input.GetKey(KeyCode.Space)) movimiento += Vector3.up;
         if (Input.GetKey(KeyCode.LeftControl)) movimiento -= Vector3.up;
 
-        transform.position += movimiento * velocidadActual * Time.deltaTime;
+        transform.position += Vector3.ClampMagnitude(movimiento, 1f) * velocidadActual * Time.deltaTime;
     }
 }

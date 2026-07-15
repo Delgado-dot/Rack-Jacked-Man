@@ -22,6 +22,7 @@ public class BotonMenu3D : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     void Start()
     {
+        hoverScaleMultiplier = Mathf.Max(0f, hoverScaleMultiplier);
         originalScale = transform.localScale;
         btnRenderer = GetComponent<Renderer>();
 

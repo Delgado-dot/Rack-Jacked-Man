@@ -14,7 +14,9 @@ public class Manager_FlujoEscenas : MonoBehaviour
     [SerializeField] private string[] escenasEnOrden =
     {
         "MenuPrincipal",
-        "Nivel_1"
+        "Nivel_1",
+        "Nivel_2",
+        "Nivel_3"
     };
 
     private void Awake()
@@ -31,7 +33,7 @@ public class Manager_FlujoEscenas : MonoBehaviour
 
     private void Start()
     {
-        if (comenzarDesdeLaPrimeraEscena && escenasEnOrden.Length > 0 &&
+        if (comenzarDesdeLaPrimeraEscena && escenasEnOrden != null && escenasEnOrden.Length > 0 &&
             SceneManager.GetActiveScene().name != escenasEnOrden[0])
         {
             CargarEscena(escenasEnOrden[0]);
@@ -50,6 +52,12 @@ public class Manager_FlujoEscenas : MonoBehaviour
 
     public void CargarSiguienteEscena()
     {
+        if (escenasEnOrden == null || escenasEnOrden.Length == 0)
+        {
+            Debug.LogError("No hay escenas configuradas en Manager_FlujoEscenas.");
+            return;
+        }
+
         int indiceActual = ObtenerIndice(SceneManager.GetActiveScene().name);
 
         if (indiceActual < 0)
@@ -70,7 +78,7 @@ public class Manager_FlujoEscenas : MonoBehaviour
 
     public void CargarMenuPrincipal()
     {
-        if (escenasEnOrden.Length > 0)
+        if (escenasEnOrden != null && escenasEnOrden.Length > 0)
             CargarEscena(escenasEnOrden[0]);
     }
 
@@ -98,6 +106,9 @@ public class Manager_FlujoEscenas : MonoBehaviour
 
     private int ObtenerIndice(string nombreEscena)
     {
+        if (escenasEnOrden == null)
+            return -1;
+
         for (int i = 0; i < escenasEnOrden.Length; i++)
         {
             if (escenasEnOrden[i] == nombreEscena)

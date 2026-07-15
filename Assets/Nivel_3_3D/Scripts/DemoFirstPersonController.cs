@@ -9,7 +9,7 @@ namespace ScifiOffice {
         CapsuleCollider col;
         bool isCrouching;
 
-        public Transform playerBody;
+        [SerializeField] public Transform playerBody;
 
         public enum ControlType { android, keyboard, keyboardMouse };
         public ControlType controlType;
@@ -18,6 +18,14 @@ namespace ScifiOffice {
         public float speed = 3f;
         public float accelerationRate = 12f, crouchFactor = 0.5f, decelerationFactor = 1f;
         public float mouseSensitivity = 50f;
+        [SerializeField] private float groundCheckHeight = 1f;
+        [SerializeField] private float groundCheckDistance = 4f;
+        [SerializeField] private float jumpForce = 5f;
+        [SerializeField] private float customGravity = 15f;
+        private float groundOffset;
+        private float verticalVelocity;
+        private bool isGrounded = true;
+        private bool jumpRequested;
 
         float xRot = 0f;
         float horizontalMovement;
@@ -28,8 +36,28 @@ namespace ScifiOffice {
 
 
         private void Start() {
+            if (playerBody == null) {
+                playerBody = transform.root;
+            }
+
             rb = playerBody.GetComponent<Rigidbody>();
             col = playerBody.GetComponent<CapsuleCollider>();
+
+            if (rb == null || col == null) {
+                Debug.LogError(
+                    "DemoFirstPersonController necesita un Rigidbody y un CapsuleCollider " +
+                    "en el objeto asignado como Player Body.",
+                    this
+                );
+                enabled = false;
+                return;
+            }
+
+            // La altura se ajusta siguiendo rampas, sin usar gravedad.
+            rb.useGravity = false;
+            rb.constraints &= ~RigidbodyConstraints.FreezePositionY;
+            rb.linearVelocity = Vector3.zero;
+            groundOffset = rb.position.y - col.bounds.min.y;
             
             if(controlType == ControlType.keyboardMouse)
                 Cursor.lockState = CursorLockMode.Locked;
@@ -38,36 +66,45 @@ namespace ScifiOffice {
         // Update is called once per frame
         void Update() {
             
-            Walk();
             Look();
 
-            //E to switch keyboard control type between keyboardMouse and keyboard
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                if (controlType == ControlType.keyboardMouse)
-                {
-                    controlType = ControlType.keyboard;
-                    xRot = 0f;
-                }
-                else
-                {
-                    controlType = ControlType.keyboardMouse;
-                }
+            if (Input.GetKeyDown(KeyCode.Space)) {
+                jumpRequested = true;
             }
-            else if (controlType == ControlType.android)
+
+            if (controlType == ControlType.android)
             {
                 //Show mobile controls
-                canvas.SetActive(true);
+                SetMobileCanvasActive(true);
             }
             else
             {
                 //Do not show mobile controls when using keyboard controls
                 Crouch();
-                canvas.SetActive(false);
+                SetMobileCanvasActive(false);
             }
 
 
 
+        }
+
+        private void FixedUpdate() {
+            Walk();
+        }
+
+        private void SetMobileCanvasActive(bool active) {
+            // El canvas solo es necesario para los controles de Android.
+            // Si no fue asignado en el Inspector, evitamos una excepción.
+            if (canvas != null) {
+                canvas.SetActive(active);
+            }
+        }
+
+        private void OnDisable() {
+            if (Cursor.lockState == CursorLockMode.Locked) {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
         }
 
         public void Look() {
@@ -130,22 +167,87 @@ namespace ScifiOffice {
                     break;
             }
 
+            displacement = Vector3.ProjectOnPlane(displacement, Vector3.up);
             float len = displacement.magnitude;
-            if(len > 0) {
-                rb.linearVelocity += displacement / len * Time.deltaTime * maxAcc;
+            Vector3 velocity = rb.linearVelocity;
+            Vector3 horizontalVelocity = new Vector3(velocity.x, 0f, velocity.z);
 
-                // Clamp velocity to the maximum speed.
-                if(rb.linearVelocity.magnitude > maxSpeed) {
-                    rb.linearVelocity = rb.linearVelocity.normalized * speed;
+            if(len > 0) {
+                horizontalVelocity += displacement / len * Time.fixedDeltaTime * maxAcc;
+
+                // Limita solamente el movimiento horizontal y conserva la gravedad.
+                if(horizontalVelocity.magnitude > maxSpeed) {
+                    horizontalVelocity = horizontalVelocity.normalized * maxSpeed;
                 }
             } else {
-                // If no buttons are pressed, decelerate.
-                len = rb.linearVelocity.magnitude;
-                float decelRate = accelerationRate * decelerationFactor * Time.deltaTime;
-                if(len < decelRate) rb.linearVelocity = Vector3.zero;
+                // Si no hay entrada, frena solo en horizontal.
+                len = horizontalVelocity.magnitude;
+                float decelRate = accelerationRate * decelerationFactor * Time.fixedDeltaTime;
+                if(len < decelRate) horizontalVelocity = Vector3.zero;
                 else {
-                    rb.linearVelocity -= rb.linearVelocity.normalized * decelRate;
+                    horizontalVelocity -= horizontalVelocity.normalized * decelRate;
                 }
+            }
+
+            UpdateVerticalMovement(horizontalVelocity);
+            rb.linearVelocity = new Vector3(horizontalVelocity.x, 0f, horizontalVelocity.z);
+        }
+
+        private void UpdateVerticalMovement(Vector3 horizontalVelocity) {
+            if (jumpRequested && isGrounded) {
+                verticalVelocity = jumpForce;
+                isGrounded = false;
+            }
+            jumpRequested = false;
+
+            Vector3 nextPosition = rb.position + horizontalVelocity * Time.fixedDeltaTime;
+            Vector3 rayOrigin = new Vector3(
+                nextPosition.x,
+                rb.position.y + groundCheckHeight,
+                nextPosition.z
+            );
+
+            RaycastHit[] hits = Physics.RaycastAll(
+                rayOrigin,
+                Vector3.down,
+                groundCheckDistance,
+                Physics.DefaultRaycastLayers,
+                QueryTriggerInteraction.Ignore
+            );
+
+            float closestDistance = float.MaxValue;
+            float groundY = rb.position.y;
+
+            foreach (RaycastHit hit in hits) {
+                if (hit.collider == col || hit.distance >= closestDistance) {
+                    continue;
+                }
+
+                closestDistance = hit.distance;
+                groundY = hit.point.y + groundOffset;
+            }
+
+            bool groundFound = closestDistance < float.MaxValue;
+
+            if (isGrounded && groundFound) {
+                rb.position = new Vector3(rb.position.x, groundY, rb.position.z);
+                verticalVelocity = 0f;
+                return;
+            }
+
+            verticalVelocity -= customGravity * Time.fixedDeltaTime;
+            float nextY = rb.position.y + verticalVelocity * Time.fixedDeltaTime;
+
+            if (groundFound && verticalVelocity <= 0f && nextY <= groundY) {
+                rb.position = new Vector3(rb.position.x, groundY, rb.position.z);
+                verticalVelocity = 0f;
+                isGrounded = true;
+            } else if (!groundFound && verticalVelocity <= 0f) {
+                // No permite caer al vacío cuando falta un collider de suelo.
+                verticalVelocity = 0f;
+                isGrounded = true;
+            } else {
+                rb.position = new Vector3(rb.position.x, nextY, rb.position.z);
             }
         }
 

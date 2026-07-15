@@ -3306,7 +3306,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 112
+  m_Constraints: 114
   m_CollisionDetection: 3
 --- !u!4 &503059099
 Transform:
@@ -7332,6 +7332,8 @@ MonoBehaviour:
   crouchFactor: 0.5
   decelerationFactor: 1
   mouseSensitivity: 50
+  stepHeight: 0.35
+  stepCheckDistance: 0.65
   canvas: {fileID: 0}
 --- !u!81 &1105310685
 AudioListener:

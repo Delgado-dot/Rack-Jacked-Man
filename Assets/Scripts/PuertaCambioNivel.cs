@@ -8,13 +8,13 @@ public class PuertaCambioNivel : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (other == null || cambiandoNivel)
+            return;
+
         Debug.Log(
             "Entró al trigger: " + other.name +
             " | Tag: " + other.tag
         );
-
-        if (cambiandoNivel)
-            return;
 
         bool esJugador =
             other.CompareTag("Player") ||
@@ -25,6 +25,14 @@ public class PuertaCambioNivel : MonoBehaviour
             Debug.LogWarning("El objeto que entró no tiene el Tag Player.");
             return;
         }
+
+        if (string.IsNullOrWhiteSpace(escenaDestino))
+        {
+            Debug.LogError("La puerta no tiene una escena de destino configurada.", this);
+            return;
+        }
+
+        escenaDestino = escenaDestino.Trim();
 
         if (!Application.CanStreamedLevelBeLoaded(escenaDestino))
         {
