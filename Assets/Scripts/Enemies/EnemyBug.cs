@@ -29,6 +29,10 @@ public class EnemyBug : MonoBehaviour
     [SerializeField] private float stompThreshold = -0.5f;
     [SerializeField] private float stompAngleThreshold = 0.3f;
 
+    [Header("Evitar obstaculos")]
+    [SerializeField] private float obstacleCheckDistance = 1f;
+    [SerializeField] private float stuckTimeThreshold = 1f;
+
     private CharacterController enemyController;
     private CharacterController playerController;
     private PlayerHealth playerHealth;
@@ -39,6 +43,8 @@ public class EnemyBug : MonoBehaviour
     private Vector3 patrolTarget;
     private float patrolTimer = 0f;
     private Vector3 startPosition;
+    private Vector3 lastPosition;
+    private float stuckTimer = 0f;
 
     private void Start()
     {
@@ -69,6 +75,7 @@ public class EnemyBug : MonoBehaviour
         }
 
         SetNewPatrolTarget();
+        lastPosition = transform.position;
     }
 
     private void Update()
@@ -92,7 +99,55 @@ public class EnemyBug : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
         enemyController.Move(velocity * Time.deltaTime);
 
+        CheckStuck();
         CheckStomp();
+    }
+
+    private bool IsObstacleAhead(Vector3 direction)
+    {
+        Vector3 origin = transform.position + Vector3.up * 0.3f;
+        return Physics.Raycast(origin, direction, obstacleCheckDistance);
+    }
+
+    private Vector3 GetAvoidanceDirection(Vector3 desiredDirection)
+    {
+        if (!IsObstacleAhead(desiredDirection))
+            return desiredDirection;
+
+        Vector3 right = Quaternion.Euler(0, 45, 0) * desiredDirection;
+        Vector3 left = Quaternion.Euler(0, -45, 0) * desiredDirection;
+
+        if (!IsObstacleAhead(right)) return right;
+        if (!IsObstacleAhead(left)) return left;
+
+        Vector3 farRight = Quaternion.Euler(0, 90, 0) * desiredDirection;
+        Vector3 farLeft = Quaternion.Euler(0, -90, 0) * desiredDirection;
+
+        if (!IsObstacleAhead(farRight)) return farRight;
+        if (!IsObstacleAhead(farLeft)) return farLeft;
+
+        return -desiredDirection;
+    }
+
+    private void CheckStuck()
+    {
+        float distMoved = Vector3.Distance(transform.position, lastPosition);
+
+        if (distMoved < 0.05f)
+        {
+            stuckTimer += Time.deltaTime;
+            if (stuckTimer > stuckTimeThreshold)
+            {
+                SetNewPatrolTarget();
+                stuckTimer = 0f;
+            }
+        }
+        else
+        {
+            stuckTimer = 0f;
+        }
+
+        lastPosition = transform.position;
     }
 
     private void UpdatePatrullar()
@@ -118,6 +173,7 @@ public class EnemyBug : MonoBehaviour
         }
         else
         {
+            direction = GetAvoidanceDirection(direction);
             enemyController.Move(direction * speed * 0.5f * Time.deltaTime);
 
             if (direction != Vector3.zero)
@@ -148,6 +204,7 @@ public class EnemyBug : MonoBehaviour
         Vector3 toPlayer = player.position - transform.position;
         Vector3 direction = new Vector3(toPlayer.x, 0, toPlayer.z).normalized;
 
+        direction = GetAvoidanceDirection(direction);
         enemyController.Move(direction * speed * Time.deltaTime);
 
         if (direction != Vector3.zero)

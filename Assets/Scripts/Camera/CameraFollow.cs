@@ -1,17 +1,13 @@
 using UnityEngine;
 
-/// <summary>
-/// CameraFollow - Camara tipo plataforma 3D con SmoothDamp.
-/// Sigue al jugador suavemente con un offset configurable.
-/// </summary>
 public class CameraFollow : MonoBehaviour
 {
     [Header("Referencias")]
     [SerializeField] private Transform target;
 
     [Header("Configuracion de seguimiento")]
-    [SerializeField] private Vector3 offset = new Vector3(0f, 2f, -8f);
-    [SerializeField] private float smoothSpeed = 5f;
+    [SerializeField] private Vector3 offset = new Vector3(0f, 1f, -3f);
+    [SerializeField] private float smoothTime = 0.1f;
 
     [Header("Limites de la camara (opcional)")]
     [SerializeField] private bool useBounds = false;
@@ -22,36 +18,30 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private float minZ = -10f;
     [SerializeField] private float maxZ = -8f;
 
+    private Vector3 smoothVelocity = Vector3.zero;
+
     private void Start()
     {
-        // Buscar al jugador automaticamente si no se asigno
         if (target == null)
         {
             GameObject playerObj = GameObject.FindWithTag("Player");
             if (playerObj == null)
-            {
                 playerObj = GameObject.Find("Player");
-            }
 
             if (playerObj != null)
-            {
                 target = playerObj.transform;
-            }
-            else
-            {
-                Debug.LogWarning("CameraFollow: No se encontro el jugador.");
-            }
         }
+
+        if (target != null)
+            transform.position = target.position + offset;
     }
 
     private void LateUpdate()
     {
         if (target == null) return;
 
-        // Calcular posicion deseada con offset
         Vector3 desiredPosition = target.position + offset;
 
-        // Aplicar limites si estan habilitados
         if (useBounds)
         {
             desiredPosition.x = Mathf.Clamp(desiredPosition.x, minX, maxX);
@@ -59,13 +49,14 @@ public class CameraFollow : MonoBehaviour
             desiredPosition.z = Mathf.Clamp(desiredPosition.z, minZ, maxZ);
         }
 
-        // Suavizar el movimiento con SmoothDamp
-        Vector3 smoothedPosition = Vector3.Lerp(
+        transform.position = Vector3.SmoothDamp(
             transform.position,
             desiredPosition,
-            smoothSpeed * Time.deltaTime
+            ref smoothVelocity,
+            smoothTime
         );
 
-        transform.position = smoothedPosition;
+        Vector3 lookTarget = target.position + Vector3.up * 1f;
+        transform.LookAt(lookTarget);
     }
 }

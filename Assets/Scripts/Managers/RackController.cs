@@ -38,10 +38,6 @@ public class RackController : MonoBehaviour
 
     void CompletarNivel()
     {
-        Debug.Log("Nivel completado, cargando subnivel...");
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.LoadSubLevel();
-        }
+        Debug.Log("Nivel completado. Esperando a que la puerta se abra...");
     }
 }

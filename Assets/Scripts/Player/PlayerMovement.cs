@@ -26,6 +26,8 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController controller;
     private PlayerControls controls;
+    private Animator animator; // <-- AGREGADO
+
     private Vector2 moveInput;
     private Vector3 velocity;
     private Vector3 currentMovement;
@@ -38,6 +40,8 @@ public class PlayerMovement : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         controls = new PlayerControls();
+
+        animator = GetComponentInChildren<Animator>(); // <-- AGREGADO
     }
 
     private void OnEnable()
@@ -110,6 +114,12 @@ public class PlayerMovement : MonoBehaviour
         // Movimiento WASD completo (adelante/atras + izq/der)
         float speed = sprinting ? walkSpeed * 1.5f : walkSpeed;
         Vector3 direction = new Vector3(moveInput.x, 0, moveInput.y);
+
+        // <-- AGREGADO
+        if (animator != null)
+        {
+            animator.SetBool("IsRunning", direction.magnitude > 0.01f);
+        }
 
         float targetSpeed = direction.magnitude * speed;
 

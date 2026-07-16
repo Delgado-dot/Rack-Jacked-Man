@@ -1,14 +1,10 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// <summary>
-/// PlayerInteract - Detecta racks cercanos y permite interactuar con la tecla E.
-/// Se adjunta al Player junto con PlayerMovement.
-/// </summary>
 public class PlayerInteract : MonoBehaviour
 {
     [Header("Configuracion de interaccion")]
-    [SerializeField] private float interactionRange = 3f;
+    [SerializeField] private float interactionRange = 1.2f;
 
     [Header("Referencia")]
     [SerializeField] private RackInteractable currentRack;

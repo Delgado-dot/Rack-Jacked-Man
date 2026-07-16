@@ -79,6 +79,9 @@ public class RackInteractable : MonoBehaviour
         else if (rackType == RackType.Final && GameManager.Instance != null)
             GameManager.Instance.LevelCompleted();
 
+        if (doorController == null)
+            doorController = FindAnyObjectByType<ObjectiveDoorController>();
+
         if (doorController != null)
             doorController.CheckAndOpen();
     }

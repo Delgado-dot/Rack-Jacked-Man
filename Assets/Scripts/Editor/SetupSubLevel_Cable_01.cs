@@ -366,7 +366,7 @@ public class SetupSubLevel_Cable_01 : EditorWindow
         CableSubLevelManager csm = manager.AddComponent<CableSubLevelManager>();
 
         // Asignar spawner
-        EnemySpawnerCable spawner = FindObjectOfType<EnemySpawnerCable>();
+        EnemySpawnerCable spawner = FindAnyObjectByType<EnemySpawnerCable>();
         if (spawner != null)
         {
             SerializedObject so = new SerializedObject(csm);

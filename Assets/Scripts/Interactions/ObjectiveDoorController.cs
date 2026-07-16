@@ -5,12 +5,14 @@ public class ObjectiveDoorController : MonoBehaviour
     [Header("Configuracion")]
     [SerializeField] private float openSpeed = 2f;
     [SerializeField] private Vector3 openOffset = new Vector3(0, 4, 0);
+    [SerializeField] private float blockWidth = 10f;
 
     private Vector3 closedPosition;
     private Vector3 targetPosition;
     private bool isOpen = false;
     private bool isMoving = false;
     private RackInteractable[] allRacks;
+    private Collider blockCollider;
 
     private void Start()
     {
@@ -18,6 +20,26 @@ public class ObjectiveDoorController : MonoBehaviour
         targetPosition = closedPosition;
 
         allRacks = FindObjectsByType<RackInteractable>();
+        Debug.Log("ObjectiveDoor: Racks encontrados = " + allRacks.Length);
+
+        CreateBlockZone();
+
+        PuertaCambioNivel puerta = GetComponent<PuertaCambioNivel>();
+        Debug.Log("ObjectiveDoor: PuertaCambioNivel = " + (puerta != null ? "SI" : "NO"));
+    }
+
+    private void CreateBlockZone()
+    {
+        GameObject zone = new GameObject("DoorBlockZone");
+        zone.transform.SetParent(transform);
+        zone.transform.localPosition = Vector3.zero;
+        zone.transform.localRotation = Quaternion.identity;
+
+        BoxCollider col = zone.AddComponent<BoxCollider>();
+        col.size = new Vector3(blockWidth, 5f, 2f);
+        col.center = Vector3.zero;
+        col.isTrigger = false;
+        blockCollider = col;
     }
 
     private void Update()
@@ -38,9 +60,12 @@ public class ObjectiveDoorController : MonoBehaviour
     {
         if (isOpen) return;
 
-        if (allRacks == null || allRacks.Length == 0)
+        allRacks = FindObjectsByType<RackInteractable>();
+
+        if (allRacks.Length == 0)
         {
-            allRacks = FindObjectsByType<RackInteractable>();
+            Debug.LogWarning("ObjectiveDoor: No se encontraron racks.");
+            return;
         }
 
         int repairedCount = 0;
@@ -67,6 +92,12 @@ public class ObjectiveDoorController : MonoBehaviour
         isOpen = true;
         isMoving = true;
         targetPosition = closedPosition + openOffset;
+        blockCollider.enabled = false;
+
+        PuertaSubLevel puerta = GetComponent<PuertaSubLevel>();
+        if (puerta != null)
+            puerta.AbrirPuerta();
+
         Debug.Log("ObjectiveDoor: Puerta abierta!");
     }
 
@@ -75,6 +106,7 @@ public class ObjectiveDoorController : MonoBehaviour
         isOpen = false;
         isMoving = true;
         targetPosition = closedPosition;
+        blockCollider.enabled = true;
     }
 
     public bool IsOpen() { return isOpen; }
