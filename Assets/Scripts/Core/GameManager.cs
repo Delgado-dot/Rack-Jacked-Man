@@ -86,7 +86,7 @@ public class GameManager : MonoBehaviour
         if (playerHealth != null)
         {
             playerHealth.transform.position = respawnPosition;
-            playerHealth.ResetDeath();
+            PlayerHealth.ResetDeath();
             Debug.Log("Jugador respawneado en: " + respawnPosition);
         }
     }

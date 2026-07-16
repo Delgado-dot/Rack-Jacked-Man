@@ -50,7 +50,7 @@ public class CableHazard : MonoBehaviour
             danioTimer -= Time.deltaTime;
             if (danioTimer <= 0f)
             {
-                playerHealth.TakeDamage();
+                PlayerHealth.TakeDamage();
                 danioTimer = danioIntervalo;
             }
         }
@@ -125,7 +125,7 @@ public class CableHazard : MonoBehaviour
 
             if (estadoActual == EstadoCable.ELECTRIFICADO && playerHealth != null)
             {
-                playerHealth.TakeDamage();
+                PlayerHealth.TakeDamage();
                 danioTimer = danioIntervalo;
             }
         }

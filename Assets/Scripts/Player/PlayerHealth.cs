@@ -1,14 +1,9 @@
 using UnityEngine;
 
-/// <summary>
-/// PlayerHealth - Sistema de vidas del jugador.
-/// Controla danio, invulnerabilidad, respawn y Game Over.
-/// </summary>
 public class PlayerHealth : MonoBehaviour
 {
-    [Header("Vidas")]
+    [Header("Vidas (inspector)")]
     [SerializeField] private int maxLives = 3;
-    [SerializeField] private int currentLives = 3;
 
     [Header("Invulnerabilidad")]
     [SerializeField] private float invulnerabilityDuration = 1f;
@@ -16,148 +11,149 @@ public class PlayerHealth : MonoBehaviour
     [Header("Referencias")]
     [SerializeField] private Transform spawnPoint;
 
-    private Vector3 initialPosition;
-    private float invulnerabilityTimer = 0f;
-    private bool isInvulnerable = false;
-    private bool isDead = false;
+    private static int s_maxLives = 3;
+    private static int s_currentLives = 3;
+    private static bool s_isInvulnerable = false;
+    private static bool s_isDead = false;
+    private static float s_invulnerabilityTimer = 0f;
+    private static float s_invulnerabilityDuration = 1f;
+
+    public static event System.Action<int, int> OnHealthChanged;
+    public static event System.Action OnPlayerDeath;
+
     private PlayerMovement playerMovement;
+    private SubLevelPlayerController subLevelController;
+
+    private void Awake()
+    {
+        s_maxLives = maxLives;
+        s_invulnerabilityDuration = invulnerabilityDuration;
+
+        if (s_currentLives <= 0 || s_currentLives > s_maxLives)
+            s_currentLives = s_maxLives;
+
+        s_isDead = false;
+        s_isInvulnerable = false;
+        s_invulnerabilityTimer = 0f;
+
+        playerMovement = GetComponent<PlayerMovement>();
+        subLevelController = GetComponent<SubLevelPlayerController>();
+    }
 
     private void Start()
     {
-        // Auto-setup racks y puzzles si no existen
         AutoSetupRacks.Setup();
 
-        // Guardar posicion inicial para respawn
-        initialPosition = transform.position;
-
-        // Buscar spawn point por tag si no se asigno
         if (spawnPoint == null)
         {
             GameObject spawn = GameObject.Find("PlayerSpawn");
             if (spawn != null)
-            {
                 spawnPoint = spawn.transform;
-            }
         }
 
-        // Referencia al movimiento del jugador para detenerlo en Game Over
-        playerMovement = GetComponent<PlayerMovement>();
+        OnHealthChanged?.Invoke(s_currentLives, s_maxLives);
     }
 
     private void Update()
     {
-        // Reducir timer de invulnerabilidad
-        if (isInvulnerable)
+        if (s_isInvulnerable)
         {
-            invulnerabilityTimer -= Time.deltaTime;
-            if (invulnerabilityTimer <= 0f)
-            {
-                isInvulnerable = false;
-            }
+            s_invulnerabilityTimer -= Time.deltaTime;
+            if (s_invulnerabilityTimer <= 0f)
+                s_isInvulnerable = false;
         }
     }
 
-    /// <summary>
-    /// Recibir danio. Reduce 1 vida y activa invulnerabilidad.
-    /// Si las vidas llegan a 0, ejecuta Game Over.
-    /// </summary>
-    public void TakeDamage()
+    public static void TakeDamage(int amount)
     {
-        // No recibir danio si esta invulnerable o muerto
-        if (isInvulnerable || isDead) return;
+        if (s_isInvulnerable || s_isDead) return;
 
-        currentLives--;
+        s_currentLives -= amount;
 
-        Debug.Log("Jugador recibio danio. Vidas restantes: " + currentLives);
+        Debug.Log("[PlayerHealth] danio -" + amount + ". Restante: " + s_currentLives);
 
-        if (currentLives <= 0)
+        OnHealthChanged?.Invoke(s_currentLives, s_maxLives);
+
+        if (s_currentLives <= 0)
         {
+            s_currentLives = 0;
             Die();
             return;
         }
 
-        // Activar invulnerabilidad
-        isInvulnerable = true;
-        invulnerabilityTimer = invulnerabilityDuration;
-
-        // Regresar al punto de aparicion
-        Respawn();
+        s_isInvulnerable = true;
+        s_invulnerabilityTimer = s_invulnerabilityDuration;
     }
 
-    /// <summary>
-    /// Curar al jugador. Aumenta 1 vida hasta el maximo.
-    /// </summary>
-    public void Heal()
-    {
-        if (isDead) return;
+    public static void TakeDamage() { TakeDamage(1); }
 
-        if (currentLives < maxLives)
+    public static void Heal()
+    {
+        if (s_isDead) return;
+
+        if (s_currentLives < s_maxLives)
         {
-            currentLives++;
-            Debug.Log("Jugador curado. Vidas actuales: " + currentLives);
+            s_currentLives++;
+            Debug.Log("[PlayerHealth] curado. Vidas: " + s_currentLives);
+            OnHealthChanged?.Invoke(s_currentLives, s_maxLives);
         }
     }
 
-    /// <summary>
-    /// Ejecutar muerte del jugador. Game Over.
-    /// </summary>
-    private void Die()
+    private static void Die()
     {
-        isDead = true;
-        currentLives = 0;
+        s_isDead = true;
 
-        Debug.Log("GAME OVER");
+        Debug.Log("[PlayerHealth] GAME OVER");
 
-        // Detener movimiento del jugador
-        if (playerMovement != null)
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player != null)
         {
-            playerMovement.enabled = false;
+            PlayerHealth ph = player.GetComponent<PlayerHealth>();
+            if (ph != null)
+            {
+                if (ph.subLevelController != null)
+                    ph.subLevelController.enabled = false;
+                else if (ph.playerMovement != null)
+                    ph.playerMovement.enabled = false;
+            }
         }
 
-        // Notificar al GameManager
+        OnPlayerDeath?.Invoke();
+
         if (GameManager.Instance != null)
-        {
             GameManager.Instance.GameOver();
-        }
     }
 
-    /// <summary>
-    /// Regresar al punto de aparicion o ultimo checkpoint.
-    /// </summary>
-    private void Respawn()
+    public static void ResetDeath()
     {
-        // Usar GameManager si esta disponible
-        if (GameManager.Instance != null)
+        s_isDead = false;
+        s_isInvulnerable = false;
+        s_invulnerabilityTimer = 0f;
+
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player != null)
         {
-            GameManager.Instance.RespawnPlayer();
-            return;
+            PlayerHealth ph = player.GetComponent<PlayerHealth>();
+            if (ph != null)
+            {
+                if (ph.subLevelController != null)
+                    ph.subLevelController.enabled = true;
+                else if (ph.playerMovement != null)
+                    ph.playerMovement.enabled = true;
+            }
         }
-
-        // Fallback: usar posicion inicial o spawn point
-        Vector3 targetPosition = initialPosition;
-
-        if (spawnPoint != null)
-        {
-            targetPosition = spawnPoint.position;
-        }
-
-        transform.position = targetPosition;
     }
 
-    public void ResetDeath()
+    public static void ResetForNewScene()
     {
-        isDead = false;
-        isInvulnerable = false;
-        invulnerabilityTimer = 0f;
-        if (playerMovement != null)
-        {
-            playerMovement.enabled = true;
-        }
+        s_currentLives = s_maxLives;
+        s_isDead = false;
+        s_isInvulnerable = false;
+        s_invulnerabilityTimer = 0f;
     }
 
-    // Getters para UI o otros sistemas
-    public int GetCurrentLives() { return currentLives; }
-    public int GetMaxLives() { return maxLives; }
-    public bool IsInvulnerable() { return isInvulnerable; }
-    public bool IsDead() { return isDead; }
+    public static int GetCurrentLives() => s_currentLives;
+    public static int GetMaxLives() => s_maxLives;
+    public static bool IsInvulnerable() => s_isInvulnerable;
+    public static bool IsDead() => s_isDead;
 }

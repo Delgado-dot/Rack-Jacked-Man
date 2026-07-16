@@ -249,7 +249,7 @@ public class EnemyBug : MonoBehaviour
                 PlayerHealth ph = hit.gameObject.GetComponent<PlayerHealth>();
                 if (ph != null)
                 {
-                    ph.TakeDamage();
+                    PlayerHealth.TakeDamage();
                     damageTimer = damageCooldown;
                     Debug.Log("EnemyBug: Danio al jugador por contacto fisico!");
                 }

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyCable : MonoBehaviour
 {
-    [Header("Configuracion")]
+    [Header("Movimiento")]
     [SerializeField] private float velocidad = 5f;
     [SerializeField] private float distanciaMaxima = 60f;
 
@@ -10,6 +10,7 @@ public class EnemyCable : MonoBehaviour
     [SerializeField] private int danoAlContacto = 1;
 
     private Vector3 posicionInicial;
+    private bool destruido = false;
 
     private void Start()
     {
@@ -18,12 +19,11 @@ public class EnemyCable : MonoBehaviour
 
     private void Update()
     {
-        transform.position += Vector3.back * velocidad * Time.deltaTime;
+        transform.position += Vector3.forward * velocidad * Time.deltaTime;
 
-        float distancia = Vector3.Distance(transform.position, posicionInicial);
-        if (distancia > distanciaMaxima)
+        if (Vector3.Distance(transform.position, posicionInicial) > distanciaMaxima)
         {
-            Destroy(gameObject);
+            Destruir();
         }
     }
 
@@ -31,17 +31,29 @@ public class EnemyCable : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        SubLevelPlayerController playerController = other.GetComponent<SubLevelPlayerController>();
-        if (playerController != null)
-        {
-            playerController.TakeDamage(danoAlContacto);
-        }
-
-        Destroy(gameObject);
+        PlayerHealth.TakeDamage(danoAlContacto);
+        Destruir();
     }
 
     public void TakeDamage(int amount)
     {
+        Destruir();
+    }
+
+    private void Destruir()
+    {
+        if (destruido) return;
+        destruido = true;
+        EnemySpawnerCable.DecrementarEnemigos();
         Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        if (!destruido)
+        {
+            destruido = true;
+            EnemySpawnerCable.DecrementarEnemigos();
+        }
     }
 }
