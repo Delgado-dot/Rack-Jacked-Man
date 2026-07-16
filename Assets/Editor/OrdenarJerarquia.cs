@@ -13,7 +13,9 @@ public class OrdenarJerarquia : EditorWindow
             return;
         }
 
+        Undo.RegisterFullObjectHierarchyUndo(Selection.activeTransform, "Ordenar jerarquía");
         OrdenarRecursivo(Selection.activeTransform);
+        EditorUtility.SetDirty(Selection.activeTransform);
         Debug.Log("Jerarquía ordenada por nombre dentro de: " + Selection.activeTransform.name);
     }
 
