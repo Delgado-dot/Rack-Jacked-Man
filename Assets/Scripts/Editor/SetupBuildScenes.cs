@@ -21,11 +21,17 @@ public class SetupBuildScenes
         string[] orden =
         {
             "MenuPrincipal",
-            "PlayerTest",
+            "Nivel_1",
             "SubCable01_Copy",
+            "Nivel_2",
+            "Nivel_3",
             "Menu Victoria",
             "Menu GameOver",
-            "SampleScene"
+            "Puzzle_Cables",
+            "Puzzle_Dispatcher",
+            "Puzzle_Nave",
+            "Puzzle_Trafico",
+            "Puzzle_PatchCore"
         };
 
         HashSet<string> added = new HashSet<string>();

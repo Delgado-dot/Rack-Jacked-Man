@@ -15,14 +15,17 @@ EditorBuildSettings:
     path: Assets/Scenes/SubCable01_Copy.unity
     guid: 02957d35ed9a62f49bed0d2825e8645f
   - enabled: 1
+    path: Assets/Scenes/Nivel_2.unity
+    guid: 7c8c43d6e67ee8a468d56e96fda806be
+  - enabled: 1
+    path: Assets/Scenes/Nivel_3.unity
+    guid: 99dda16d7439454199646ba63333ff54
+  - enabled: 1
     path: Assets/Scenes/Menu Victoria.unity
     guid: f4c81cc204df8484f9525d52b47a71ec
   - enabled: 1
     path: Assets/Scenes/Menu GameOver.unity
     guid: a58de4d337dc2e643bb1dc60b780da17
-  - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
     path: Assets/Scenes/Puzzle_Cables.unity
     guid: b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0

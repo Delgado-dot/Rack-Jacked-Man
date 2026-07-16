@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 /// <summary>
 /// GameManager - Singleton que controla el flujo del juego.
 /// Maneja checkpoints, respawn, game over y completar nivel.
+/// Persiste: vidas, puntos, nivel actual, chaquetas usadas.
 /// </summary>
 public class GameManager : MonoBehaviour
 {
@@ -24,6 +25,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerHealth playerHealth;
 
     private Vector3 initialSpawnPosition;
+
+    // Persistencia entre niveles
+    private static int s_nivelActual = 1;
+    private static int s_puntos = 0;
+    private static int s_chaquetasUsadas = 0;
 
     private void Awake()
     {
@@ -163,6 +169,47 @@ public class GameManager : MonoBehaviour
         Debug.LogError("[GameManager] La escena '" + sceneName + "' NO esta en Build Settings." +
             "\nVe a File > Build Profiles y agregala." +
             "\nO ejecuta: Rack-Jacked-Man > Setup Build Scenes");
+    }
+
+    // ─── Persistencia ─────────────────────────────────────────────
+
+    public int GetNivelActual() => s_nivelActual;
+    public void SetNivelActual(int nivel) => s_nivelActual = nivel;
+
+    public int GetPuntos() => s_puntos;
+    public void AddPuntos(int cantidad) => s_puntos += cantidad;
+
+    public int GetChaquetasUsadas() => s_chaquetasUsadas;
+    public void AddChaquetaUsada() => s_chaquetasUsadas++;
+
+    public void ResetPersistencia()
+    {
+        s_nivelActual = 1;
+        s_puntos = 0;
+        s_chaquetasUsadas = 0;
+        PlayerHealth.ResetForNewScene();
+    }
+
+    /// <summary>
+    /// Retorna la escena destino del SubCable según el nivel actual.
+    /// Nivel 1 -> SubCable -> Nivel_2
+    /// Nivel 2 -> SubCable -> Nivel_3
+    /// Nivel 3 -> SubCable -> Victoria
+    /// </summary>
+    public string GetSubLevelDestination()
+    {
+        switch (s_nivelActual)
+        {
+            case 1: return "Nivel_2";
+            case 2: return "Nivel_3";
+            default: return sceneVictory;
+        }
+    }
+
+    public void AvanzarNivel()
+    {
+        s_nivelActual++;
+        Debug.Log("[GameManager] Nivel actual: " + s_nivelActual);
     }
 
     public bool IsGameOver() { return isGameOver; }
