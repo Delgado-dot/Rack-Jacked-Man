@@ -47,20 +47,6 @@ public class AutoSetupRacks : MonoBehaviour
         {
             playerMode = player.AddComponent<PlayerMode>();
         }
-
-        Rigidbody rb = player.GetComponent<Rigidbody>();
-        if (rb == null)
-        {
-            rb = player.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            rb.useGravity = false;
-        }
-
-        PlayerInteract playerInteract = player.GetComponent<PlayerInteract>();
-        if (playerInteract == null)
-        {
-            playerInteract = player.AddComponent<PlayerInteract>();
-        }
     }
 
     static void SetupManagers()
