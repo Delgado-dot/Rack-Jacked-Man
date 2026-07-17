@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class EnemyVirus : MonoBehaviour
+public class EnemyVirus : MonoBehaviour, IPausable
 {
     [Header("Jugador")]
     public Transform player;
@@ -60,5 +60,14 @@ public class EnemyVirus : MonoBehaviour
         {
             agent.SetDestination(hit.position);
         }
+    }
+    public void Pausar()
+    {
+        agent.isStopped = true;
+    }
+
+    public void Reanudar()
+    {
+        agent.isStopped = false;
     }
 }
