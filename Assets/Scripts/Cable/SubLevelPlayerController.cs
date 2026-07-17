@@ -218,7 +218,7 @@ public class SubLevelPlayerController : MonoBehaviour
         if (Time.time < nextFireTime) return;
         nextFireTime = Time.time + fireRate;
 
-        Vector3 spawnPos = transform.position + Vector3.up * 1f + Vector3.forward * 1.5f;
+        Vector3 spawnPos = transform.position + Vector3.up * 0.1f + Vector3.forward * 1.5f;
         Projectile.Spawn(spawnPos, transform.forward);
     }
 
