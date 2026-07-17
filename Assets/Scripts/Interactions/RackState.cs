@@ -35,6 +35,7 @@ public class RackState : MonoBehaviour
                 blockMat.color = offColor;
             }
         }
+        Debug.Log($"{gameObject.name} RackState = {repaired}");
     }
 
     public void SetRepaired(bool state)

@@ -47,6 +47,12 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        string escenaActual = SceneManager.GetActiveScene().name;
+        if (escenaActual == sceneMainMenu)
+        {
+            ResetPersistencia();
+        }
+
         if (playerHealth == null)
         {
             GameObject player = GameObject.Find("Player");
@@ -113,8 +119,6 @@ public class GameManager : MonoBehaviour
 
         isLevelCompleted = true;
         Debug.Log("NIVEL COMPLETADO!");
-        Time.timeScale = 0f;
-        SafeLoadScene(sceneVictory);
     }
 
     public void LoadSubLevel()
@@ -129,6 +133,7 @@ public class GameManager : MonoBehaviour
         isGameOver = false;
         isLevelCompleted = false;
         Time.timeScale = 1f;
+        ResetPersistencia();
         SafeLoadScene(sceneMainMenu);
     }
 
@@ -193,15 +198,14 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Retorna la escena destino del SubCable según el nivel actual.
     /// Nivel 1 -> SubCable -> Nivel_2
-    /// Nivel 2 -> SubCable -> Nivel_3
-    /// Nivel 3 -> SubCable -> Victoria
+    /// Nivel 2 -> SubCable -> Menu Victoria
     /// </summary>
     public string GetSubLevelDestination()
     {
         switch (s_nivelActual)
         {
             case 1: return "Nivel_2";
-            case 2: return "Nivel_3";
+            case 2: return sceneVictory;
             default: return sceneVictory;
         }
     }

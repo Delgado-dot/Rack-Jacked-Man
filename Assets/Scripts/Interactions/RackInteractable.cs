@@ -21,6 +21,8 @@ public class RackInteractable : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log($"{gameObject.name} -> repaired = {repaired}");
+
         rackRenderer = GetComponent<Renderer>();
 
         if (puzzleMana == null)
@@ -32,7 +34,6 @@ public class RackInteractable : MonoBehaviour
         if (doorController == null)
             doorController = FindAnyObjectByType<ObjectiveDoorController>();
     }
-
     public bool IsInteractable()
     {
         return !repaired && !puzzleActive;
@@ -90,6 +91,12 @@ public class RackInteractable : MonoBehaviour
     {
         puzzleActive = false;
         Debug.Log("Puzzle fallido en rack " + rackIndex);
+    }
+
+    public void Initialize(int index, RackType type)
+    {
+        rackIndex = index;
+        rackType = type;
     }
 
     public int GetRackIndex() { return rackIndex; }

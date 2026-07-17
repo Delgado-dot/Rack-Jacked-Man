@@ -21,13 +21,11 @@ public class CamaraLibre3D : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
+        // El PauseManager necesita el cursor libre para poder pulsar la UI.
+        if (Time.timeScale == 0f)
+            return;
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && Cursor.lockState != CursorLockMode.Locked)
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;

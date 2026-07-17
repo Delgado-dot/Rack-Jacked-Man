@@ -10,7 +10,15 @@ public class MenuPrincipal : MonoBehaviour
 
     public void Ranking()
     {
-        Debug.Log("Abrir ranking");
+        ConexionRanking conexion = FindObjectOfType<ConexionRanking>(true);
+        if (conexion == null)
+        {
+            Canvas canvas = FindObjectOfType<Canvas>();
+            conexion = (canvas != null ? canvas.gameObject : gameObject)
+                .AddComponent<ConexionRanking>();
+        }
+
+        conexion.AbrirRanking();
     }
 
     public void Ajustes()

@@ -42,7 +42,7 @@ public class PlayerCableMovement : MonoBehaviour
     private void Start()
     {
         InicializarCarriles();
-        velocidadActual = velocidadBase;
+        velocidadActual = Mathf.Clamp(velocidadBase, velocidadMinima, velocidadMaxima);
     }
 
     private void InicializarCarriles()

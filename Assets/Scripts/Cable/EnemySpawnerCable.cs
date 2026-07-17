@@ -52,7 +52,7 @@ public class EnemySpawnerCable : MonoBehaviour
     private void SpawnEnemigo()
     {
         int indice = Random.Range(0, cableXPositions.Length);
-        float xCable = cableXPositions[indice];
+        float xCable = cableXPositions[indice] + Random.Range(-variacionX, variacionX);
 
         Vector3 spawnPos = new Vector3(
             xCable,
