@@ -32,12 +32,19 @@ public class AutoSetupRacks : MonoBehaviour
         if (alreadySetup) return;
         alreadySetup = true;
 
-        Debug.Log("[AutoSetupRacks] Iniciando setup...");
+        string sceneName = SceneManager.GetActiveScene().name;
+        bool isSubLevel = sceneName.StartsWith("SubCable") || sceneName.StartsWith("Sub");
+
+        Debug.Log("[AutoSetupRacks] Iniciando setup en " + sceneName + "...");
 
         SetupPlayer();
         SetupManagers();
-        EnsureObjectiveDoor();
-        SetupSceneRacks();
+
+        if (!isSubLevel)
+        {
+            EnsureObjectiveDoor();
+            SetupSceneRacks();
+        }
 
         Debug.Log("[AutoSetupRacks] Setup completo.");
     }
