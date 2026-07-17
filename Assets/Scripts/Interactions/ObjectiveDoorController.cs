@@ -85,9 +85,12 @@ public class ObjectiveDoorController : MonoBehaviour
 
         blockCollider.enabled = false;
 
-        BoxCollider selfBox = GetComponent<BoxCollider>();
-        if (selfBox != null && !selfBox.isTrigger)
-            selfBox.enabled = false;
+        Collider[] allCols = GetComponents<Collider>();
+        foreach (Collider c in allCols)
+        {
+            if (!c.isTrigger)
+                c.enabled = false;
+        }
 
         PuertaSubLevel puerta = GetComponent<PuertaSubLevel>();
         if (puerta != null)
@@ -95,9 +98,17 @@ public class ObjectiveDoorController : MonoBehaviour
             Debug.Log("[DIAG-DOOR] OpenDoor: Llamando PuertaSubLevel.AbrirPuerta()");
             puerta.AbrirPuerta();
         }
-        else
+
+        PuertaCambioNivel puertaCambio = GetComponent<PuertaCambioNivel>();
+        if (puertaCambio != null)
         {
-            Debug.LogWarning("[DIAG-DOOR] OpenDoor: NO hay PuertaSubLevel en este GameObject");
+            puertaCambio.SetDoorOpen(true);
+            Debug.Log("[DIAG-DOOR] OpenDoor: PuertaCambioNivel abierta");
+        }
+
+        if (puerta == null && puertaCambio == null)
+        {
+            Debug.LogWarning("[DIAG-DOOR] OpenDoor: No hay PuertaSubLevel ni PuertaCambioNivel");
         }
 
         Debug.Log("[DIAG-DOOR] OpenDoor: Puerta abierta!");

@@ -40,10 +40,24 @@ public class AutoSetupRacks : MonoBehaviour
         SetupPlayer();
         SetupManagers();
 
+        bool isNivel3 = sceneName == "Nivel_3";
+        bool isNivel2 = sceneName == "Nivel_2";
+
         if (!isSubLevel)
         {
-            EnsureObjectiveDoor();
-            SetupSceneRacks();
+            if (isNivel3)
+            {
+                SetupNivel3();
+            }
+            else if (isNivel2)
+            {
+                Debug.Log("[AutoSetupRacks] Nivel_2: usando configuracion propia. Saltando EnsureObjectiveDoor/SetupSceneRacks.");
+            }
+            else
+            {
+                EnsureObjectiveDoor();
+                SetupSceneRacks();
+            }
         }
 
         Debug.Log("[AutoSetupRacks] Setup completo.");
@@ -227,5 +241,54 @@ public class AutoSetupRacks : MonoBehaviour
                 listeners[i].enabled = false;
             }
         }
+    }
+
+    static void SetupNivel3()
+    {
+        PuzzleMana puzzleMana = FindAnyObjectByType<PuzzleMana>();
+
+        string[] rackNames = { "Server Rack (3)", "Server Rack (4)", "Server Rack (5)", "Server Rack (6)" };
+
+        for (int i = 0; i < rackNames.Length; i++)
+        {
+            GameObject rackGO = GameObject.Find(rackNames[i]);
+            if (rackGO == null)
+            {
+                Debug.LogWarning("[AutoSetupRacks] Nivel_3: Rack no encontrado: " + rackNames[i]);
+                continue;
+            }
+
+            RackInteractable rackInteractable = rackGO.GetComponent<RackInteractable>();
+            if (rackInteractable == null)
+                rackInteractable = rackGO.AddComponent<RackInteractable>();
+
+            bool isLast = (i == rackNames.Length - 1);
+            RackInteractable.RackType rackType = isLast
+                ? RackInteractable.RackType.Final
+                : RackInteractable.RackType.Checkpoint;
+            rackInteractable.Initialize(i, rackType);
+
+            RackState rackState = rackGO.GetComponent<RackState>();
+            if (rackState == null)
+                rackGO.AddComponent<RackState>();
+
+            BoxCollider col = rackGO.GetComponent<BoxCollider>();
+            if (col == null)
+                col = rackGO.AddComponent<BoxCollider>();
+
+            Debug.Log("[AutoSetupRacks] Nivel_3 Rack configurado: " + rackGO.name + " (index=" + i + ", type=" + rackType + ")");
+        }
+
+        GameObject tv = GameObject.Find("TV 32 inch 2");
+        if (tv != null && tv.GetComponent<RackExitTrigger>() == null)
+        {
+            tv.AddComponent<RackExitTrigger>();
+            Debug.Log("[AutoSetupRacks] Nivel_3: RackExitTrigger agregado a " + tv.name);
+        }
+
+        int totalRacks = GameObject.FindObjectsByType<RackInteractable>().Length;
+        Debug.Log("[AutoSetupRacks] Nivel_3 Total racks: " + totalRacks);
+
+        FixDuplicateAudioListeners();
     }
 }

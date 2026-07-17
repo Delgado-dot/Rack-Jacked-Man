@@ -1199,7 +1199,6 @@ GameObject:
   - component: {fileID: 505841521}
   - component: {fileID: 505841520}
   - component: {fileID: 505841519}
-  - component: {fileID: 505841524}
   m_Layer: 0
   m_Name: Trigger_SalidaNivel2
   m_TagString: Untagged
@@ -1313,20 +1312,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &505841524
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 505841518}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 252dc44091ea21e4785967b9cffa2673, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ObjectiveDoorController
-  blockWidth: 10
-  colorAbierto: {r: 0, g: 0.5, b: 1, a: 1}
 --- !u!65 &511013463
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2481,7 +2466,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97a69b2203dca154a94d35e9237a7188, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInteract
-  interactionRange: 0.5
+  interactionRange: 1.2
   currentRack: {fileID: 0}
 --- !u!1 &849972954
 GameObject:
@@ -13181,7 +13166,7 @@ GameObject:
   - component: {fileID: 8750046702345239859}
   - component: {fileID: 8750046702345239858}
   m_Layer: 0
-  m_Name: Rack_N2_12
+  m_Name: Rack_N2_111
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16962,6 +16947,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1843024297}
   m_LocalEulerAnglesHint: {x: 0, y: -90.00001, z: 0}
+--- !u!114 &888888801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7270650305486235488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 252dc44091ea21e4785967b9cffa2673, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectiveDoorController
+  blockWidth: 4
+  colorAbierto: {r: 0, g: 0.8, b: 0, a: 1}
+--- !u!114 &888888802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7270650305486235488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bcf3b46c8f29aa48a7a4f385f93310e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuertaCambioNivel
+  nombreEscena: SubCable01_Copy
 --- !u!1 &7270650305486235488
 GameObject:
   m_ObjectHideFlags: 0
@@ -16974,6 +16986,8 @@ GameObject:
   - component: {fileID: 6341775088243241599}
   - component: {fileID: 9216183010506311349}
   - component: {fileID: 22543191}
+  - component: {fileID: 888888801}
+  - component: {fileID: 888888802}
   m_Layer: 0
   m_Name: PuertaPared_N2_02
   m_TagString: Untagged
@@ -19322,13 +19336,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a409283bd2894a4db81a7c39c950e6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RackInteractable
-  rackType: 0
-  rackIndex: 1
+  rackType: 1
+  rackIndex: 2
   repaired: 0
   puzzleActive: 0
   puzzleMana: {fileID: 755250548}
   rackState: {fileID: 0}
-  doorController: {fileID: 505841524}
+  doorController: {fileID: 0}
 --- !u!33 &8750046702345239857
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -19368,7 +19382,7 @@ MonoBehaviour:
   puzzleActive: 0
   puzzleMana: {fileID: 755250548}
   rackState: {fileID: 0}
-  doorController: {fileID: 505841524}
+  doorController: {fileID: 0}
 --- !u!33 &8750046702894431918
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -19432,7 +19446,7 @@ MonoBehaviour:
   puzzleActive: 0
   puzzleMana: {fileID: 755250548}
   rackState: {fileID: 0}
-  doorController: {fileID: 505841524}
+  doorController: {fileID: 0}
 --- !u!33 &8750046703392820576
 MeshFilter:
   m_ObjectHideFlags: 0

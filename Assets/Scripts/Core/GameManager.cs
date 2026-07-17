@@ -198,15 +198,14 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Retorna la escena destino del SubCable según el nivel actual.
     /// Nivel 1 -> SubCable -> Nivel_2
-    /// Nivel 2 -> SubCable -> Nivel_3
-    /// Nivel 3 -> SubCable -> Victoria
+    /// Nivel 2 -> SubCable -> Menu Victoria
     /// </summary>
     public string GetSubLevelDestination()
     {
         switch (s_nivelActual)
         {
             case 1: return "Nivel_2";
-            case 2: return "Nivel_3";
+            case 2: return sceneVictory;
             default: return sceneVictory;
         }
     }
