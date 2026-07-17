@@ -18,13 +18,20 @@ public class ObjectiveDoorController : MonoBehaviour
         if (doorRenderer != null)
             colorOriginal = doorRenderer.material.color;
 
-        allRacks = FindObjectsByType<RackInteractable>();
+        allRacks = FindObjectsByType<RackInteractable>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
         Debug.Log("[DIAG-DOOR] Start en \"" + gameObject.name + "\" | Racks=" + allRacks.Length);
 
         CreateBlockZone();
 
         PuertaSubLevel subPuerta = GetComponent<PuertaSubLevel>();
         Debug.Log("[DIAG-DOOR] PuertaSubLevel=" + (subPuerta != null ? "SI" : "NO"));
+        Debug.Log("Racks en escena: " + FindObjectsByType<RackInteractable>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        ).Length);
     }
 
     private void CreateBlockZone()
@@ -49,7 +56,10 @@ public class ObjectiveDoorController : MonoBehaviour
             return;
         }
 
-        allRacks = FindObjectsByType<RackInteractable>();
+        allRacks = FindObjectsByType<RackInteractable>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None
+        );
 
         if (allRacks.Length == 0)
         {
