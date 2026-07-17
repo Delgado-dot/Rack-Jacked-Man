@@ -85,9 +85,9 @@ public class ObjectiveDoorController : MonoBehaviour
 
         blockCollider.enabled = false;
 
-        Collider originalCol = GetComponent<Collider>();
-        if (originalCol != null)
-            originalCol.enabled = false;
+        BoxCollider selfBox = GetComponent<BoxCollider>();
+        if (selfBox != null && !selfBox.isTrigger)
+            selfBox.enabled = false;
 
         PuertaSubLevel puerta = GetComponent<PuertaSubLevel>();
         if (puerta != null)

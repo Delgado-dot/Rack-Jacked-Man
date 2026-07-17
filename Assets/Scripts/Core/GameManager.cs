@@ -47,6 +47,12 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        string escenaActual = SceneManager.GetActiveScene().name;
+        if (escenaActual == sceneMainMenu)
+        {
+            ResetPersistencia();
+        }
+
         if (playerHealth == null)
         {
             GameObject player = GameObject.Find("Player");
@@ -113,8 +119,6 @@ public class GameManager : MonoBehaviour
 
         isLevelCompleted = true;
         Debug.Log("NIVEL COMPLETADO!");
-        Time.timeScale = 0f;
-        SafeLoadScene(sceneVictory);
     }
 
     public void LoadSubLevel()
@@ -129,6 +133,7 @@ public class GameManager : MonoBehaviour
         isGameOver = false;
         isLevelCompleted = false;
         Time.timeScale = 1f;
+        ResetPersistencia();
         SafeLoadScene(sceneMainMenu);
     }
 

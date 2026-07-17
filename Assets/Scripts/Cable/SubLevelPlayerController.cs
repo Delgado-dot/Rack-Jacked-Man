@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class SubLevelPlayerController : MonoBehaviour
 {
@@ -313,8 +314,14 @@ public class SubLevelPlayerController : MonoBehaviour
         if (transform.position.z > limiteZ)
         {
             AddScore(pointsPerLevel);
+
             if (GameManager.Instance != null)
-                GameManager.Instance.LevelCompleted();
+            {
+                string destino = GameManager.Instance.GetSubLevelDestination();
+                Debug.Log("[Runner] Limite alcanzado. Destino: " + destino);
+                GameManager.Instance.AvanzarNivel();
+                UnityEngine.SceneManagement.SceneManager.LoadScene(destino);
+            }
         }
     }
 
