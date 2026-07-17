@@ -85,7 +85,7 @@ public class BotonMenu3D : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 SceneManager.LoadScene("Nivel_1");
                 break;
             case ActionType.Ranking:
-                Debug.Log("Abrir ranking");
+                AbrirRanking();
                 break;
             case ActionType.Ajustes:
                 Debug.Log("Abrir ajustes");
@@ -98,5 +98,19 @@ public class BotonMenu3D : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
                 #endif
                 break;
         }
+    }
+
+    private void AbrirRanking()
+    {
+        ConexionRanking conexion = FindObjectOfType<ConexionRanking>(true);
+
+        if (conexion == null)
+        {
+            Canvas canvas = FindObjectOfType<Canvas>();
+            GameObject contenedor = canvas != null ? canvas.gameObject : gameObject;
+            conexion = contenedor.AddComponent<ConexionRanking>();
+        }
+
+        conexion.AbrirRanking();
     }
 }

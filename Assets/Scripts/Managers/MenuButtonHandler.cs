@@ -37,6 +37,15 @@ public class MenuButtonHandler : MonoBehaviour
 
     public void Guardar()
     {
-        Debug.Log("Guardar: funcionalidad pendiente");
+        int puntos = GameManager.Instance != null ? GameManager.Instance.GetPuntos() : 0;
+        int nivel = GameManager.Instance != null ? GameManager.Instance.GetNivelActual() : 1;
+        int chaquetas = GameManager.Instance != null ? GameManager.Instance.GetChaquetasUsadas() : 0;
+        string jugador = PlayerPrefs.GetString("jugador_nombre", "JUGADOR");
+
+        ConexionRanking conexion = FindObjectOfType<ConexionRanking>(true);
+        if (conexion == null)
+            conexion = gameObject.AddComponent<ConexionRanking>();
+
+        conexion.GuardarPuntaje(jugador, puntos, nivel, chaquetas);
     }
 }

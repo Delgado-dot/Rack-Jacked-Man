@@ -18,12 +18,12 @@ public class SubLevelManager : MonoBehaviour
 
     public void EnterSubLevel()
     {
-        Debug.Log("Entrando a subnivel: " + subLevelName);
+        Debug.Log($"Entrando a subnivel {subLevelIndex}: {subLevelName}");
     }
 
     public void ExitSubLevel()
     {
-        Debug.Log("Saliendo de subnivel: " + subLevelName);
+        Debug.Log($"Saliendo de subnivel {subLevelIndex}: {subLevelName}");
         isCompleted = true;
     }
 
