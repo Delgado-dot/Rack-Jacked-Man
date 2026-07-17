@@ -3756,7 +3756,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 500000100}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: -7, y: 1.2, z: -2.29}
   m_LocalScale: {x: 1, y: 1, z: 1.2077}
   m_ConstrainProportionsScale: 0
@@ -3765,7 +3765,7 @@ Transform:
   - {fileID: 500000121}
   - {fileID: 500000131}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &500000103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3784,7 +3784,7 @@ MonoBehaviour:
   subnivel: 0
   jumpHeight: 2.5
   gravity: -35
-  rotationSpeed: 720
+  rotationSpeed: 360
   groundCheck: {fileID: 500000121}
   groundDistance: 0.3
   groundLayer:
@@ -3869,7 +3869,7 @@ Transform:
   m_GameObject: {fileID: 500000110}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.56, z: 0.328}
+  m_LocalPosition: {x: 0, y: -0.901, z: 0.328}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4059,7 +4059,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraFollow
   target: {fileID: 500000111}
-  offset: {x: 0, y: 1.5, z: -2.188}
+  offset: {x: 0, y: 1.1, z: -3}
   smoothTime: 0.1
   useBounds: 0
   minX: -10
@@ -7926,7 +7926,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7484a926bfa351a45bbc7ea732178b70, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7484a926bfa351a45bbc7ea732178b70, type: 3}
       propertyPath: m_LocalRotation.x
@@ -7934,7 +7934,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7484a926bfa351a45bbc7ea732178b70, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7484a926bfa351a45bbc7ea732178b70, type: 3}
       propertyPath: m_LocalRotation.z
@@ -7946,7 +7946,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7484a926bfa351a45bbc7ea732178b70, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7484a926bfa351a45bbc7ea732178b70, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z

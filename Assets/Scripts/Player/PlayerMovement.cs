@@ -17,7 +17,7 @@ public class PlayerMovement : MonoBehaviour
     public float gravity = -35f;
 
     [Header("Rotacion")]
-    public float rotationSpeed = 720f;
+    public float rotationSpeed = 360f;
 
     [Header("Suelo")]
     public Transform groundCheck;
@@ -111,9 +111,13 @@ public class PlayerMovement : MonoBehaviour
             jumpPressed = false;
         }
 
-        // Movimiento WASD completo (adelante/atras + izq/der)
+        // Movimiento relativo a la dirección del jugador
         float speed = sprinting ? walkSpeed * 1.5f : walkSpeed;
-        Vector3 direction = new Vector3(moveInput.x, 0, moveInput.y);
+
+        Vector3 inputDirection = new Vector3(moveInput.x, 0, moveInput.y);
+
+        Vector3 direction = transform.TransformDirection(inputDirection);
+        direction.y = 0;
 
         // <-- AGREGADO
         if (animator != null)
@@ -134,10 +138,10 @@ public class PlayerMovement : MonoBehaviour
         controller.Move(currentMovement * Time.deltaTime);
 
         // Rotacion segun direccion de movimiento
-        if (direction.sqrMagnitude > 0.01f)
+        if (inputDirection.sqrMagnitude > 0.01f)
         {
-            float targetAngle = Mathf.Atan2(-direction.x, -direction.z) * Mathf.Rad2Deg;
-            Quaternion targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+
             transform.rotation = Quaternion.RotateTowards(
                 transform.rotation,
                 targetRotation,

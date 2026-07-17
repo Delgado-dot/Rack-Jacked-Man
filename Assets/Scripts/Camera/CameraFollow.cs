@@ -6,7 +6,7 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private Transform target;
 
     [Header("Configuracion de seguimiento")]
-    [SerializeField] private Vector3 offset = new Vector3(0f, 1f, -3f);
+    [SerializeField] private Vector3 offset = new Vector3(0f, 1f, 3f);
     [SerializeField] private float smoothTime = 0.1f;
 
     [Header("Limites de la camara (opcional)")]
@@ -40,7 +40,7 @@ public class CameraFollow : MonoBehaviour
     {
         if (target == null) return;
 
-        Vector3 desiredPosition = target.position + offset;
+        Vector3 desiredPosition = target.position + target.TransformDirection(offset);
 
         if (useBounds)
         {
