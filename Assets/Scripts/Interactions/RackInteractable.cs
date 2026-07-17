@@ -92,6 +92,12 @@ public class RackInteractable : MonoBehaviour
         Debug.Log("Puzzle fallido en rack " + rackIndex);
     }
 
+    public void Initialize(int index, RackType type)
+    {
+        rackIndex = index;
+        rackType = type;
+    }
+
     public int GetRackIndex() { return rackIndex; }
     public RackType GetRackType() { return rackType; }
     public bool IsRepaired() { return repaired; }

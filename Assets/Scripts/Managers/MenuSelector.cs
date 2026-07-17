@@ -55,6 +55,7 @@ public class MenuSelector : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.ResetState();
+            GameManager.Instance.SetNivelActual(1);
         }
 
         PlayerHealth.ResetForNewScene();
