@@ -3,29 +3,28 @@ using UnityEngine;
 public class ObjectiveDoorController : MonoBehaviour
 {
     [Header("Configuracion")]
-    [SerializeField] private float openSpeed = 2f;
-    [SerializeField] private Vector3 openOffset = new Vector3(0, 4, 0);
     [SerializeField] private float blockWidth = 10f;
+    [SerializeField] private Color colorAbierto = new Color(0f, 0.5f, 1f, 1f);
 
-    private Vector3 closedPosition;
-    private Vector3 targetPosition;
     private bool isOpen = false;
-    private bool isMoving = false;
     private RackInteractable[] allRacks;
     private Collider blockCollider;
+    private MeshRenderer doorRenderer;
+    private Color colorOriginal;
 
     private void Start()
     {
-        closedPosition = transform.position;
-        targetPosition = closedPosition;
+        doorRenderer = GetComponent<MeshRenderer>();
+        if (doorRenderer != null)
+            colorOriginal = doorRenderer.material.color;
 
         allRacks = FindObjectsByType<RackInteractable>();
-        Debug.Log("ObjectiveDoor: Racks encontrados = " + allRacks.Length);
+        Debug.Log("[DIAG-DOOR] Start en \"" + gameObject.name + "\" | Racks=" + allRacks.Length);
 
         CreateBlockZone();
 
-        PuertaCambioNivel puerta = GetComponent<PuertaCambioNivel>();
-        Debug.Log("ObjectiveDoor: PuertaCambioNivel = " + (puerta != null ? "SI" : "NO"));
+        PuertaSubLevel subPuerta = GetComponent<PuertaSubLevel>();
+        Debug.Log("[DIAG-DOOR] PuertaSubLevel=" + (subPuerta != null ? "SI" : "NO"));
     }
 
     private void CreateBlockZone()
@@ -42,29 +41,19 @@ public class ObjectiveDoorController : MonoBehaviour
         blockCollider = col;
     }
 
-    private void Update()
-    {
-        if (isMoving)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, openSpeed * Time.deltaTime);
-
-            if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
-            {
-                transform.position = targetPosition;
-                isMoving = false;
-            }
-        }
-    }
-
     public void CheckAndOpen()
     {
-        if (isOpen) return;
+        if (isOpen)
+        {
+            Debug.Log("[DIAG-DOOR] CheckAndOpen: Ya abierto. Ignorado.");
+            return;
+        }
 
         allRacks = FindObjectsByType<RackInteractable>();
 
         if (allRacks.Length == 0)
         {
-            Debug.LogWarning("ObjectiveDoor: No se encontraron racks.");
+            Debug.LogWarning("[DIAG-DOOR] CheckAndOpen: No se encontraron racks.");
             return;
         }
 
@@ -77,7 +66,7 @@ public class ObjectiveDoorController : MonoBehaviour
             }
         }
 
-        Debug.Log("ObjectiveDoor: " + repairedCount + "/" + allRacks.Length + " racks reparados");
+        Debug.Log("[DIAG-DOOR] CheckAndOpen: " + repairedCount + "/" + allRacks.Length + " racks reparados");
 
         if (repairedCount >= allRacks.Length)
         {
@@ -90,23 +79,42 @@ public class ObjectiveDoorController : MonoBehaviour
         if (isOpen) return;
 
         isOpen = true;
-        isMoving = true;
-        targetPosition = closedPosition + openOffset;
+
+        if (doorRenderer != null)
+            doorRenderer.material.color = colorAbierto;
+
         blockCollider.enabled = false;
+
+        Collider originalCol = GetComponent<Collider>();
+        if (originalCol != null)
+            originalCol.enabled = false;
 
         PuertaSubLevel puerta = GetComponent<PuertaSubLevel>();
         if (puerta != null)
+        {
+            Debug.Log("[DIAG-DOOR] OpenDoor: Llamando PuertaSubLevel.AbrirPuerta()");
             puerta.AbrirPuerta();
+        }
+        else
+        {
+            Debug.LogWarning("[DIAG-DOOR] OpenDoor: NO hay PuertaSubLevel en este GameObject");
+        }
 
-        Debug.Log("ObjectiveDoor: Puerta abierta!");
+        Debug.Log("[DIAG-DOOR] OpenDoor: Puerta abierta!");
     }
 
     public void CloseDoor()
     {
         isOpen = false;
-        isMoving = true;
-        targetPosition = closedPosition;
+
+        if (doorRenderer != null)
+            doorRenderer.material.color = colorOriginal;
+
         blockCollider.enabled = true;
+
+        Collider originalCol = GetComponent<Collider>();
+        if (originalCol != null)
+            originalCol.enabled = true;
     }
 
     public bool IsOpen() { return isOpen; }

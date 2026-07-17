@@ -9,30 +9,36 @@ public class DestinoNivel : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        Debug.Log("[DestinoNivel] Nivel completado.");
+        string escenaActual = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        Debug.Log("[DIAG-DESTINO] ═══ OnTriggerEnter en \"" + gameObject.name + "\" | Escena actual: " + escenaActual + " | siguienteNivel=\"" + siguienteNivel + "\"");
 
         // Si se configuró un destino explícito, usarlo
         if (!string.IsNullOrEmpty(siguienteNivel))
         {
-            SceneManager.LoadScene(siguienteNivel);
+            Debug.Log("[DIAG-DESTINO] → Destino EXPLÍCITO: \"" + siguienteNivel + "\"");
+            UnityEngine.SceneManagement.SceneManager.LoadScene(siguienteNivel);
             return;
         }
 
         // Si hay GameManager, usar su lógica de destino según nivel actual
         if (GameManager.Instance != null)
         {
+            int nivelActual = GameManager.Instance.GetNivelActual();
             string destino = GameManager.Instance.GetSubLevelDestination();
-            Debug.Log("[DestinoNivel] GameManager destino: " + destino);
+            Debug.Log("[DIAG-DESTINO] → GameManager.nivelActual=" + nivelActual + " | GetSubLevelDestination()=\"" + destino + "\"");
             GameManager.Instance.AvanzarNivel();
-            SceneManager.LoadScene(destino);
+            Debug.Log("[DIAG-DESTINO] → AvanzarNivel() ejecutado. Nuevo nivelActual=" + GameManager.Instance.GetNivelActual());
+            Debug.Log("[DIAG-DESTINO] → Cargando escena: \"" + destino + "\"");
+            UnityEngine.SceneManagement.SceneManager.LoadScene(destino);
             return;
         }
 
         // Fallback: siguiente build index
-        int nextIndex = SceneManager.GetActiveScene().buildIndex + 1;
-        if (nextIndex < SceneManager.sceneCountInBuildSettings)
+        int nextIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex + 1;
+        Debug.Log("[DIAG-DESTINO] → Fallback: buildIndex " + UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex + " → " + nextIndex);
+        if (nextIndex < UnityEngine.SceneManagement.SceneManager.sceneCountInBuildSettings)
         {
-            SceneManager.LoadScene(nextIndex);
+            UnityEngine.SceneManagement.SceneManager.LoadScene(nextIndex);
         }
     }
 }

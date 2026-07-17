@@ -4,16 +4,78 @@ using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
+/// <summary>
+/// Editor script que adapta Nivel_2 y Nivel_3 de Samuel a la arquitectura de Cambio.
+/// Clona Player y Camera de Nivel_1. Corrige flujo automaticamente.
+/// </summary>
+[InitializeOnLoad]
 public class SetupNivelesEntrega : EditorWindow
 {
-    private const string SCENE_SOURCE = "Assets/Scenes/Nivel_1.unity";
-    private const string SCENE_NIVEL2 = "Assets/Scenes/Nivel_2.unity";
-    private const string SCENE_NIVEL3 = "Assets/Scenes/Nivel_3.unity";
+    private const string SRC = "Assets/Scenes/Nivel_1.unity";
+    private const string PREFKEY_FLOW_FIXED = "SetupNiveles_FlowFixed_v2";
+
+    // ═══════════════════════════════════════════════════════════════
+    // EJECUCION AUTOMATICA AL ABRIR UNITY
+    // ═══════════════════════════════════════════════════════════════
+    static SetupNivelesEntrega()
+    {
+        EditorApplication.delayCall += AutoFixFlow;
+    }
+
+    private static void AutoFixFlow()
+    {
+        if (SessionState.GetBool(PREFKEY_FLOW_FIXED, false)) return;
+
+        bool needsNivel1 = NeedsFlowFixNivel1();
+        bool needsNivel2 = NeedsFlowFixNivel2();
+
+        if (!needsNivel1 && !needsNivel2)
+        {
+            SessionState.SetBool(PREFKEY_FLOW_FIXED, true);
+            return;
+        }
+
+        Debug.Log("[Setup] Auto-fix: aplicando correccion de flujo...");
+        if (needsNivel1) FixNivel1Flow();
+        if (needsNivel2) FixNivel2Flow();
+        SessionState.SetBool(PREFKEY_FLOW_FIXED, true);
+        Debug.Log("[Setup] Auto-fix: flujo corregido.");
+    }
+
+    private static bool NeedsFlowFixNivel1()
+    {
+        string full = Application.dataPath + "/../" + "Assets/Scenes/Nivel_1.unity";
+        if (!File.Exists(full)) return false;
+        string[] lines = File.ReadAllLines(full);
+        bool insidePuntoFinal = false;
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (lines[i].Contains("m_Name: PuntoFinal")) insidePuntoFinal = true;
+            if (insidePuntoFinal && lines[i].Trim() == "m_IsActive: 1") return true;
+            if (insidePuntoFinal && lines[i].Trim() == "m_IsActive: 0") return false;
+            if (insidePuntoFinal && lines[i].StartsWith("--- !u!")) return false;
+        }
+        return false;
+    }
+
+    private static bool NeedsFlowFixNivel2()
+    {
+        string full = Application.dataPath + "/../" + "Assets/Scenes/Nivel_2.unity";
+        if (!File.Exists(full)) return false;
+        string[] lines = File.ReadAllLines(full);
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (lines[i].Contains("escenaDestino: Nivel_3")) return true;
+            if (lines[i].Contains("nombreEscena: Nivel_3")) return true;
+        }
+        return false;
+    }
 
     // FileIDs del Player en Nivel_1
-    private static readonly HashSet<long> PlayerFileIDs = new HashSet<long>
+    private static readonly HashSet<long> PlayerIDs = new HashSet<long>
     {
         500000100, 500000101, 500000103, 500000104, 500000105,
         500000110, 500000111,
@@ -24,20 +86,12 @@ public class SetupNivelesEntrega : EditorWindow
         563622406, 563622407, 563622408
     };
 
-    // FileIDs de la Main Camera en Nivel_1
-    private static readonly HashSet<long> CameraFileIDs = new HashSet<long>
+    // FileIDs de la Camera en Nivel_1
+    private static readonly HashSet<long> CameraIDs = new HashSet<long>
     {
         500000200, 500000201, 500000202, 500000203,
         500000204, 500000205, 500000206, 500000207
     };
-
-    // Todos los fileIDs que vamos a clonar
-    private static readonly HashSet<long> AllCloneIDs = new HashSet<long>();
-    static SetupNivelesEntrega()
-    {
-        foreach (long id in PlayerFileIDs) AllCloneIDs.Add(id);
-        foreach (long id in CameraFileIDs) AllCloneIDs.Add(id);
-    }
 
     [MenuItem("Rack-Jacked-Man/Setup Niveles Entrega")]
     public static void ShowWindow()
@@ -47,568 +101,454 @@ public class SetupNivelesEntrega : EditorWindow
 
     private void OnGUI()
     {
-        GUILayout.Label("Setup de Niveles para Entrega Final", EditorStyles.boldLabel);
+        GUILayout.Label("Adaptar Nivel_2 y Nivel_3 de Samuel", EditorStyles.boldLabel);
+        GUILayout.Space(5);
+        GUILayout.Label("Clona Player y Camera de Nivel_1.", EditorStyles.wordWrappedMiniLabel);
         GUILayout.Space(10);
 
-        if (GUILayout.Button("1. Corregir Nivel_2", GUILayout.Height(40)))
-        {
+        if (GUILayout.Button("1. Fix Nivel_2", GUILayout.Height(35)))
             FixNivel2();
-        }
 
         GUILayout.Space(5);
 
-        if (GUILayout.Button("2. Corregir Nivel_3", GUILayout.Height(40)))
-        {
+        if (GUILayout.Button("2. Fix Nivel_3", GUILayout.Height(35)))
             FixNivel3();
-        }
-
-        GUILayout.Space(5);
-
-        if (GUILayout.Button("3. Configurar Menu Victoria", GUILayout.Height(40)))
-        {
-            SetupMenuScene("Assets/Scenes/Menu Victoria.unity", "Victoria");
-        }
-
-        GUILayout.Space(5);
-
-        if (GUILayout.Button("4. Configurar Menu GameOver", GUILayout.Height(40)))
-        {
-            SetupMenuScene("Assets/Scenes/Menu GameOver.unity", "GameOver");
-        }
 
         GUILayout.Space(10);
 
-        if (GUILayout.Button("5. CONFIGURAR TODO", GUILayout.Height(50)))
+        if (GUILayout.Button("CONFIGURAR TODO", GUILayout.Height(45)))
         {
             FixNivel2();
             FixNivel3();
-            SetupMenuScene("Assets/Scenes/Menu Victoria.unity", "Victoria");
-            SetupMenuScene("Assets/Scenes/Menu GameOver.unity", "GameOver");
-            EditorUtility.DisplayDialog("Setup Completo",
-                "Nivel_2, Nivel_3, Victoria y GameOver configurados.", "OK");
+            EditorUtility.DisplayDialog("Listo", "Nivel_2 y Nivel_3 configurados.", "OK");
+        }
+
+        GUILayout.Space(15);
+        GUILayout.Label("CORRECCION DE FLUJO", EditorStyles.boldLabel);
+        GUILayout.Space(5);
+
+        if (GUILayout.Button("3. Fix Flujo (Nivel_1 + Nivel_2)", GUILayout.Height(35)))
+        {
+            FixNivel1Flow();
+            FixNivel2Flow();
+            EditorUtility.DisplayDialog("Listo", "Flujo corregido.\nNivel_1: PuntoFinal deshabilitado.\nNivel_2: Trigger_SalidaNivel2 -> SubCable01_Copy.", "OK");
         }
 
         GUILayout.Space(10);
-        GUILayout.Label("MenuPrincipal -> Nivel_1 -> SubCable -> Nivel_2 -> SubCable -> Nivel_3 -> Victoria", EditorStyles.wordWrappedMiniLabel);
+        GUILayout.Label("Flujo: Nivel_1 -> SubCable -> Nivel_2 -> SubCable -> Nivel_3 -> Victoria", EditorStyles.wordWrappedMiniLabel);
     }
 
-    // ═════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════
     // NIVEL_2
-    // ═════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════
 
     private static void FixNivel2()
     {
-        Scene scene = EditorSceneManager.OpenScene(SCENE_NIVEL2, OpenSceneMode.Single);
+        Scene scene = EditorSceneManager.OpenScene("Assets/Scenes/Nivel_2.unity", OpenSceneMode.Single);
         Debug.Log("[Setup] === FixNivel2 ===");
 
-        // 1. Eliminar Player y Camera de Samuel
-        DeleteIfExists("Player");
-        DeleteIfExists("Main Camera");
+        // Eliminar Player y Camera de Samuel
+        DestroyByName("Player");
+        DestroyByName("Main Camera");
 
-        // 2. Clonar Player de Nivel_1 (base fileID 700000000)
-        ClonePlayerFromNivel1(scene, 700000000, new Vector3(-3.75f, 3.5f, 8.1f));
+        // Clonar Player (base 700000000)
+        long playerCameraTargetID = CloneObject("Player", PlayerIDs, 700000000,
+            new Vector3(-3.75f, 3.5f, 8.1f), "Player");
 
-        // 3. Clonar Camera de Nivel_1 (base fileID 900000000)
-        //    CameraTarget del Player clonado tendra fileID 700000111
-        CloneCameraFromNivel1(scene, 900000000, 700000111);
+        // Clonar Camera (base 900000000)
+        // CameraFollow.target apunta a CameraTarget del Player clonado
+        CloneCamera(900000000, playerCameraTargetID);
 
-        // 4. Fix Ground Layer
-        FixGroundLayer("Piso_N2_");
+        // Fix Ground Layer (Layer 3 = Ground)
+        FixLayer("Piso_N2_", 3);
 
-        // 5. Verificar
-        VerifyScene("Nivel_2");
+        // Verificar
+        Verify("Nivel_2");
 
         EditorSceneManager.SaveScene(scene);
         Debug.Log("[Setup] Nivel_2 listo.");
     }
 
-    // ═════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════
     // NIVEL_3
-    // ═════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════
 
     private static void FixNivel3()
     {
-        Scene scene = EditorSceneManager.OpenScene(SCENE_NIVEL3, OpenSceneMode.Single);
+        Scene scene = EditorSceneManager.OpenScene("Assets/Scenes/Nivel_3.unity", OpenSceneMode.Single);
         Debug.Log("[Setup] === FixNivel3 ===");
 
-        // 1. Eliminar Player y Camera de Samuel
-        DeleteIfExists("Player");
-        DeleteIfExists("Main Camera");
+        // Eliminar Player y Camera de Samuel
+        DestroyByName("Player");
+        DestroyByName("Main Camera");
 
-        // 2. Clonar Player de Nivel_1 (base fileID 800000000)
-        ClonePlayerFromNivel1(scene, 800000000, new Vector3(4.285f, 2.017f, 30.808f));
+        // Clonar Player (base 800000000)
+        long playerCameraTargetID = CloneObject("Player", PlayerIDs, 800000000,
+            new Vector3(4.285f, 2.017f, 30.808f), "Player");
 
-        // 3. Clonar Camera de Nivel_1 (base fileID 910000000)
-        //    CameraTarget del Player clonado tendra fileID 800000111
-        CloneCameraFromNivel1(scene, 910000000, 800000111);
+        // Clonar Camera (base 910000000)
+        CloneCamera(910000000, playerCameraTargetID);
 
-        // 4. Fix Ground Layer
-        FixGroundLayer("20m Epoxy");
+        // Fix Ground Layer
+        FixLayer("20m Epoxy", 3);
 
-        // 5. Deshabilitar UI de Samuel (no eliminar)
-        DisableSamuelUI();
+        // Deshabilitar UI de Samuel (no eliminar)
+        SetActive("HUDCanvas", false);
+        SetActive("EventSystem", false);
+        SetActive("MobileControls", false);
 
-        // 6. Crear trigger de salida
-        CreateExitTriggerNivel3();
+        // Crear trigger de salida -> Victoria
+        CreateTrigger("Trigger_SalidaNivel3", new Vector3(2.3f, 1.0f, 48.5f), new Vector3(3f, 3f, 2f), "");
 
-        // 7. Verificar
-        VerifyScene("Nivel_3");
+        // Verificar
+        Verify("Nivel_3");
 
         EditorSceneManager.SaveScene(scene);
         Debug.Log("[Setup] Nivel_3 listo.");
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    // CLONAR PLAYER DE NIVEL_1
-    // ═════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════
+    // CORRECCION DE FLUJO
+    // ═══════════════════════════════════════════════════════════════
 
-    private static void ClonePlayerFromNivel1(Scene targetScene, long baseFileID, Vector3 spawnPosition)
+    private static void FixNivel1Flow()
     {
-        string[] sourceLines = ReadSourceScene();
-        if (sourceLines == null) return;
+        Scene scene = EditorSceneManager.OpenScene("Assets/Scenes/Nivel_1.unity", OpenSceneMode.Single);
+        Debug.Log("[Setup] === FixNivel1Flow ===");
 
-        Dictionary<long, List<string>> blocks = ExtractBlocks(sourceLines, PlayerFileIDs);
-        if (blocks.Count == 0)
-        {
-            Debug.LogError("[Setup] No se encontro Player en Nivel_1");
-            return;
-        }
+        // PuntoFinal tiene DestinoNivel que carga Nivel_2 directamente.
+        // Debe estar deshabilitado para que ObjectiveDoor/PuertaSubLevel controle la salida.
+        SetActive("PuntoFinal", false);
 
-        Dictionary<long, long> idMap = BuildIDMap(blocks.Keys, baseFileID);
-        List<string> targetContent = ReadTargetScene(targetScene);
+        // Verificar que ObjectiveDoor sigue activo
+        GameObject door = GameObject.Find("ObjectiveDoor");
+        if (door != null && door.activeSelf)
+            Debug.Log("[Setup] Nivel_1: ObjectiveDoor activo OK");
+        else
+            Debug.LogWarning("[Setup] Nivel_1: ObjectiveDoor NO encontrado o inactivo");
 
-        // Eliminar Player viejo
-        targetContent = RemoveBlocks(targetContent, PlayerFileIDs);
-
-        // Inyectar Player clonado
-        int insertIdx = FindSceneRootsLine(targetContent);
-        if (insertIdx < 0) return;
-
-        List<string> injectLines = BuildInjectLines(blocks, idMap);
-        targetContent.InsertRange(insertIdx, injectLines);
-
-        // Agregar a SceneRoots
-        long newRootID = idMap[500000101];
-        targetContent = AddToSceneRoots(targetContent, newRootID);
-
-        // Resetear spawnPoint
-        targetContent = ResetSpawnPoint(targetContent, idMap);
-
-        WriteTargetScene(targetScene, targetContent);
-        Debug.Log("[Setup] Player clonado (base " + baseFileID + ")");
+        EditorSceneManager.SaveScene(scene);
+        Debug.Log("[Setup] Nivel_1 flujo corregido.");
     }
 
-    // ═════════════════════════════════════════════════════════════════
-    // CLONAR CAMERA DE NIVEL_1
-    // ═════════════════════════════════════════════════════════════════
-
-    private static void CloneCameraFromNivel1(Scene targetScene, long baseFileID, long cameraTargetFileID)
+    private static void FixNivel2Flow()
     {
-        string[] sourceLines = ReadSourceScene();
-        if (sourceLines == null) return;
+        Scene scene = EditorSceneManager.OpenScene("Assets/Scenes/Nivel_2.unity", OpenSceneMode.Single);
+        Debug.Log("[Setup] === FixNivel2Flow ===");
 
-        Dictionary<long, List<string>> blocks = ExtractBlocks(sourceLines, CameraFileIDs);
+        // Trigger_SalidaNivel2 tiene PuertaCambioNivel.escenaDestino = "Nivel_3"
+        // Debe apuntar a "SubCable01_Copy" para mantener el flujo correcto.
+        GameObject trigger = GameObject.Find("Trigger_SalidaNivel2");
+        if (trigger != null)
+        {
+            PuertaCambioNivel puerta = trigger.GetComponent<PuertaCambioNivel>();
+            if (puerta != null)
+            {
+                string anterior = puerta.nombreEscena;
+                puerta.nombreEscena = "SubCable01_Copy";
+                Debug.Log("[Setup] Trigger_SalidaNivel2: nombreEscena " + anterior + " -> SubCable01_Copy");
+            }
+            else
+            {
+                Debug.LogWarning("[Setup] Trigger_SalidaNivel2: no tiene PuertaCambioNivel");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[Setup] Nivel_2: Trigger_SalidaNivel2 no encontrado");
+        }
+
+        EditorSceneManager.SaveScene(scene);
+        Debug.Log("[Setup] Nivel_2 flujo corregido.");
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // CLONAR OBJETOS DESDE NIVEL_1 (extraccion YAML textual)
+    // ═══════════════════════════════════════════════════════════════
+
+    private static long CloneObject(string objectName, HashSet<long> sourceIDs,
+        long baseFileID, Vector3 position, string tagName)
+    {
+        string[] srcLines = ReadScene(SRC);
+        if (srcLines == null) return 0;
+
+        // Extraer bloques YAML
+        Dictionary<long, List<string>> blocks = ExtractBlocks(srcLines, sourceIDs);
+        if (blocks.Count == 0)
+        {
+            Debug.LogError("[Setup] No se encontro " + objectName + " en Nivel_1");
+            return 0;
+        }
+
+        // Remapear IDs
+        Dictionary<long, long> map = BuildMap(blocks.Keys, baseFileID);
+
+        // Leer escena destino
+        List<string> dst = ReadSceneList(EditorSceneManager.GetActiveScene());
+
+        // Eliminar bloques viejos
+        dst = RemoveBlocks(dst, sourceIDs);
+
+        // Inyectar antes de SceneRoots
+        int idx = FindLine(dst, "SceneRoots:");
+        if (idx < 0) return 0;
+
+        List<string> inject = new List<string>();
+        foreach (long oldID in blocks.Keys)
+        {
+            foreach (string line in blocks[oldID])
+                inject.Add(Remap(line, map));
+            inject.Add("");
+        }
+        dst.InsertRange(idx, inject);
+
+        // Agregar a SceneRoots
+        AddToRoots(dst, map[sourceIDs.First()]); // Transform root
+
+        // Fix spawnPoint en PlayerHealth
+        ResetSpawnPoint(dst, map);
+
+        // Guardar
+        WriteScene(EditorSceneManager.GetActiveScene(), dst);
+
+        long cameraTargetId = map.ContainsKey(500000111) ? map[500000111] : 0;
+        Debug.Log("[Setup] " + objectName + " clonado. CameraTarget=" + cameraTargetId);
+        return cameraTargetId;
+    }
+
+    private static void CloneCamera(long baseFileID, long cameraTargetFileID)
+    {
+        string[] srcLines = ReadScene(SRC);
+        if (srcLines == null) return;
+
+        Dictionary<long, List<string>> blocks = ExtractBlocks(srcLines, CameraIDs);
         if (blocks.Count == 0)
         {
             Debug.LogError("[Setup] No se encontro Main Camera en Nivel_1");
             return;
         }
 
-        Dictionary<long, long> idMap = BuildIDMap(blocks.Keys, baseFileID);
-        List<string> targetContent = ReadTargetScene(targetScene);
+        Dictionary<long, long> map = BuildMap(blocks.Keys, baseFileID);
+        List<string> dst = ReadSceneList(EditorSceneManager.GetActiveScene());
 
-        // Eliminar Camera vieja
-        targetContent = RemoveBlocks(targetContent, CameraFileIDs);
+        dst = RemoveBlocks(dst, CameraIDs);
 
-        // Inyectar Camera clonada
-        int insertIdx = FindSceneRootsLine(targetContent);
-        if (insertIdx < 0) return;
+        int idx = FindLine(dst, "SceneRoots:");
+        if (idx < 0) return;
 
-        List<string> injectLines = BuildInjectLines(blocks, idMap);
-        targetContent.InsertRange(insertIdx, injectLines);
-
-        // Agregar a SceneRoots
-        long newCameraRootID = idMap[500000201];
-        targetContent = AddToSceneRoots(targetContent, newCameraRootID);
-
-        // Actualizar CameraFollow target → CameraTarget del Player clonado
-        long newFollowID = idMap[500000205];
-        targetContent = FixCameraFollowTarget(targetContent, newFollowID, cameraTargetFileID);
-
-        WriteTargetScene(targetScene, targetContent);
-        Debug.Log("[Setup] Camera clonada (base " + baseFileID + ", target→" + cameraTargetFileID + ")");
-    }
-
-    // ═════════════════════════════════════════════════════════════════
-    // UTILIDADES DE EXTRACCION/INYECCION YAML
-    // ═════════════════════════════════════════════════════════════════
-
-    private static string[] ReadSourceScene()
-    {
-        string path = Application.dataPath + "/../" + SCENE_SOURCE;
-        if (!File.Exists(path))
-        {
-            Debug.LogError("[Setup] No se encontro: " + path);
-            return null;
-        }
-        return File.ReadAllLines(path);
-    }
-
-    private static string[] ReadSourceSceneArray()
-    {
-        return ReadSourceScene();
-    }
-
-    private static List<string> ReadTargetScene(Scene scene)
-    {
-        string path = Application.dataPath + "/../" + scene.path;
-        return new List<string>(File.ReadAllLines(path));
-    }
-
-    private static void WriteTargetScene(Scene scene, List<string> content)
-    {
-        string path = Application.dataPath + "/../" + scene.path;
-        File.WriteAllLines(path, content.ToArray());
-    }
-
-    private static Dictionary<long, List<string>> ExtractBlocks(string[] lines, HashSet<long> targetIDs)
-    {
-        Dictionary<long, List<string>> blocks = new Dictionary<long, List<string>>();
-        bool inSection = false;
-        long currentID = 0;
-        List<string> currentBlock = new List<string>();
-
-        for (int i = 0; i < lines.Length; i++)
-        {
-            string line = lines[i];
-
-            if (line.StartsWith("--- !u!"))
-            {
-                if (inSection && currentBlock.Count > 0)
-                {
-                    blocks[currentID] = new List<string>(currentBlock);
-                }
-
-                long fileID = ExtractFileID(line);
-
-                if (targetIDs.Contains(fileID))
-                {
-                    inSection = true;
-                    currentID = fileID;
-                    currentBlock = new List<string> { line };
-                }
-                else
-                {
-                    inSection = false;
-                    currentID = 0;
-                    currentBlock = new List<string>();
-                }
-            }
-            else if (inSection)
-            {
-                currentBlock.Add(line);
-            }
-        }
-
-        if (inSection && currentBlock.Count > 0)
-        {
-            blocks[currentID] = new List<string>(currentBlock);
-        }
-
-        return blocks;
-    }
-
-    private static long ExtractFileID(string yamlLine)
-    {
-        var match = Regex.Match(yamlLine, @"&(\d+)");
-        if (match.Success)
-            return long.Parse(match.Groups[1].Value);
-        return 0;
-    }
-
-    private static Dictionary<long, long> BuildIDMap(ICollection<long> oldIDs, long baseFileID)
-    {
-        Dictionary<long, long> map = new Dictionary<long, long>();
-        long next = baseFileID;
-        foreach (long oldID in oldIDs)
-        {
-            map[oldID] = next;
-            next++;
-        }
-        return map;
-    }
-
-    private static List<string> BuildInjectLines(Dictionary<long, List<string>> blocks, Dictionary<long, long> idMap)
-    {
-        List<string> lines = new List<string>();
+        List<string> inject = new List<string>();
         foreach (long oldID in blocks.Keys)
         {
             foreach (string line in blocks[oldID])
-            {
-                lines.Add(RemapLine(line, idMap));
-            }
-            lines.Add("");
+                inject.Add(Remap(line, map));
+            inject.Add("");
         }
-        return lines;
+        dst.InsertRange(idx, inject);
+
+        AddToRoots(dst, map[500000201]); // Camera Transform
+
+        // Fix CameraFollow.target -> CameraTarget del Player clonado
+        long followId = map[500000205];
+        FixFollowTarget(dst, followId, cameraTargetFileID);
+
+        WriteScene(EditorSceneManager.GetActiveScene(), dst);
+        Debug.Log("[Setup] Camera clonada. Follow target=" + cameraTargetFileID);
     }
 
-    private static string RemapLine(string line, Dictionary<long, long> idMap)
+    // ═══════════════════════════════════════════════════════════════
+    // UTILIDADES YAML
+    // ═══════════════════════════════════════════════════════════════
+
+    private static string[] ReadScene(string path)
     {
-        foreach (var kvp in idMap)
+        string full = Application.dataPath + "/../" + path;
+        if (!File.Exists(full)) { Debug.LogError("[Setup] No existe: " + full); return null; }
+        return File.ReadAllLines(full);
+    }
+
+    private static List<string> ReadSceneList(Scene s)
+    {
+        return new List<string>(File.ReadAllLines(Application.dataPath + "/../" + s.path));
+    }
+
+    private static void WriteScene(Scene s, List<string> content)
+    {
+        File.WriteAllLines(Application.dataPath + "/../" + s.path, content.ToArray());
+    }
+
+    private static Dictionary<long, List<string>> ExtractBlocks(string[] lines, HashSet<long> ids)
+    {
+        var blocks = new Dictionary<long, List<string>>();
+        bool inside = false;
+        long curID = 0;
+        var cur = new List<string>();
+
+        for (int i = 0; i < lines.Length; i++)
         {
-            string oldStr = kvp.Key.ToString();
-            string newStr = kvp.Value.ToString();
-            if (line.Contains(oldStr))
+            string l = lines[i];
+            if (l.StartsWith("--- !u!"))
             {
-                line = line.Replace(oldStr, newStr);
+                if (inside && cur.Count > 0) blocks[curID] = new List<string>(cur);
+                long fid = ParseFID(l);
+                if (ids.Contains(fid)) { inside = true; curID = fid; cur = new List<string> { l }; }
+                else { inside = false; curID = 0; cur = new List<string>(); }
             }
+            else if (inside) cur.Add(l);
+        }
+        if (inside && cur.Count > 0) blocks[curID] = new List<string>(cur);
+        return blocks;
+    }
+
+    private static long ParseFID(string line)
+    {
+        var m = Regex.Match(line, @"&(\d+)");
+        return m.Success ? long.Parse(m.Groups[1].Value) : 0;
+    }
+
+    private static Dictionary<long, long> BuildMap(ICollection<long> olds, long baseID)
+    {
+        var map = new Dictionary<long, long>();
+        long n = baseID;
+        foreach (long o in olds) { map[o] = n++; }
+        return map;
+    }
+
+    private static string Remap(string line, Dictionary<long, long> map)
+    {
+        foreach (var kv in map)
+        {
+            string olds = kv.Key.ToString();
+            if (line.Contains(olds)) line = line.Replace(olds, kv.Value.ToString());
         }
         return line;
     }
 
-    private static List<string> RemoveBlocks(List<string> content, HashSet<long> idsToRemove)
+    private static List<string> RemoveBlocks(List<string> content, HashSet<long> ids)
     {
-        List<string> result = new List<string>();
-        bool skipping = false;
-
+        var result = new List<string>();
+        bool skip = false;
         for (int i = 0; i < content.Count; i++)
         {
-            string line = content[i];
-
-            if (line.StartsWith("--- !u!"))
+            string l = content[i];
+            if (l.StartsWith("--- !u!"))
             {
-                long fileID = ExtractFileID(line);
-                if (idsToRemove.Contains(fileID))
-                {
-                    skipping = true;
-                    continue;
-                }
-                else
-                {
-                    skipping = false;
-                }
+                long fid = ParseFID(l);
+                if (ids.Contains(fid)) { skip = true; continue; }
+                skip = false;
             }
-
-            if (!skipping)
-            {
-                result.Add(line);
-            }
+            if (!skip) result.Add(l);
         }
-
         return result;
     }
 
-    private static int FindSceneRootsLine(List<string> content)
+    private static int FindLine(List<string> c, string text)
     {
-        for (int i = 0; i < content.Count; i++)
-        {
-            if (content[i].Trim() == "SceneRoots:")
-                return i;
-        }
+        for (int i = 0; i < c.Count; i++)
+            if (c[i].Trim() == text) return i;
         return -1;
     }
 
-    private static List<string> AddToSceneRoots(List<string> content, long transformFileID)
+    private static void AddToRoots(List<string> c, long transformFID)
     {
-        for (int i = 0; i < content.Count; i++)
-        {
-            if (content[i].Trim() == "SceneRoots:")
-            {
-                for (int j = i + 1; j < Mathf.Min(i + 10, content.Count); j++)
-                {
-                    if (content[j].Trim() == "m_Roots:")
-                    {
-                        content.Insert(j + 1, "    - {fileID: " + transformFileID + "}");
-                        return content;
-                    }
-                }
-            }
-        }
-        return content;
+        int roots = FindLine(c, "m_Roots:");
+        if (roots >= 0)
+            c.Insert(roots + 1, "    - {fileID: " + transformFID + "}");
     }
 
-    private static List<string> ResetSpawnPoint(List<string> content, Dictionary<long, long> idMap)
+    private static void ResetSpawnPoint(List<string> c, Dictionary<long, long> map)
     {
-        long oldPHID = 500000104;
-        if (!idMap.ContainsKey(oldPHID)) return content;
-
-        string marker = "&" + idMap[oldPHID].ToString();
+        if (!map.ContainsKey(500000104)) return;
+        string marker = "&" + map[500000104];
         bool found = false;
-        for (int i = 0; i < content.Count; i++)
+        for (int i = 0; i < c.Count; i++)
         {
-            if (content[i].Contains(marker))
-                found = true;
-
-            if (found && content[i].Trim().StartsWith("spawnPoint:"))
-            {
-                content[i] = "  spawnPoint: {fileID: 0}";
-                return content;
-            }
+            if (c[i].Contains(marker)) found = true;
+            if (found && c[i].Trim().StartsWith("spawnPoint:"))
+            { c[i] = "  spawnPoint: {fileID: 0}"; return; }
         }
-        return content;
     }
 
-    private static List<string> FixCameraFollowTarget(List<string> content, long cameraFollowFileID, long newTargetFileID)
+    private static void FixFollowTarget(List<string> c, long followFID, long targetFID)
     {
-        string marker = "&" + cameraFollowFileID.ToString();
+        string marker = "&" + followFID;
         bool found = false;
-        for (int i = 0; i < content.Count; i++)
+        for (int i = 0; i < c.Count; i++)
         {
-            if (content[i].Contains(marker))
-                found = true;
-
-            if (found && content[i].Trim().StartsWith("target:"))
-            {
-                content[i] = "  target: {fileID: " + newTargetFileID + "}";
-                Debug.Log("[Setup] CameraFollow target actualizado a fileID: " + newTargetFileID);
-                return content;
-            }
-        }
-        return content;
-    }
-
-    // ═════════════════════════════════════════════════════════════════
-    // DELETE / FIX / LAYER / UI / TRIGGER
-    // ═════════════════════════════════════════════════════════════════
-
-    private static void DeleteIfExists(string name)
-    {
-        GameObject obj = GameObject.Find(name);
-        if (obj != null)
-        {
-            Object.DestroyImmediate(obj);
-            Debug.Log("[Setup] Eliminado: " + name);
+            if (c[i].Contains(marker)) found = true;
+            if (found && c[i].Trim().StartsWith("target:"))
+            { c[i] = "  target: {fileID: " + targetFID + "}"; return; }
         }
     }
 
-    private static void FixGroundLayer(string floorPrefix)
+    // ═══════════════════════════════════════════════════════════════
+    // UTILIDADES DE ESCENA (Unity API)
+    // ═══════════════════════════════════════════════════════════════
+
+    private static void DestroyByName(string name)
     {
-        int groundLayer = 3;
-        GameObject[] all = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+        GameObject go = GameObject.Find(name);
+        if (go != null) { Object.DestroyImmediate(go); Debug.Log("[Setup] Eliminado: " + name); }
+    }
+
+    private static void SetActive(string name, bool active)
+    {
+        GameObject go = GameObject.Find(name);
+        if (go != null) { go.SetActive(active); Debug.Log("[Setup] " + name + " -> " + (active ? "ON" : "OFF")); }
+    }
+
+    private static void FixLayer(string prefix, int layer)
+    {
         int count = 0;
-        foreach (GameObject obj in all)
+        foreach (GameObject go in Object.FindObjectsByType<GameObject>())
         {
-            if (obj.name.StartsWith(floorPrefix) && obj.layer != groundLayer)
-            {
-                obj.layer = groundLayer;
-                count++;
-            }
+            if (go.name.StartsWith(prefix) && go.layer != layer)
+            { go.layer = layer; count++; }
         }
-        Debug.Log("[Setup] Layer Ground aplicado a " + count + " objetos con prefijo '" + floorPrefix + "'");
+        Debug.Log("[Setup] Layer " + layer + " aplicado a " + count + " objetos (" + prefix + ")");
     }
 
-    private static void DisableSamuelUI()
+    private static void CreateTrigger(string name, Vector3 pos, Vector3 size, string siguienteNivel)
     {
-        string[] names = { "HUDCanvas", "EventSystem", "MobileControls" };
-        foreach (string n in names)
-        {
-            GameObject obj = GameObject.Find(n);
-            if (obj != null)
-            {
-                obj.SetActive(false);
-                Debug.Log("[Setup] Deshabilitado: " + n);
-            }
-        }
-    }
-
-    private static void CreateExitTriggerNivel3()
-    {
-        if (GameObject.Find("Trigger_SalidaNivel3") != null)
-        {
-            Debug.Log("[Setup] Trigger_SalidaNivel3 ya existe");
-            return;
-        }
-
-        GameObject trigger = new GameObject("Trigger_SalidaNivel3");
-        trigger.transform.position = new Vector3(2.3f, 1.0f, 48.5f);
-
-        BoxCollider col = trigger.AddComponent<BoxCollider>();
+        if (GameObject.Find(name) != null) { Debug.Log("[Setup] " + name + " ya existe"); return; }
+        GameObject go = new GameObject(name);
+        go.transform.position = pos;
+        BoxCollider col = go.AddComponent<BoxCollider>();
         col.isTrigger = true;
-        col.size = new Vector3(3.0f, 3.0f, 2.0f);
-
-        trigger.AddComponent<DestinoNivel>();
-        Debug.Log("[Setup] Trigger_SalidaNivel3 creado en (2.3, 1.0, 48.5)");
+        col.size = size;
+        go.AddComponent<DestinoNivel>();
+        Debug.Log("[Setup] " + name + " creado en " + pos);
     }
 
-    private static void VerifyScene(string nivelName)
+    private static void Verify(string nivel)
     {
-        int players = 0, cameras = 0, audioListeners = 0;
-
-        GameObject[] all = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
-        foreach (GameObject obj in all)
+        int players = 0, cams = 0, audio = 0;
+        foreach (GameObject go in Object.FindObjectsByType<GameObject>())
         {
-            if (obj.CompareTag("Player")) players++;
-            if (obj.CompareTag("MainCamera")) cameras++;
-            if (obj.GetComponent<AudioListener>() != null) audioListeners++;
+            if (go.CompareTag("Player")) players++;
+            if (go.CompareTag("MainCamera")) cams++;
+            if (go.GetComponent<AudioListener>() != null) audio++;
         }
 
-        // Verificar Camera.main
-        Camera mainCam = Camera.main;
-        if (mainCam == null)
-            Debug.LogError("[Setup] " + nivelName + ": Camera.main == NULL");
+        Camera main = Camera.main;
+        if (main == null)
+            Debug.LogError("[Setup] " + nivel + ": Camera.main == NULL");
 
-        // Verificar CameraFollow.target
-        if (mainCam != null)
+        if (main != null)
         {
-            CameraFollow cf = mainCam.GetComponent<CameraFollow>();
+            CameraFollow cf = main.GetComponent<CameraFollow>();
             if (cf == null)
-                Debug.LogError("[Setup] " + nivelName + ": CameraFollow no existe en Main Camera");
+                Debug.LogError("[Setup] " + nivel + ": CameraFollow no existe");
+
+            Component[] comps = main.GetComponents<Component>();
+            foreach (Component c in comps)
+                if (c == null) Debug.LogError("[Setup] " + nivel + ": MISSING SCRIPT en Main Camera");
         }
 
-        // Verificar Missing Scripts
-        if (mainCam != null)
-        {
-            Component[] components = mainCam.GetComponents<Component>();
-            foreach (Component c in components)
-            {
-                if (c == null)
-                    Debug.LogError("[Setup] " + nivelName + ": MISSING SCRIPT en Main Camera");
-            }
-        }
+        if (players != 1) Debug.LogWarning("[Setup] " + nivel + ": Players=" + players);
+        if (cams != 1) Debug.LogWarning("[Setup] " + nivel + ": MainCameras=" + cams);
+        if (audio != 1) Debug.LogWarning("[Setup] " + nivel + ": AudioListeners=" + audio);
 
-        // Conteos
-        if (players != 1)
-            Debug.LogWarning("[Setup] " + nivelName + ": Players = " + players + " (deberia ser 1)");
-        if (cameras != 1)
-            Debug.LogWarning("[Setup] " + nivelName + ": MainCameras = " + cameras + " (deberia ser 1)");
-        if (audioListeners != 1)
-            Debug.LogWarning("[Setup] " + nivelName + ": AudioListeners = " + audioListeners + " (deberia ser 1)");
-
-        if (players == 1 && cameras == 1 && audioListeners == 1 && mainCam != null)
-            Debug.Log("[Setup] " + nivelName + ": Verificacion OK");
-    }
-
-    // ═════════════════════════════════════════════════════════════════
-    // MENU SCENES
-    // ═════════════════════════════════════════════════════════════════
-
-    private static void SetupMenuScene(string scenePath, string menuName)
-    {
-        Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
-
-        GameObject menuObj = GameObject.Find("MenuManager");
-        if (menuObj == null)
-            menuObj = new GameObject("MenuManager");
-
-        MenuButtonHandler handler = menuObj.GetComponent<MenuButtonHandler>();
-        if (handler == null)
-            handler = menuObj.AddComponent<MenuButtonHandler>();
-
-        UnityEngine.UI.Button[] buttons = Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsSortMode.None);
-        foreach (UnityEngine.UI.Button btn in buttons)
-        {
-            string btnName = btn.gameObject.name.ToLower();
-            btn.onClick.RemoveAllListeners();
-
-            if (btnName.Contains("reintentar") || btnName.Contains("retry"))
-                btn.onClick.AddListener(handler.Reintentar);
-            else if (btnName.Contains("menu") || btnName.Contains("principal") || btnName.Contains("main"))
-                btn.onClick.AddListener(handler.MenuPrincipal);
-            else if (btnName.Contains("salir") || btnName.Contains("quit"))
-                btn.onClick.AddListener(handler.Salir);
-        }
-
-        EditorSceneManager.SaveScene(scene);
-        Debug.Log("[Setup] Menu " + menuName + " configurado.");
+        if (players == 1 && cams == 1 && audio == 1 && main != null)
+            Debug.Log("[Setup] " + nivel + ": OK");
     }
 }

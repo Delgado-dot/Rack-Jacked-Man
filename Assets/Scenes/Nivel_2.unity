@@ -475,6 +475,8 @@ GameObject:
   - component: {fileID: 166375731}
   - component: {fileID: 166375730}
   - component: {fileID: 166375729}
+  - component: {fileID: 166375732}
+  - component: {fileID: 166375733}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -548,6 +550,33 @@ Transform:
   - {fileID: 234805145}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &166375732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 166375728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58879ab58b26163498cc5e21a8d4d593, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerMode
+  currentMode: 0
+--- !u!114 &166375733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 166375728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97a69b2203dca154a94d35e9237a7188, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteract
+  interactionRange: 1.2
+  currentRack: {fileID: 0}
 --- !u!1 &181164482
 GameObject:
   m_ObjectHideFlags: 0
@@ -1262,6 +1291,7 @@ GameObject:
   - component: {fileID: 505841521}
   - component: {fileID: 505841520}
   - component: {fileID: 505841519}
+  - component: {fileID: 505841524}
   m_Layer: 0
   m_Name: Trigger_SalidaNivel2
   m_TagString: Untagged
@@ -1281,7 +1311,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bcf3b46c8f29aa48a7a4f385f93310e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuertaCambioNivel
-  escenaDestino: Nivel_3
+  nombreEscena: SubCable01_Copy
 --- !u!65 &505841520
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1375,6 +1405,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &505841524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 505841518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 252dc44091ea21e4785967b9cffa2673, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectiveDoorController
+  blockWidth: 10
+  colorAbierto: {r: 0, g: 0.5, b: 1, a: 1}
 --- !u!65 &511013463
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1861,6 +1905,76 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 5761739814090621300, guid: 39db49ee5060123428669cf915c4bc9b, type: 3}
+--- !u!1 &755250546
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 755250549}
+  - component: {fileID: 755250548}
+  - component: {fileID: 755250547}
+  m_Layer: 0
+  m_Name: PuzzleManager_N2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &755250547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 755250546}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70c4a5c32e82e5d4db9754d93a11ce3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PythonPuzzleManager
+  carpetaPuzzles: Puzzles_Python
+  launcher: launcher.py
+  puzzles:
+  - cables
+  - dispatcher
+  - nave
+  - trafico
+  - patchcore
+  usarExe: 0
+  ejecutable: launcher.exe
+  timeout: 60
+--- !u!114 &755250548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 755250546}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c609739c42c04564b9f7f87d61b4a9d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PuzzleMana
+  playerMode: {fileID: 166375732}
+  pythonPuzzleManager: {fileID: 755250547}
+--- !u!4 &755250549
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 755250546}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &865734993
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11991,6 +12105,8 @@ GameObject:
   - component: {fileID: 8750046703391015429}
   - component: {fileID: 6812431470395913935}
   - component: {fileID: 464930539}
+  - component: {fileID: 8750046703391015431}
+  - component: {fileID: 8750046703391015430}
   m_Layer: 0
   m_Name: Rack_N2_05
   m_TagString: Untagged
@@ -12105,6 +12221,8 @@ GameObject:
   - component: {fileID: 8750046702345239857}
   - component: {fileID: 6812431471564638715}
   - component: {fileID: 1566112223}
+  - component: {fileID: 8750046702345239859}
+  - component: {fileID: 8750046702345239858}
   m_Layer: 0
   m_Name: Rack_N2_12
   m_TagString: Untagged
@@ -18228,6 +18346,38 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5010925443937921070}
   m_Mesh: {fileID: -166281912306686551, guid: 22979a140857f8f49ad4426515414f92, type: 3}
+--- !u!114 &8750046702345239858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5010925443937921070}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cd05757a0363874d8190205cd7cfea1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RackState
+  repaired: 0
+--- !u!114 &8750046702345239859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5010925443937921070}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a409283bd2894a4db81a7c39c950e6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RackInteractable
+  rackType: 0
+  rackIndex: 1
+  repaired: 0
+  puzzleActive: 0
+  puzzleMana: {fileID: 755250548}
+  rackState: {fileID: 0}
+  doorController: {fileID: 505841524}
 --- !u!33 &8750046702894431918
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -18260,6 +18410,38 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5010925442950780698}
   m_Mesh: {fileID: -166281912306686551, guid: 22979a140857f8f49ad4426515414f92, type: 3}
+--- !u!114 &8750046703391015430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5010925442950780698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cd05757a0363874d8190205cd7cfea1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RackState
+  repaired: 0
+--- !u!114 &8750046703391015431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5010925442950780698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a409283bd2894a4db81a7c39c950e6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RackInteractable
+  rackType: 0
+  rackIndex: 0
+  repaired: 0
+  puzzleActive: 0
+  puzzleMana: {fileID: 755250548}
+  rackState: {fileID: 0}
+  doorController: {fileID: 505841524}
 --- !u!33 &8750046703392820576
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -18554,3 +18736,4 @@ SceneRoots:
   - {fileID: 166375731}
   - {fileID: 2018022894}
   - {fileID: 505841523}
+  - {fileID: 755250549}
