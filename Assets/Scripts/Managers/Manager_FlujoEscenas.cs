@@ -93,6 +93,7 @@ public class Manager_FlujoEscenas : MonoBehaviour
             return;
         }
 
+        Time.timeScale = 1f;
         SceneManager.LoadScene(nombreEscena);
     }
 
