@@ -3533,7 +3533,7 @@ Transform:
   m_GameObject: {fileID: 430407970}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 4, z: -5}
+  m_LocalPosition: {x: 0, y: 4, z: -4}
   m_LocalScale: {x: 0.5, y: 10, z: 20}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3803,7 +3803,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxLives: 3
-  currentLives: 3
   invulnerabilityDuration: 1
   spawnPoint: {fileID: 726398329}
 --- !u!143 &500000105
@@ -8160,7 +8159,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1010204333
 Transform:
   m_ObjectHideFlags: 0

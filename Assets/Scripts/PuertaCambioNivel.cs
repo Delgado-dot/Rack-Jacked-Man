@@ -15,28 +15,33 @@ public class PuertaCambioNivel : MonoBehaviour
             col = gameObject.AddComponent<BoxCollider>();
         }
         col.isTrigger = true;
-        Debug.Log("PuertaCambioNivel: Trigger listo. doorIsOpen = " + doorIsOpen);
+        Debug.Log("[DIAG-PUERTACAMBIO] Start en \"" + gameObject.name + "\" | nombreEscena=\"" + nombreEscena + "\" | doorIsOpen=" + doorIsOpen);
     }
 
     public void SetDoorOpen(bool open)
     {
         doorIsOpen = open;
-        Debug.Log("PuertaCambioNivel: doorIsOpen = " + doorIsOpen);
+        Debug.Log("[DIAG-PUERTACAMBIO] SetDoorOpen(" + open + ") en \"" + gameObject.name + "\"");
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("PuertaCambioNivel: OnTriggerEnter con " + other.gameObject.name + " | doorIsOpen=" + doorIsOpen);
+        string escenaActual = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        Debug.Log("[DIAG-PUERTACAMBIO] OnTriggerEnter en \"" + gameObject.name + "\" | Escena: " + escenaActual + " | doorIsOpen=" + doorIsOpen + " | nombreEscena=\"" + nombreEscena + "\"");
 
-        if (!other.CompareTag("Player")) return;
-
-        if (!doorIsOpen)
+        if (!other.CompareTag("Player"))
         {
-            Debug.Log("PuertaCambioNivel: Puerta CERRADA, bloqueado.");
+            Debug.Log("[DIAG-PUERTACAMBIO] → No es Player (" + other.gameObject.name + "). Ignorado.");
             return;
         }
 
-        Debug.Log("PuertaCambioNivel: Puerta ABIERTA, cargando " + nombreEscena);
-        SceneManager.LoadScene(nombreEscena);
+        if (!doorIsOpen)
+        {
+            Debug.Log("[DIAG-PUERTACAMBIO] → PUERTA CERRADA. Bloqueado.");
+            return;
+        }
+
+        Debug.Log("[DIAG-PUERTACAMBIO] → PUERTA ABIERTA. Cargando \"" + nombreEscena + "\"");
+        UnityEngine.SceneManagement.SceneManager.LoadScene(nombreEscena);
     }
 }

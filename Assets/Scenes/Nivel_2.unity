@@ -1281,7 +1281,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bcf3b46c8f29aa48a7a4f385f93310e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuertaCambioNivel
-  escenaDestino: Nivel_3
+  nombreEscena: SubCable01_Copy
 --- !u!65 &505841520
 BoxCollider:
   m_ObjectHideFlags: 0
