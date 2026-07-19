@@ -116,6 +116,9 @@ public class ObjectiveDoorController : MonoBehaviour
             Debug.Log("[DIAG-DOOR] OpenDoor: PuertaCambioNivel abierta");
         }
 
+        SendMessage("OnDoorOpen", SendMessageOptions.DontRequireReceiver);
+        DoorVisualSync.onDoorOpened?.Invoke();
+
         if (puerta == null && puertaCambio == null)
         {
             Debug.LogWarning("[DIAG-DOOR] OpenDoor: No hay PuertaSubLevel ni PuertaCambioNivel");
@@ -136,6 +139,9 @@ public class ObjectiveDoorController : MonoBehaviour
         Collider originalCol = GetComponent<Collider>();
         if (originalCol != null)
             originalCol.enabled = true;
+
+        SendMessage("OnDoorClose", SendMessageOptions.DontRequireReceiver);
+        DoorVisualSync.onDoorClosed?.Invoke();
     }
 
     public bool IsOpen() { return isOpen; }

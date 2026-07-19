@@ -2381,9 +2381,7 @@ GameObject:
   - component: {fileID: 800000012}
   - component: {fileID: 800000013}
   - component: {fileID: 800000014}
-  - component: {fileID: 800000015}
   - component: {fileID: 800000016}
-  - component: {fileID: 800000017}
   - component: {fileID: 800000018}
   m_Layer: 0
   m_Name: Main Camera
@@ -2466,18 +2464,6 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 800000011}
   m_Enabled: 1
---- !u!114 &800000015
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 800000011}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineBrain
 --- !u!114 &800000016
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2500,18 +2486,6 @@ MonoBehaviour:
   maxY: 15
   minZ: -10
   maxZ: -8
---- !u!114 &800000017
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 800000011}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
 --- !u!114 &800000018
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2971,6 +2945,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 877741558}
   m_CullTransparentMesh: 1
+--- !u!114 &900000030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132149291692932}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad3e167eab358bb428e39393210e943a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DoorVisualSync
+  colorCerrado: {r: 1, g: 0, b: 0, a: 1}
+  colorAbierto: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1 &902313118
 GameObject:
   m_ObjectHideFlags: 0
@@ -5158,7 +5146,6 @@ Transform:
   - {fileID: 2478961552206191087}
   - {fileID: 2478961552208925949}
   - {fileID: 2478961551143629764}
-  - {fileID: 5675013306744210101}
   - {fileID: 5675013306147251886}
   - {fileID: 2478961550947550577}
   - {fileID: 2478961551463482493}
@@ -5168,6 +5155,7 @@ Transform:
   - {fileID: 2478961552274635537}
   - {fileID: 5675013306507846173}
   - {fileID: 5675013306731115156}
+  - {fileID: 5675013306744210101}
   m_Father: {fileID: 1843024297}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1921333575
@@ -6873,6 +6861,8 @@ GameObject:
   - component: {fileID: 3469287837345736347}
   - component: {fileID: 1711813855765828177}
   - component: {fileID: 7505213867470647219}
+  - component: {fileID: 900000030}
+  - component: {fileID: 7505213867470647220}
   m_Layer: 0
   m_Name: PuertaPared_N2_01
   m_TagString: Untagged
@@ -14189,7 +14179,7 @@ GameObject:
   - component: {fileID: 6812431471478273908}
   - component: {fileID: 1479722832}
   m_Layer: 0
-  m_Name: 'Rack_N2_06 '
+  m_Name: Rack_N2_06
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18119,6 +18109,31 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.13996522, y: 3.8312795, z: 3.8312798}
   m_Center: {x: 0.00946874, y: 1.9156398, z: -0.000000059604645}
+--- !u!143 &7505213867470647220
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132149291692932}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 2
+  m_Radius: 0.5
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.08
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7583874869582352364
 GameObject:
   m_ObjectHideFlags: 0
@@ -20316,7 +20331,7 @@ MonoBehaviour:
   repaired: 0
   puzzleActive: 0
   puzzleMana: {fileID: 755250548}
-  rackState: {fileID: 0}
+  rackState: {fileID: 8750046702290177297}
   doorController: {fileID: 505841524}
 --- !u!33 &8750046702345239857
 MeshFilter:
@@ -20356,7 +20371,7 @@ MonoBehaviour:
   repaired: 0
   puzzleActive: 0
   puzzleMana: {fileID: 755250548}
-  rackState: {fileID: 0}
+  rackState: {fileID: 8750046702345239858}
   doorController: {fileID: 505841524}
 --- !u!33 &8750046702894431918
 MeshFilter:
@@ -20420,7 +20435,7 @@ MonoBehaviour:
   repaired: 0
   puzzleActive: 0
   puzzleMana: {fileID: 755250548}
-  rackState: {fileID: 0}
+  rackState: {fileID: 8750046703391015430}
   doorController: {fileID: 505841524}
 --- !u!33 &8750046703392820576
 MeshFilter:

@@ -26,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController controller;
     private PlayerControls controls;
-    private Animator animator; // <-- AGREGADO
+    private Animator animator;
 
     private Vector2 moveInput;
     private Vector3 velocity;
@@ -40,8 +40,7 @@ public class PlayerMovement : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         controls = new PlayerControls();
-
-        animator = GetComponentInChildren<Animator>(); // <-- AGREGADO
+        animator = GetComponentInChildren<Animator>();
     }
 
     private void OnEnable()
@@ -108,6 +107,7 @@ public class PlayerMovement : MonoBehaviour
                     jumpHeight * -2f * gravity
                 );
             }
+
             jumpPressed = false;
         }
 
@@ -119,10 +119,9 @@ public class PlayerMovement : MonoBehaviour
         Vector3 direction = transform.TransformDirection(inputDirection);
         direction.y = 0;
 
-        // <-- AGREGADO
         if (animator != null)
         {
-            animator.SetBool("IsRunning", direction.magnitude > 0.01f);
+            animator.SetFloat("IsRunning", direction.magnitude > 0.01f ? 1f : 0f);
         }
 
         float targetSpeed = direction.magnitude * speed;

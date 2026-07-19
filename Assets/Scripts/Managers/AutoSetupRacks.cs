@@ -245,9 +245,43 @@ public class AutoSetupRacks : MonoBehaviour
 
     static void SetupNivel3()
     {
-        PuzzleMana puzzleMana = FindAnyObjectByType<PuzzleMana>();
+        Debug.Log("[AutoSetupRacks] Nivel_3: Iniciando setup...");
 
-        string[] rackNames = { "Server Rack (3)", "Server Rack (4)", "Server Rack (5)", "Server Rack (6)" };
+        // ─── PuzzleManager_N3 ──────────────────────────────────────
+        // Reutilizar PuzzleMana existente de SetupManagers() si lo hay
+        PuzzleMana puzzleMana = FindAnyObjectByType<PuzzleMana>();
+        GameObject puzzleManagerGO;
+
+        if (puzzleMana != null)
+        {
+            puzzleManagerGO = puzzleMana.gameObject;
+            puzzleManagerGO.name = "PuzzleManager_N3";
+        }
+        else
+        {
+            puzzleManagerGO = new GameObject("PuzzleManager_N3");
+            puzzleManagerGO.transform.position = Vector3.zero;
+            puzzleMana = puzzleManagerGO.AddComponent<PuzzleMana>();
+        }
+
+        PythonPuzzleManager pythonMgr = puzzleManagerGO.GetComponent<PythonPuzzleManager>();
+        if (pythonMgr == null)
+            pythonMgr = puzzleManagerGO.AddComponent<PythonPuzzleManager>();
+
+        puzzleMana.pythonPuzzleManager = pythonMgr;
+
+        PlayerMode playerMode = FindAnyObjectByType<PlayerMode>();
+        if (playerMode == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null) playerMode = player.GetComponent<PlayerMode>();
+        }
+        puzzleMana.playerMode = playerMode;
+
+        Debug.Log("[AutoSetupRacks] Nivel_3: PuzzleManager_N3 configurado");
+
+        // ─── Racks ─────────────────────────────────────────────────
+        string[] rackNames = { "Server Rack (3)", "Server Rack (5)", "Server Rack (6)", "Server Rack (8)" };
 
         for (int i = 0; i < rackNames.Length; i++)
         {
@@ -279,11 +313,45 @@ public class AutoSetupRacks : MonoBehaviour
             Debug.Log("[AutoSetupRacks] Nivel_3 Rack configurado: " + rackGO.name + " (index=" + i + ", type=" + rackType + ")");
         }
 
+        // ─── Puerta final: TV 32 inch 2 → Menu Victoria ───────────
         GameObject tv = GameObject.Find("TV 32 inch 2");
-        if (tv != null && tv.GetComponent<RackExitTrigger>() == null)
+        if (tv != null)
         {
-            tv.AddComponent<RackExitTrigger>();
-            Debug.Log("[AutoSetupRacks] Nivel_3: RackExitTrigger agregado a " + tv.name);
+            if (tv.GetComponent<ObjectiveDoorController>() == null)
+                tv.AddComponent<ObjectiveDoorController>();
+
+            PuertaCambioNivel puertaCambio = tv.GetComponent<PuertaCambioNivel>();
+            if (puertaCambio == null)
+                puertaCambio = tv.AddComponent<PuertaCambioNivel>();
+            puertaCambio.nombreEscena = "Menu Victoria";
+
+            Collider existingCol = tv.GetComponent<Collider>();
+            if (existingCol == null)
+            {
+                BoxCollider newCol = tv.AddComponent<BoxCollider>();
+                newCol.isTrigger = true;
+            }
+            else if (!existingCol.isTrigger)
+            {
+                existingCol.isTrigger = true;
+            }
+
+            Debug.Log("[AutoSetupRacks] Nivel_3: TV 32 inch 2 configurado como puerta → Menu Victoria");
+        }
+        else
+        {
+            Debug.LogWarning("[AutoSetupRacks] Nivel_3: TV 32 inch 2 no encontrado");
+        }
+
+        // ─── Referencias ────────────────────────────────────────────
+        // RackInteractable.Start() auto-busca PuzzleMana y ObjectiveDoorController
+        // ObjectiveDoorController.Start() auto-busca todos los RackInteractable
+        // No es necesario wiring manual: FindAnyObjectByType lo resuelve en Start()
+
+        if (FindAnyObjectByType<InteractHUD>() == null)
+        {
+            GameObject hudGO = new GameObject("InteractHUD");
+            hudGO.AddComponent<InteractHUD>();
         }
 
         int totalRacks = GameObject.FindObjectsByType<RackInteractable>().Length;
