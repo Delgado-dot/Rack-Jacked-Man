@@ -26,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController controller;
     private PlayerControls controls;
-    private Animator animator; // <-- AGREGADO
+    private Animator animator;
 
     private Vector2 moveInput;
     private Vector3 velocity;
@@ -41,7 +41,7 @@ public class PlayerMovement : MonoBehaviour
         controller = GetComponent<CharacterController>();
         controls = new PlayerControls();
 
-        animator = GetComponentInChildren<Animator>(); // <-- AGREGADO
+        animator = GetComponentInChildren<Animator>();
     }
 
     private void OnEnable()
@@ -107,7 +107,14 @@ public class PlayerMovement : MonoBehaviour
                 velocity.y = Mathf.Sqrt(
                     jumpHeight * -2f * gravity
                 );
+
+                // Reproducir animación de salto
+                if (animator != null)
+                {
+                    animator.SetTrigger("Jump");
+                }
             }
+
             jumpPressed = false;
         }
 
@@ -119,7 +126,6 @@ public class PlayerMovement : MonoBehaviour
         Vector3 direction = transform.TransformDirection(inputDirection);
         direction.y = 0;
 
-        // <-- AGREGADO
         if (animator != null)
         {
             animator.SetBool("IsRunning", direction.magnitude > 0.01f);
@@ -137,7 +143,7 @@ public class PlayerMovement : MonoBehaviour
 
         controller.Move(currentMovement * Time.deltaTime);
 
-        // Rotacion segun direccion de movimiento
+        // Rotación según dirección de movimiento
         if (inputDirection.sqrMagnitude > 0.01f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
