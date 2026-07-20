@@ -15,7 +15,7 @@ public class BotonMenu3D : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     public ActionType action;
     public float hoverScaleMultiplier = 1.1f;
     public Color hoverColor = Color.cyan;
-
+    [SerializeField] private FuturisticTransition transitionManager;
     private Vector3 originalScale;
     private Color originalColor;
     private Renderer btnRenderer;
@@ -82,7 +82,16 @@ public class BotonMenu3D : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         switch (action)
         {
             case ActionType.Jugar:
-                SceneManager.LoadScene("Nivel_1");
+
+                if (transitionManager != null)
+                {
+                    transitionManager.ChangeScene("ComicIntro");
+                }
+                else
+                {
+                    Debug.LogWarning("No hay TransitionManager asignado");
+                }
+
                 break;
             case ActionType.Ranking:
                 AbrirRanking();
