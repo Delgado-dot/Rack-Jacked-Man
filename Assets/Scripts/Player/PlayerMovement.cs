@@ -40,6 +40,7 @@ public class PlayerMovement : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         controls = new PlayerControls();
+
         animator = GetComponentInChildren<Animator>();
     }
 
@@ -98,7 +99,7 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = -5f;
         }
 
-// Salto (Espacio)
+        // Salto (Espacio)
         if (jumpPressed)
         {
             if (isGrounded)
@@ -107,6 +108,7 @@ public class PlayerMovement : MonoBehaviour
                     jumpHeight * -2f * gravity
                 );
 
+                // Reproducir animación de salto
                 if (animator != null)
                 {
                     animator.SetTrigger("Jump");
@@ -126,7 +128,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (animator != null)
         {
-            animator.SetFloat("IsRunning", direction.magnitude > 0.01f ? 1f : 0f);
+            animator.SetBool("IsRunning", direction.magnitude > 0.01f);
         }
 
         float targetSpeed = direction.magnitude * speed;
@@ -141,7 +143,7 @@ public class PlayerMovement : MonoBehaviour
 
         controller.Move(currentMovement * Time.deltaTime);
 
-        // Rotacion segun direccion de movimiento
+        // Rotación según dirección de movimiento
         if (inputDirection.sqrMagnitude > 0.01f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
