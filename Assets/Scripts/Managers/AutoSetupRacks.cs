@@ -5,7 +5,14 @@ public class AutoSetupRacks : MonoBehaviour
 {
     private static bool alreadySetup = false;
     private static int totalRacksNeeded = 6;
-    private static int lastSceneIndex = -1;
+    private static ulong lastSceneHandle = ulong.MaxValue;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        alreadySetup = false;
+        lastSceneHandle = ulong.MaxValue;
+    }
 
     private void Awake()
     {
@@ -22,11 +29,13 @@ public class AutoSetupRacks : MonoBehaviour
 
     public static void Setup()
     {
-        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-        if (currentSceneIndex != lastSceneIndex)
+        // El handle cambia incluso cuando se recarga el mismo nivel. El indice
+        // no cambia y hacia que Reintentar omitiera todo el setup de racks.
+        ulong currentSceneHandle = SceneManager.GetActiveScene().handle.GetRawData();
+        if (currentSceneHandle != lastSceneHandle)
         {
             alreadySetup = false;
-            lastSceneIndex = currentSceneIndex;
+            lastSceneHandle = currentSceneHandle;
         }
 
         if (alreadySetup) return;
@@ -121,6 +130,15 @@ public class AutoSetupRacks : MonoBehaviour
             if (player != null) playerMode = player.GetComponent<PlayerMode>();
         }
         puzzleMana.playerMode = playerMode;
+
+        if (GameManager.Instance != null)
+            GameManager.Instance.EnsureLevelTimerStarted();
+
+        if (FindAnyObjectByType<GameplayStatusHUD>() == null)
+        {
+            GameObject statusHudGO = new GameObject("GameplayStatusHUD");
+            statusHudGO.AddComponent<GameplayStatusHUD>();
+        }
 
         if (FindAnyObjectByType<InteractHUD>() == null)
         {

@@ -17,12 +17,20 @@ public class BarraVidaUI : MonoBehaviour
 
     private void Start()
     {
+        if (barraVida == null)
+        {
+            Debug.LogWarning("[BarraVidaUI] No hay Slider asignado.");
+            return;
+        }
+
         barraVida.maxValue = PlayerHealth.GetMaxLives();
         barraVida.value = PlayerHealth.GetCurrentLives();
     }
 
     private void ActualizarBarra(int vidasActuales, int vidasMaximas)
     {
+        if (barraVida == null) return;
+
         barraVida.maxValue = vidasMaximas;
         barraVida.value = vidasActuales;
     }

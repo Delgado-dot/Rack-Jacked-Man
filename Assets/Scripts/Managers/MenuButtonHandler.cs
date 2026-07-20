@@ -9,8 +9,14 @@ public class MenuButtonHandler : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.ResetState();
+            string lastScene = GameManager.Instance.GetLastPlayedLevel();
+            if (!string.IsNullOrEmpty(lastScene))
+            {
+                SceneManager.LoadScene(lastScene);
+                return;
+            }
         }
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene("Nivel_1");
     }
 
     public void MenuPrincipal()
@@ -42,7 +48,7 @@ public class MenuButtonHandler : MonoBehaviour
         int chaquetas = GameManager.Instance != null ? GameManager.Instance.GetChaquetasUsadas() : 0;
         string jugador = PlayerPrefs.GetString("jugador_nombre", "JUGADOR");
 
-        ConexionRanking conexion = FindObjectOfType<ConexionRanking>(true);
+        ConexionRanking conexion = FindAnyObjectByType<ConexionRanking>();
         if (conexion == null)
             conexion = gameObject.AddComponent<ConexionRanking>();
 

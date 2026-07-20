@@ -26,9 +26,16 @@ public class EnemySpawnerCable : MonoBehaviour
     private float spawnTimer;
     private static int enemigosActivos = 0;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        enemigosActivos = 0;
+    }
+
     private void Start()
     {
         spawnTimer = tiempoEntreEnemigos;
+        enemigosActivos = 0;
 
         if (jugador == null)
         {

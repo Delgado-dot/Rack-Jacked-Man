@@ -68,6 +68,10 @@ public class PauseManager : MonoBehaviour
     public void Reiniciar()
     {
         Time.timeScale = 1f;
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetState();
+        }
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 

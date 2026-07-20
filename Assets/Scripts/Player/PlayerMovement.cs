@@ -24,6 +24,10 @@ public class PlayerMovement : MonoBehaviour
     public float groundDistance = 0.3f;
     public LayerMask groundLayer;
 
+    [Header("Zona de caida")]
+    [Tooltip("Si el jugador cae mas de esta distancia por debajo de su punto de inicio, vuelve al ultimo checkpoint.")]
+    public float caidaMaximaDesdeInicio = 15f;
+
     private CharacterController controller;
     private PlayerControls controls;
     private Animator animator;
@@ -35,6 +39,7 @@ public class PlayerMovement : MonoBehaviour
     private bool shootPressed;
     private bool jumpPressed;
     private bool isGrounded;
+    private float alturaInicial;
 
     private void Awake()
     {
@@ -42,6 +47,17 @@ public class PlayerMovement : MonoBehaviour
         controls = new PlayerControls();
 
         animator = GetComponentInChildren<Animator>();
+
+        if (groundCheck == null)
+        {
+            Debug.LogWarning("[PlayerMovement] groundCheck no asignado en " + gameObject.name + ". Se usa la posicion del jugador como referencia.");
+            groundCheck = transform;
+        }
+    }
+
+    private void Start()
+    {
+        alturaInicial = transform.position.y;
     }
 
     private void OnEnable()
@@ -128,7 +144,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (animator != null)
         {
-            animator.SetBool("IsRunning", direction.magnitude > 0.01f);
+            animator.SetFloat("IsRunning", direction.magnitude);
         }
 
         float targetSpeed = direction.magnitude * speed;
@@ -164,6 +180,15 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.Log("Disparo");
             shootPressed = false;
+        }
+
+        // Si el jugador se cae del nivel, lo devolvemos al ultimo checkpoint
+        if (transform.position.y < alturaInicial - caidaMaximaDesdeInicio)
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.RespawnPlayer();
+            }
         }
     }
 

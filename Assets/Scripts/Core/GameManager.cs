@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 
 /// <summary>
 /// GameManager - Singleton que controla el flujo del juego.
@@ -20,6 +21,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool isGameOver = false;
     [SerializeField] private bool isLevelCompleted = false;
 
+    [Header("Tiempo del nivel")]
+    [SerializeField] private bool timerEnabled = true;
+    [SerializeField, Min(1f)] private float defaultTimeLimit = 300f;
+
     [Header("Referencias")]
     [SerializeField] private Transform lastCheckpoint;
     [SerializeField] private PlayerHealth playerHealth;
@@ -31,6 +36,29 @@ public class GameManager : MonoBehaviour
     private static int s_puntos = 0;
     private static int s_chaquetasUsadas = 0;
     private static bool s_nivelAvanzado = false;
+    private static string s_lastPlayedLevel = "";
+    private static float s_timeLimit = 300f;
+    private static float s_timeRemaining = 300f;
+
+    private bool timerRunning = false;
+    private bool timerCompleted = false;
+    private int lastDisplayedSecond = -1;
+
+    public static event Action<float, float> OnTimeChanged;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        Instance = null;
+        s_nivelActual = 1;
+        s_puntos = 0;
+        s_chaquetasUsadas = 0;
+        s_nivelAvanzado = false;
+        s_lastPlayedLevel = "";
+        s_timeLimit = 300f;
+        s_timeRemaining = 300f;
+        OnTimeChanged = null;
+    }
 
     private void Awake()
     {
@@ -38,6 +66,10 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            s_timeLimit = Mathf.Max(1f, defaultTimeLimit);
+            if (s_timeRemaining <= 0f || s_timeRemaining > s_timeLimit)
+                s_timeRemaining = s_timeLimit;
         }
         else
         {
@@ -46,12 +78,63 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
     private void Start()
     {
-        string escenaActual = SceneManager.GetActiveScene().name;
+        RefrescarReferenciasDeEscena(SceneManager.GetActiveScene().name);
+    }
+
+    private void Update()
+    {
+        if (!timerEnabled || !timerRunning || isGameOver || isLevelCompleted)
+            return;
+
+        s_timeRemaining = Mathf.Max(0f, s_timeRemaining - Time.deltaTime);
+        NotifyTimeChanged();
+
+        if (s_timeRemaining <= 0f)
+        {
+            timerRunning = false;
+            Debug.Log("[GameManager] Tiempo agotado.");
+            GameOver();
+        }
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Los puzzles se cargan de forma aditiva sobre el nivel actual. No son
+        // un cambio de nivel y no deben reiniciar vidas, referencias ni tiempo.
+        if (mode == LoadSceneMode.Additive) return;
+
+        RefrescarReferenciasDeEscena(scene.name);
+    }
+
+    private void RefrescarReferenciasDeEscena(string escenaActual)
+    {
+        s_nivelAvanzado = false;
+        playerHealth = null;
+        lastCheckpoint = null;
+
         if (escenaActual == sceneMainMenu)
         {
             ResetPersistencia();
+        }
+
+        // Track last gameplay scene for restart functionality
+        if (escenaActual != sceneMainMenu &&
+            escenaActual != sceneGameOver &&
+            escenaActual != sceneVictory)
+        {
+            s_lastPlayedLevel = escenaActual;
         }
 
         if (playerHealth == null)
@@ -60,6 +143,13 @@ public class GameManager : MonoBehaviour
             if (player != null)
             {
                 playerHealth = player.GetComponent<PlayerHealth>();
+            }
+
+            // Algunas escenas usan otro nombre para el objeto del jugador.
+            // Buscar el componente evita detener el reloj por ese detalle.
+            if (playerHealth == null)
+            {
+                playerHealth = FindAnyObjectByType<PlayerHealth>();
             }
         }
 
@@ -77,6 +167,69 @@ public class GameManager : MonoBehaviour
                 initialSpawnPosition = rackStart.transform.position;
             }
         }
+
+        bool esEscenaJugable = playerHealth != null &&
+            escenaActual != sceneMainMenu &&
+            escenaActual != sceneGameOver &&
+            escenaActual != sceneVictory;
+
+        if (esEscenaJugable)
+        {
+            // Cada escena jugable comienza con estado y tiempo propios, incluso
+            // si la anterior termino mediante una puerta que llamo LoadScene.
+            isGameOver = false;
+            isLevelCompleted = false;
+            StartLevelTimer();
+        }
+        else
+            StopLevelTimer();
+    }
+
+    public void StartLevelTimer()
+    {
+        s_timeLimit = Mathf.Max(1f, defaultTimeLimit);
+        s_timeRemaining = s_timeLimit;
+        timerRunning = timerEnabled;
+        timerCompleted = false;
+        lastDisplayedSecond = -1;
+        NotifyTimeChanged(true);
+    }
+
+    public void EnsureLevelTimerStarted()
+    {
+        if (!timerRunning && !timerCompleted && !isGameOver && !isLevelCompleted)
+            StartLevelTimer();
+    }
+
+    public void StopLevelTimer()
+    {
+        timerRunning = false;
+        NotifyTimeChanged(true);
+    }
+
+    public void ResetLevelTimer()
+    {
+        s_timeLimit = Mathf.Max(1f, defaultTimeLimit);
+        s_timeRemaining = s_timeLimit;
+        timerRunning = timerEnabled;
+        timerCompleted = false;
+        lastDisplayedSecond = -1;
+        NotifyTimeChanged(true);
+    }
+
+    public void AddTime(float seconds)
+    {
+        s_timeRemaining = Mathf.Clamp(s_timeRemaining + seconds, 0f, s_timeLimit);
+        NotifyTimeChanged(true);
+    }
+
+    private void NotifyTimeChanged(bool force = false)
+    {
+        int displayedSecond = Mathf.CeilToInt(s_timeRemaining);
+        if (!force && displayedSecond == lastDisplayedSecond) return;
+
+        lastDisplayedSecond = displayedSecond;
+        OnTimeChanged?.Invoke(s_timeRemaining, s_timeLimit);
     }
 
     public void RegisterCheckpoint(Transform checkpoint)
@@ -109,6 +262,7 @@ public class GameManager : MonoBehaviour
         if (isGameOver) return;
 
         isGameOver = true;
+        timerRunning = false;
         Debug.Log("GAME OVER");
         Time.timeScale = 0f;
         SafeLoadScene(sceneGameOver);
@@ -119,6 +273,9 @@ public class GameManager : MonoBehaviour
         if (isLevelCompleted) return;
 
         isLevelCompleted = true;
+        timerRunning = false;
+        timerCompleted = true;
+        NotifyTimeChanged(true);
         Debug.Log("NIVEL COMPLETADO!");
     }
 
@@ -143,6 +300,7 @@ public class GameManager : MonoBehaviour
         isGameOver = false;
         isLevelCompleted = false;
         Time.timeScale = 1f;
+        ResetLevelTimer();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
@@ -151,6 +309,13 @@ public class GameManager : MonoBehaviour
         isGameOver = false;
         isLevelCompleted = false;
         Time.timeScale = 1f;
+        PlayerHealth.ResetForNewScene();
+        ResetLevelTimer();
+    }
+
+    public string GetLastPlayedLevel()
+    {
+        return s_lastPlayedLevel;
     }
 
     private void SafeLoadScene(string sceneName)
@@ -193,7 +358,10 @@ public class GameManager : MonoBehaviour
         s_nivelActual = 1;
         s_puntos = 0;
         s_chaquetasUsadas = 0;
+        s_nivelAvanzado = false;
+        s_lastPlayedLevel = "";
         PlayerHealth.ResetForNewScene();
+        ResetLevelTimer();
     }
 
     /// <summary>
@@ -228,4 +396,7 @@ public class GameManager : MonoBehaviour
     public bool IsGameOver() { return isGameOver; }
     public bool IsLevelCompleted() { return isLevelCompleted; }
     public Transform GetLastCheckpoint() { return lastCheckpoint; }
+    public float GetTimeRemaining() { return s_timeRemaining; }
+    public float GetTimeLimit() { return s_timeLimit; }
+    public bool IsTimerRunning() { return timerRunning; }
 }

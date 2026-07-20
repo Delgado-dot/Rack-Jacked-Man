@@ -5,9 +5,14 @@ public class DestinoNivel : MonoBehaviour
 {
     [SerializeField] private string siguienteNivel = "";
 
+    private bool activado = false;
+
     private void OnTriggerEnter(Collider other)
     {
+        if (activado) return;
         if (!other.CompareTag("Player")) return;
+
+        activado = true;
 
         string escenaActual = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         Debug.Log("[DIAG-DESTINO] ═══ OnTriggerEnter en \"" + gameObject.name + "\" | Escena actual: " + escenaActual + " | siguienteNivel=\"" + siguienteNivel + "\"");

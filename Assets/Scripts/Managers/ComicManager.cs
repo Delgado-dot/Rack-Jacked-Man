@@ -31,7 +31,7 @@ public class ComicManager : MonoBehaviour
     [SerializeField] private float startMaskHeight = 20f;
 
     [Header("Escena siguiente")]
-    [SerializeField] private string nextSceneName;
+    [SerializeField] private string nextSceneName = "Nivel_1";
 
 
     private int currentPage = 0;
@@ -102,9 +102,11 @@ public class ComicManager : MonoBehaviour
     }
     IEnumerator ChangePage()
     {
-        yield return StartCoroutine(CloseComicMask());
+        if (currentPage > 0)
+            yield return StartCoroutine(CloseComicMask());
+        else
+            comicMask.sizeDelta = new Vector2(comicMask.rect.width, startMaskHeight);
 
-        
         // Cambiar imagen
         comicImage.sprite = images[currentPage];
 

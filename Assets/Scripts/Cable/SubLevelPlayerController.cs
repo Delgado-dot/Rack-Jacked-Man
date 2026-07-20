@@ -136,6 +136,7 @@ public class SubLevelPlayerController : MonoBehaviour
     {
         currentLane = 1;
         targetX = lanePositions[currentLane];
+        limiteAlcanzado = false;
         cc.enabled = false;
         transform.position = new Vector3(targetX, transform.position.y, transform.position.z);
         cc.enabled = true;
@@ -309,10 +310,15 @@ public class SubLevelPlayerController : MonoBehaviour
 
     // ─── Limites ──────────────────────────────────────────────────
 
+    private bool limiteAlcanzado = false;
+
     private void CheckLimits()
     {
+        if (limiteAlcanzado) return;
+
         if (transform.position.z > limiteZ)
         {
+            limiteAlcanzado = true;
             AddScore(pointsPerLevel);
 
             if (GameManager.Instance != null)

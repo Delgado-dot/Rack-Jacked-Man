@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class PlayerInteract : MonoBehaviour
 {
     [Header("Configuracion de interaccion")]
-    [SerializeField] private float interactionRange = 1.2f;
+    [SerializeField, Min(1.5f)] private float interactionRange = 2.5f;
 
     [Header("Referencia")]
     [SerializeField] private RackInteractable currentRack;
@@ -14,6 +14,10 @@ public class PlayerInteract : MonoBehaviour
     private void Awake()
     {
         controls = new PlayerControls();
+
+        // Algunas escenas antiguas guardaron 0.5 en el inspector, un alcance
+        // menor que el tamano de los propios racks.
+        interactionRange = Mathf.Max(interactionRange, 1.5f);
     }
 
     private void OnEnable()
@@ -30,7 +34,7 @@ public class PlayerInteract : MonoBehaviour
     {
         DetectNearbyRack();
 
-        if (currentRack != null && Keyboard.current.eKey.wasPressedThisFrame)
+        if (currentRack != null && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
             Interact();
         }
@@ -45,10 +49,25 @@ public class PlayerInteract : MonoBehaviour
 
         foreach (Collider hit in hits)
         {
-            RackInteractable rack = hit.GetComponent<RackInteractable>();
+            // Los modelos importados suelen tener el collider en un hijo y el
+            // componente interactuable en la raiz del rack.
+            RackInteractable rack = hit.GetComponentInParent<RackInteractable>();
+            if (rack == null)
+                rack = hit.GetComponentInChildren<RackInteractable>();
+
             if (rack != null && rack.IsInteractable())
             {
-                float dist = Vector3.Distance(transform.position, hit.transform.position);
+                Vector3 targetPoint;
+                if (hit is MeshCollider mc && !mc.convex)
+                {
+                    targetPoint = hit.bounds.ClosestPoint(transform.position);
+                }
+                else
+                {
+                    targetPoint = hit.ClosestPoint(transform.position);
+                }
+
+                float dist = Vector3.Distance(transform.position, targetPoint);
                 if (dist < closestDist)
                 {
                     closestDist = dist;

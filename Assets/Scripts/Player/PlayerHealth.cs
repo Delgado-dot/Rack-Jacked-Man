@@ -21,12 +21,25 @@ public class PlayerHealth : MonoBehaviour
     public static event System.Action<int, int> OnHealthChanged;
     public static event System.Action OnPlayerDeath;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        s_maxLives = 3;
+        s_currentLives = 3;
+        s_isInvulnerable = false;
+        s_isDead = false;
+        s_invulnerabilityTimer = 0f;
+        s_invulnerabilityDuration = 1f;
+        OnHealthChanged = null;
+        OnPlayerDeath = null;
+    }
+
     private PlayerMovement playerMovement;
     private SubLevelPlayerController subLevelController;
 
     private void Awake()
     {
-        s_maxLives = maxLives;
+        s_maxLives = Mathf.Max(1, maxLives);
         s_invulnerabilityDuration = invulnerabilityDuration;
 
         if (s_currentLives <= 0 || s_currentLives > s_maxLives)
@@ -68,7 +81,10 @@ public class PlayerHealth : MonoBehaviour
     {
         if (s_isInvulnerable || s_isDead) return;
 
-        s_currentLives -= amount;
+        amount = Mathf.Max(0, amount);
+        if (amount == 0) return;
+
+        s_currentLives = Mathf.Max(0, s_currentLives - amount);
 
         Debug.Log("[PlayerHealth] danio -" + amount + ". Restante: " + s_currentLives);
 
@@ -150,6 +166,16 @@ public class PlayerHealth : MonoBehaviour
         s_isDead = false;
         s_isInvulnerable = false;
         s_invulnerabilityTimer = 0f;
+        OnHealthChanged?.Invoke(s_currentLives, s_maxLives);
+    }
+
+    public static void RestoreFullHealth()
+    {
+        s_currentLives = s_maxLives;
+        s_isDead = false;
+        s_isInvulnerable = false;
+        s_invulnerabilityTimer = 0f;
+        OnHealthChanged?.Invoke(s_currentLives, s_maxLives);
     }
 
     public static int GetCurrentLives() => s_currentLives;

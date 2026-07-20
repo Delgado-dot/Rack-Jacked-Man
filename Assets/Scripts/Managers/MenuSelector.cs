@@ -53,14 +53,21 @@ public class MenuSelector : MonoBehaviour
     {
         Time.timeScale = 1f;
 
+        bool esVictoria = SceneManager.GetActiveScene().name == "Menu Victoria";
+        int nivel = 1;
+
         if (GameManager.Instance != null)
         {
             GameManager.Instance.ResetState();
-            GameManager.Instance.SetNivelActual(1);
+
+            if (esVictoria)
+                GameManager.Instance.SetNivelActual(1);
+
+            nivel = GameManager.Instance.GetNivelActual();
         }
 
         PlayerHealth.ResetForNewScene();
-        SceneManager.LoadScene("Nivel_1");
+        SceneManager.LoadScene("Nivel_" + nivel);
     }
 
     private void SaveAndRestart()
