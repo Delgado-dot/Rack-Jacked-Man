@@ -99,7 +99,7 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = -5f;
         }
 
-        // Salto (Espacio)
+// Salto (Espacio)
         if (jumpPressed)
         {
             if (isGrounded)
@@ -107,7 +107,13 @@ public class PlayerMovement : MonoBehaviour
                 velocity.y = Mathf.Sqrt(
                     jumpHeight * -2f * gravity
                 );
+
+                if (animator != null)
+                {
+                    animator.SetTrigger("Jump");
+                }
             }
+
             jumpPressed = false;
         }
 
