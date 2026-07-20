@@ -22341,12 +22341,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3216723603414121753}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bcf3b46c8f29aa48a7a4f385f93310e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PuertaCambioNivel
-  nombreEscena: SubCable01_Copy
+m_Enabled: 1
+    m_EditorHideFlags: 0
+    m_Script: {fileID: 11500000, guid: 5bcf3b46c8f29aa48a7a4f385f93310e, type: 3}
+    m_Name: 
+    m_EditorClassIdentifier: Assembly-CSharp::PuertaCambioNivel
+  nombreEscena: Menu Victoria
 --- !u!65 &900000012
 BoxCollider:
   m_ObjectHideFlags: 0
