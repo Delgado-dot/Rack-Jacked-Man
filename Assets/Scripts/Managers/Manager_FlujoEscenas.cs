@@ -6,7 +6,7 @@ public class Manager_FlujoEscenas : MonoBehaviour
     public static Manager_FlujoEscenas Instancia { get; private set; }
 
     [Header("Inicio del juego")]
-    [Tooltip("Al pulsar Play, comienza siempre desde la primera escena de la lista.")]
+    [Tooltip("Solo fuerza MenuPrincipal al iniciar el juego, no en cada carga de escena.")]
     [SerializeField] private bool comenzarDesdeLaPrimeraEscena = true;
 
     [Header("Orden de las escenas")]
@@ -14,8 +14,16 @@ public class Manager_FlujoEscenas : MonoBehaviour
     [SerializeField] private string[] escenasEnOrden =
     {
         "MenuPrincipal",
-        "Nivel_1"
+        "ComicIntro",
+        "Nivel_1",
+        "SubCable01_Copy",
+        "Nivel_2",
+        "Nivel_3",
+        "Menu Victoria",
+        "Menu GameOver"
     };
+
+    private static bool juegoIniciado = false;
 
     private void Awake()
     {
@@ -31,9 +39,10 @@ public class Manager_FlujoEscenas : MonoBehaviour
 
     private void Start()
     {
-        if (comenzarDesdeLaPrimeraEscena && escenasEnOrden.Length > 0 &&
+        if (comenzarDesdeLaPrimeraEscena && !juegoIniciado && escenasEnOrden.Length > 0 &&
             SceneManager.GetActiveScene().name != escenasEnOrden[0])
         {
+            juegoIniciado = true;
             CargarEscena(escenasEnOrden[0]);
         }
     }

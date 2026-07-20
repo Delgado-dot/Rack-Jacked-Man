@@ -5,7 +5,7 @@ public class MenuPrincipal : MonoBehaviour
 {
     public void Jugar()
     {
-        SceneManager.LoadScene("Nivel_1");
+        SceneManager.LoadScene("ComicIntro");
     }
 
     public void Ranking()

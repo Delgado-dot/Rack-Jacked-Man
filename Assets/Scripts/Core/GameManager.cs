@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
     private static int s_nivelActual = 1;
     private static int s_puntos = 0;
     private static int s_chaquetasUsadas = 0;
+    private static bool s_nivelAvanzado = false;
 
     private void Awake()
     {
@@ -214,6 +215,12 @@ public class GameManager : MonoBehaviour
 
     public void AvanzarNivel()
     {
+        if (s_nivelAvanzado)
+        {
+            Debug.Log("[GameManager] Nivel ya avanzado recientemente. Ignorado.");
+            return;
+        }
+        s_nivelAvanzado = true;
         s_nivelActual++;
         Debug.Log("[GameManager] Nivel actual: " + s_nivelActual);
     }
