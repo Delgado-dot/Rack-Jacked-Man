@@ -623,7 +623,7 @@ MonoBehaviour:
     virus pierde el control."
   - "Solo queda el \xFAltimo enlace. Conecta el cable final y devuelve la comunicaci\xF3n
     a toda la ciudad."
-  readingTime: 6
+  readingTime: 3
   typingSpeed: 0.04
   typingSound: {fileID: 1270746484}
   maskDuration: 1
