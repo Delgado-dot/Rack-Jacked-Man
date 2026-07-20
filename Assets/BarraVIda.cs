@@ -15,16 +15,21 @@ public class BarraVida : MonoBehaviour
     {
         vidaActual = vidaMaxima;
 
-        barraVida.maxValue = vidaMaxima;
-        barraDanio.maxValue = vidaMaxima;
-
-        barraVida.value = vidaMaxima;
-        barraDanio.value = vidaMaxima;
+        if (barraVida != null)
+        {
+            barraVida.maxValue = vidaMaxima;
+            barraVida.value = vidaMaxima;
+        }
+        if (barraDanio != null)
+        {
+            barraDanio.maxValue = vidaMaxima;
+            barraDanio.value = vidaMaxima;
+        }
     }
 
     void Update()
     {
-        if (barraDanio.value > barraVida.value)
+        if (barraDanio != null && barraVida != null && barraDanio.value > barraVida.value)
         {
             barraDanio.value -= velocidad * Time.deltaTime;
         }
@@ -37,7 +42,8 @@ public class BarraVida : MonoBehaviour
         if (vidaActual < 0)
             vidaActual = 0;
 
-        barraVida.value = vidaActual;
+        if (barraVida != null)
+            barraVida.value = vidaActual;
     }
 
     public void Curar(float cantidad)
@@ -47,7 +53,9 @@ public class BarraVida : MonoBehaviour
         if (vidaActual > vidaMaxima)
             vidaActual = vidaMaxima;
 
-        barraVida.value = vidaActual;
-        barraDanio.value = vidaActual;
+        if (barraVida != null)
+            barraVida.value = vidaActual;
+        if (barraDanio != null)
+            barraDanio.value = vidaActual;
     }
 }
